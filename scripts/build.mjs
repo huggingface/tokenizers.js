@@ -1,21 +1,10 @@
-import { build } from "esbuild";
+import { build as esbuild } from "esbuild";
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 
 console.log("Generating TypeScript declarations...");
 execSync("tsc -p tsconfig.build.json", { stdio: "inherit" });
-
-const config = {
-  bundle: true,
-  minify: true,
-  minifySyntax: true,
-  treeShaking: true,
-  logLevel: "silent",
-  entryPoints: ["src/index.ts"],
-  platform: "neutral",
-  metafile: true,
-};
 
 const formatSize = (bytes) => {
   if (bytes < 1024) return `${bytes}b`;
@@ -34,16 +23,27 @@ const reportSize = (outfile) => {
   console.log(`⚡ Done\n`);
 };
 
-await build({
-  ...config,
-  format: "esm",
-  outfile: "dist/tokenizers.mjs",
-});
-reportSize("dist/tokenizers.mjs");
+const build = async (outfile) => {
+  const format = outfile.endsWith(".mjs") ? "esm" : "cjs";
+  const minifyOptions = /\.min\.[cm]js$/.test(outfile)
+    ? { minify: true, minifySyntax: true }
+    : {};
 
-await build({
-  ...config,
-  format: "cjs",
-  outfile: "dist/tokenizers.cjs",
-});
-reportSize("dist/tokenizers.cjs");
+  await esbuild({
+    bundle: true,
+    treeShaking: true,
+    logLevel: "silent",
+    entryPoints: ["src/index.ts"],
+    platform: "neutral",
+    metafile: true,
+    format,
+    outfile,
+    ...minifyOptions,
+  });
+  reportSize(outfile);
+}
+
+await build("dist/tokenizers.mjs");
+await build("dist/tokenizers.cjs");
+await build("dist/tokenizers.min.mjs");
+await build("dist/tokenizers.min.cjs");

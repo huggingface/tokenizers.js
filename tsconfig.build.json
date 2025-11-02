@@ -3,10 +3,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "declaration": true,
-    "declarationDir": "dist",
+    "declarationDir": "types",
     "emitDeclarationOnly": true,
-    "outDir": "dist",
+    "outDir": "types",
     "noEmit": false
   },
-  "include": ["src/index.ts", "types"]
+  "include": ["src/index.ts"]
 }

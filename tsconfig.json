@@ -8,8 +8,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "declaration": true,
-    "declarationDir": "dist",
-    "outDir": "dist",
+    "declarationDir": "types",
+    "outDir": "types",
     "strict": true,
     "sourceMap": true,
     "strictNullChecks": false,
@@ -21,5 +21,5 @@
       "@static/*": ["src/static/*"]
     }
   },
-  "include": ["src/**/*", "types"]
+  "include": ["src/**/*"]
 }

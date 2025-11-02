@@ -1,30 +1,33 @@
 {
   "name": "@huggingface/tokenizers",
   "version": "0.0.1",
-  "description": "",
-  "main": "dist/tokenizers.cjs",
+  "description": "🤗 Tokenizers.js: A pure JS/TS implementation of today's most used tokenizers",
   "type": "module",
-  "module": "dist/tokenizers.mjs",
-  "types": "dist/index.d.ts",
+  "main": "dist/tokenizers.min.mjs",
+  "browser": "dist/tokenizers.min.mjs",
+  "module": "dist/tokenizers.min.mjs",
+  "types": "types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./types/index.d.ts",
       "node": {
-        "require": "./dist/tokenizers.cjs",
-        "import": "./dist/tokenizers.mjs"
+        "require": "./dist/tokenizers.min.cjs",
+        "import": "./dist/tokenizers.min.mjs"
       },
       "browser": {
-        "import": "./dist/tokenizers.mjs"
+        "import": "./dist/tokenizers.min.mjs"
       },
-      "default": "./dist/tokenizers.mjs"
+      "default": "./dist/tokenizers.min.mjs"
     }
   },
   "files": [
     "dist",
-    "README.md"
+    "types",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
-    "clean": "rimraf dist",
+    "clean": "rimraf dist types",
     "build": "npm run clean && node scripts/build.mjs",
     "dev": "npm run clean && node scripts/dev.mjs",
     "lint": "eslint src --ext .ts,.tsx",
