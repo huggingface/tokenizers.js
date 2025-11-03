@@ -79,7 +79,7 @@ export interface TokenizerJSON {
   added_tokens?: AddedToken[];
   normalizer?: TokenizerConfigNormalizer;
   pre_tokenizer?: TokenizerConfigPreTokenizer;
-  post_processor?: TokenConfigPostProcessor;
+  post_processor?: TokenizerConfigPostProcessor;
   decoder?: TokenizerConfigDecoder;
   model: TokenizerModelConfig;
 }
