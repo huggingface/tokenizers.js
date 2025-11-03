@@ -14,14 +14,21 @@ const tokenizer = new Tokenizer(tokenizerJson, tokenizerConfig);
 // Tokenize text
 const tokens = tokenizer.tokenize('Hello World');
 const encoded = tokenizer.encode('Hello World');
-const decoded = tokenizer.decode(encoded);
+const decoded = tokenizer.decode(encoded.ids);
 
 console.log(tokens);
 console.log(encoded);
 console.log(decoded);
 `;
 
-const TARGET_OUTPUT = "[ '▁Hello', '▁World' ]\n[ 1, 15043, 2787 ]\n<s> Hello World\n";
+const TARGET_OUTPUT = `[ '▁Hello', '▁World' ]
+{
+  ids: [ 1, 15043, 2787 ],
+  tokens: [ '<s>', '▁Hello', '▁World' ],
+  attention_mask: [ 1, 1, 1 ]
+}
+<s> Hello World
+`;
 
 const wrap_async_iife = (code: string) => `(async function() { ${code} })();`;
 

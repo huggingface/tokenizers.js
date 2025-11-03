@@ -44,9 +44,9 @@ const tokenizerConfig = await fetch(`https://huggingface.co/${modelId}/resolve/m
 const tokenizer = new Tokenizer(tokenizerJson, tokenizerConfig);
 
 // Tokenize text
-const tokens = tokenizer.tokenize('Hello World');   // ['Hello', 'ĠWorld']
-const encoded = tokenizer.encode('Hello World');    // [9906, 4435]
-const decoded = tokenizer.decode(encoded);          // 'Hello World'
+const tokens = tokenizer.tokenize('Hello World');  // ['Hello', 'ĠWorld']
+const encoded = tokenizer.encode('Hello World');   // { ids: [9906, 4435], tokens: ['Hello', 'ĠWorld'], attention_mask: [1, 1] }
+const decoded = tokenizer.decode(encoded.ids);     // 'Hello World'
 ```
 
 ## Requirements

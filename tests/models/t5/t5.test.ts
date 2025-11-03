@@ -38,14 +38,14 @@ describe("hard-coded", () => {
           const tokenizer = new Tokenizer(tokenizerJson, tokenizerConfig);
 
           for (const [text, expected] of Object.entries(data)) {
-            const token_ids = tokenizer.encode(text, {
+            const encoded = tokenizer.encode(text, {
               add_special_tokens: false,
             });
-            expect(token_ids).toEqual(expected);
+            expect(encoded.ids).toEqual(expected);
 
             // If reversible, test that decoding produces the original text
             if (reversible) {
-              const decoded = tokenizer.decode(token_ids);
+              const decoded = tokenizer.decode(encoded.ids);
               expect(decoded).toEqual(text);
             }
           }

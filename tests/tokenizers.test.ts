@@ -20,10 +20,10 @@ describe("Tokenizers (model-specific)", () => {
           for (const [testName, testCase] of Object.entries(config.default[modelId])) {
             test(testName, () => {
               if (testCase.ids) {
-                const ids = tokenizer.encode(testCase.text, {
+                const encoded = tokenizer.encode(testCase.text, {
                   text_pair: testCase.text_pair,
                 });
-                expect(ids).toEqual(testCase.ids);
+                expect(encoded.ids).toEqual(testCase.ids);
 
                 if (testCase.decoded) {
                   const decoded = tokenizer.decode(testCase.ids);

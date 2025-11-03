@@ -33,7 +33,8 @@ export type DataType =
   | "int4";
 
 export interface EncodingSingle {
-  input_ids: number[];
+  ids: number[];
+  tokens: string[];
   attention_mask: number[];
   token_type_ids?: number[];
 }

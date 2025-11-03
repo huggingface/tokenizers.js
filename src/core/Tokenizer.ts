@@ -128,19 +128,48 @@ class Tokenizer {
       this.config.do_lowercase_and_remove_accent ?? false;
   }
 
+  /**
+   * Encodes a single text or a pair of texts using the model's tokenizer.
+   *
+   * @param text The text to encode.
+   * @param options An optional object containing the following properties:
+   * @returns An object containing the encoded text.
+   */
+
+  // Overload: when return_token_type_ids is explicitly true
+  public encode(
+    text: string,
+    options: EncodeOptions & { return_token_type_ids: true },
+  ): EncodingSingle & { token_type_ids: number[] };
+
+  // Overload: when return_token_type_ids is false/null or not provided
+  public encode(text: string, options?: EncodeOptions): EncodingSingle;
+
+  // Implementation
   public encode(
     text: string,
     {
-      text_pair,
-      add_special_tokens,
-      return_token_type_ids,
+      text_pair = null,
+      add_special_tokens = true,
+      return_token_type_ids = null,
     }: EncodeOptions = {},
-  ): Array<number> {
-    return this.encode_plus(text, {
+  ): EncodingSingle {
+    const { tokens, token_type_ids } = this.tokenize_helper(text, {
       text_pair,
       add_special_tokens,
-      return_token_type_ids,
-    }).input_ids;
+    });
+
+    const input_ids = this.model.convert_tokens_to_ids(tokens);
+    const result: EncodingSingle = {
+      ids: input_ids,
+      tokens,
+      attention_mask: new Array(input_ids.length).fill(1),
+    };
+
+    if (return_token_type_ids && token_type_ids) {
+      result.token_type_ids = token_type_ids;
+    }
+    return result;
   }
 
   public decode(
@@ -196,40 +225,6 @@ class Tokenizer {
     { text_pair = null, add_special_tokens = false }: TokenizeOptions = {},
   ): string[] {
     return this.tokenize_helper(text, { text_pair, add_special_tokens }).tokens;
-  }
-
-  /**
-   * Encodes a single text or a pair of texts using the model's tokenizer.
-   *
-   * @param text The text to encode.
-   * @param options An optional object containing the following properties:
-   * @returns An object containing the encoded text.
-   * @private
-   */
-
-  private encode_plus(
-    text: string,
-    {
-      text_pair = null,
-      add_special_tokens = true,
-      return_token_type_ids = null,
-    }: EncodeOptions,
-  ): EncodingSingle {
-    const { tokens, token_type_ids } = this.tokenize_helper(text, {
-      text_pair,
-      add_special_tokens,
-    });
-
-    const input_ids = this.model.convert_tokens_to_ids(tokens);
-    const result: EncodingSingle = {
-      input_ids,
-      attention_mask: new Array(input_ids.length).fill(1),
-    };
-
-    if (return_token_type_ids && token_type_ids) {
-      result.token_type_ids = token_type_ids;
-    }
-    return result;
   }
 
   private encode_text(text: string | null): string[] | null {
