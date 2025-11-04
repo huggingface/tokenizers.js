@@ -40,6 +40,8 @@ Alternatively, you can use it via a CDN as follows:
 
 ## Usage
 
+### Basic Usage
+
 ```javascript
 import { Tokenizer } from "@huggingface/tokenizers";
 
@@ -56,6 +58,30 @@ const tokens = tokenizer.tokenize("Hello World"); // ['Hello', 'ĠWorld']
 const encoded = tokenizer.encode("Hello World"); // { ids: [9906, 4435], tokens: ['Hello', 'ĠWorld'], attention_mask: [1, 1] }
 const decoded = tokenizer.decode(encoded.ids); // 'Hello World'
 ```
+
+### Advanced Usage - Component Exports
+
+You can also import individual tokenizer components, similar to the Python tokenizers library:
+
+```javascript
+import { Tokenizer, Encoding } from "@huggingface/tokenizers";
+import { Metaspace, Whitespace } from "@huggingface/tokenizers/pre-tokenizers";
+import { BPE } from "@huggingface/tokenizers/models";
+import { Lowercase, StripAccents } from "@huggingface/tokenizers/normalizers";
+import { BPEDecoder } from "@huggingface/tokenizers/decoders";
+import { TemplateProcessing } from "@huggingface/tokenizers/post-processors";
+
+// Use these components to build custom tokenizers or handle specific use cases
+const metaspace = new Metaspace({
+  type: "Metaspace",
+  replacement: "▁",
+  add_prefix_space: true,
+});
+
+// Type your encoding results
+const encoded: Encoding = tokenizer.encode("Hello World");
+```
+
 
 ## Requirements
 
