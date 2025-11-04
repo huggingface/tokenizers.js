@@ -178,6 +178,12 @@ export default {
 
   // Module name mapper for path aliases
   moduleNameMapper: {
+    "^@huggingface/tokenizers$": "<rootDir>/src/index.ts",
+    "^@huggingface/tokenizers/pre-tokenizers$": "<rootDir>/src/pre-tokenizers.ts",
+    "^@huggingface/tokenizers/models$": "<rootDir>/src/models.ts",
+    "^@huggingface/tokenizers/normalizers$": "<rootDir>/src/normalizers.ts",
+    "^@huggingface/tokenizers/decoders$": "<rootDir>/src/decoders.ts",
+    "^@huggingface/tokenizers/post-processors$": "<rootDir>/src/post-processors.ts",
     "^@utils$": "<rootDir>/src/utils/index.ts",
     "^@utils/(.*)$": "<rootDir>/src/utils/$1",
     "^@core/(.*)$": "<rootDir>/src/core/$1",
