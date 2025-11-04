@@ -1,7 +1,7 @@
 {
   "overrides": [
     {
-      "files": ["tests/**/*.ts"],
+      "files": ["README.md", "tests/**/*.ts"],
       "options": {
         "printWidth": 10000000
       }

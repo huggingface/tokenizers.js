@@ -30,28 +30,37 @@ Run today's most used tokenizers directly in your browser or Node.js application
 npm install @huggingface/tokenizers
 ```
 
+Alternatively, you can use it via a CDN as follows:
+
+```html
+<script type="module">
+  import { Tokenizer } from "https://cdn.jsdelivr.net/npm/@huggingface/tokenizers";
+</script>
+```
+
 ## Usage
 
 ```javascript
-import { Tokenizer } from '@huggingface/tokenizers';
+import { Tokenizer } from "@huggingface/tokenizers";
 
-// Load files from the Hugging Face Hub 
+// Load files from the Hugging Face Hub
 const modelId = "HuggingFaceTB/SmolLM3-3B";
-const tokenizerJson = await fetch(`https://huggingface.co/${modelId}/resolve/main/tokenizer.json`).then(res => res.json());
-const tokenizerConfig = await fetch(`https://huggingface.co/${modelId}/resolve/main/tokenizer_config.json`).then(res => res.json());
+const tokenizerJson = await fetch(`https://huggingface.co/${modelId}/resolve/main/tokenizer.json`).then((res) => res.json());
+const tokenizerConfig = await fetch(`https://huggingface.co/${modelId}/resolve/main/tokenizer_config.json`).then((res) => res.json());
 
 // Create tokenizer
 const tokenizer = new Tokenizer(tokenizerJson, tokenizerConfig);
 
 // Tokenize text
-const tokens = tokenizer.tokenize('Hello World');  // ['Hello', 'ĠWorld']
-const encoded = tokenizer.encode('Hello World');   // { ids: [9906, 4435], tokens: ['Hello', 'ĠWorld'], attention_mask: [1, 1] }
-const decoded = tokenizer.decode(encoded.ids);     // 'Hello World'
+const tokens = tokenizer.tokenize("Hello World"); // ['Hello', 'ĠWorld']
+const encoded = tokenizer.encode("Hello World"); // { ids: [9906, 4435], tokens: ['Hello', 'ĠWorld'], attention_mask: [1, 1] }
+const decoded = tokenizer.decode(encoded.ids); // 'Hello World'
 ```
 
 ## Requirements
 
 This library expects two files from Hugging Face models:
+
 - `tokenizer.json` - Contains the tokenizer configuration
 - `tokenizer_config.json` - Contains additional metadata
 
@@ -60,6 +69,7 @@ This library expects two files from Hugging Face models:
 Tokenizers.js supports [Hugging Face tokenizer components](https://huggingface.co/docs/tokenizers/components):
 
 ### Normalizers
+
 - NFD
 - NFKC
 - NFC
@@ -73,6 +83,7 @@ Tokenizers.js supports [Hugging Face tokenizer components](https://huggingface.c
 - Sequence
 
 ### Pre-tokenizers
+
 - BERT
 - ByteLevel
 - Whitespace
@@ -84,12 +95,14 @@ Tokenizers.js supports [Hugging Face tokenizer components](https://huggingface.c
 - Digits
 
 ### Models
+
 - BPE (Byte-Pair Encoding)
 - WordPiece
 - Unigram
 - Legacy
 
 ### Post-processors
+
 - ByteLevel
 - TemplateProcessing
 - RobertaProcessing
@@ -97,6 +110,7 @@ Tokenizers.js supports [Hugging Face tokenizer components](https://huggingface.c
 - Sequence
 
 ### Decoders
+
 - ByteLevel
 - WordPiece
 - Metaspace
