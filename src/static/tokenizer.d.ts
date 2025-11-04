@@ -24,14 +24,6 @@ export interface TokenizerConfig {
   add_eos_token?: boolean;
   add_prefix_space?: boolean;
 
-  // Padding and truncation
-  padding_side?: "left" | "right";
-  truncation_side?: "left" | "right";
-  model_max_length?: number;
-  max_length?: number;
-  stride?: number;
-  pad_to_multiple_of?: number;
-
   // Cleaning and processing
   clean_up_tokenization_spaces?: boolean;
   split_special_tokens?: boolean;
@@ -74,37 +66,12 @@ export interface TokenConfig {
 
 export interface TokenizerJSON {
   version?: string;
-  truncation?: TruncationConfig | null;
-  padding?: PaddingConfig | null;
   added_tokens?: AddedToken[];
   normalizer?: TokenizerConfigNormalizer;
   pre_tokenizer?: TokenizerConfigPreTokenizer;
   post_processor?: TokenizerConfigPostProcessor;
   decoder?: TokenizerConfigDecoder;
   model: TokenizerModelConfig;
-}
-
-// ----------------------------------------------------------------------------
-// Truncation Configuration
-// ----------------------------------------------------------------------------
-
-export interface TruncationConfig {
-  direction?: "Left" | "Right";
-  max_length: number;
-  strategy?: "LongestFirst" | "OnlyFirst" | "OnlySecond";
-  stride?: number;
-}
-
-// ----------------------------------------------------------------------------
-// Padding Configuration
-// ----------------------------------------------------------------------------
-
-export interface PaddingConfig {
-  direction?: "Left" | "Right";
-  pad_id?: number;
-  pad_token?: string;
-  pad_type_id?: number;
-  pad_to_multiple_of?: number | null;
 }
 
 // ----------------------------------------------------------------------------
