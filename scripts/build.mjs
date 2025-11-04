@@ -1,6 +1,6 @@
 import { build as esbuild } from "esbuild";
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 
 console.log("Generating TypeScript declarations...");
@@ -25,7 +25,7 @@ const reportSize = (outfile) => {
   console.log(`⚡ Done\n`);
 };
 
-const build = async (entryPoint, outfile) => {
+const build = async (outfile) => {
   const format = outfile.endsWith(".mjs") ? "esm" : "cjs";
   const minifyOptions = /\.min\.[cm]js$/.test(outfile)
     ? { minify: true, minifySyntax: true }
@@ -35,7 +35,7 @@ const build = async (entryPoint, outfile) => {
     bundle: true,
     treeShaking: true,
     logLevel: "silent",
-    entryPoints: [entryPoint],
+    entryPoints: ["src/index.ts"],
     platform: "neutral",
     metafile: true,
     format,
@@ -45,32 +45,56 @@ const build = async (entryPoint, outfile) => {
   reportSize(outfile);
 };
 
-await build("src/index.ts", "dist/tokenizers.mjs");
-await build("src/index.ts", "dist/tokenizers.cjs");
-await build("src/index.ts", "dist/tokenizers.min.mjs");
-await build("src/index.ts", "dist/tokenizers.min.cjs");
+await build("dist/tokenizers.mjs");
+await build("dist/tokenizers.cjs");
+await build("dist/tokenizers.min.mjs");
+await build("dist/tokenizers.min.cjs");
 
-await build("src/pre-tokenizers.ts", "dist/pre-tokenizers.mjs");
-await build("src/pre-tokenizers.ts", "dist/pre-tokenizers.cjs");
-await build("src/pre-tokenizers.ts", "dist/pre-tokenizers.min.mjs");
-await build("src/pre-tokenizers.ts", "dist/pre-tokenizers.min.cjs");
+// Read the type definition files to extract export names
+const readExports = (filename) => {
+  const content = readFileSync(`types/${filename}`, 'utf-8');
+  const exports = [];
+  const exportRegex = /export \{ default as (\w+) \}/g;
+  let match;
+  while ((match = exportRegex.exec(content)) !== null) {
+    exports.push(match[1]);
+  }
+  return exports;
+};
 
-await build("src/models.ts", "dist/models.mjs");
-await build("src/models.ts", "dist/models.cjs");
-await build("src/models.ts", "dist/models.min.mjs");
-await build("src/models.ts", "dist/models.min.cjs");
+// Generate wrapper files for submodule exports
+const submodules = {
+  "pre-tokenizers": readExports("pre-tokenizers.d.ts"),
+  "models": readExports("models.d.ts"),
+  "normalizers": readExports("normalizers.d.ts"),
+  "decoders": readExports("decoders.d.ts"),
+  "post-processors": readExports("post-processors.d.ts"),
+};
 
-await build("src/normalizers.ts", "dist/normalizers.mjs");
-await build("src/normalizers.ts", "dist/normalizers.cjs");
-await build("src/normalizers.ts", "dist/normalizers.min.mjs");
-await build("src/normalizers.ts", "dist/normalizers.min.cjs");
+for (const [path, exportNames] of Object.entries(submodules)) {
+  const exportList = exportNames.join(", ");
+  
+  // ESM wrappers
+  writeFileSync(
+    `dist/${path}.mjs`,
+    `export { ${exportList} } from './tokenizers.mjs';\n`
+  );
+  writeFileSync(
+    `dist/${path}.min.mjs`,
+    `export { ${exportList} } from './tokenizers.min.mjs';\n`
+  );
+  
+  // CJS wrappers
+  const cjsExports = exportNames.map(name => `  ${name}: main.${name}`).join(',\n');
+  writeFileSync(
+    `dist/${path}.cjs`,
+    `const main = require('./tokenizers.cjs');\nmodule.exports = {\n${cjsExports}\n};\n`
+  );
+  writeFileSync(
+    `dist/${path}.min.cjs`,
+    `const main = require('./tokenizers.min.cjs');\nmodule.exports = {\n${cjsExports}\n};\n`
+  );
+}
 
-await build("src/decoders.ts", "dist/decoders.mjs");
-await build("src/decoders.ts", "dist/decoders.cjs");
-await build("src/decoders.ts", "dist/decoders.min.mjs");
-await build("src/decoders.ts", "dist/decoders.min.cjs");
+console.log("\n✓ Generated wrapper files for submodule exports");
 
-await build("src/post-processors.ts", "dist/post-processors.mjs");
-await build("src/post-processors.ts", "dist/post-processors.cjs");
-await build("src/post-processors.ts", "dist/post-processors.min.mjs");
-await build("src/post-processors.ts", "dist/post-processors.min.cjs");

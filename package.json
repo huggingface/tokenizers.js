@@ -22,57 +22,57 @@
     "./pre-tokenizers": {
       "types": "./types/pre-tokenizers.d.ts",
       "node": {
-        "require": "./dist/pre-tokenizers.min.cjs",
-        "import": "./dist/pre-tokenizers.min.mjs"
+        "require": "./dist/tokenizers.min.cjs",
+        "import": "./dist/tokenizers.min.mjs"
       },
       "browser": {
-        "import": "./dist/pre-tokenizers.min.mjs"
+        "import": "./dist/tokenizers.min.mjs"
       },
-      "default": "./dist/pre-tokenizers.min.mjs"
+      "default": "./dist/tokenizers.min.mjs"
     },
     "./models": {
       "types": "./types/models.d.ts",
       "node": {
-        "require": "./dist/models.min.cjs",
-        "import": "./dist/models.min.mjs"
+        "require": "./dist/tokenizers.min.cjs",
+        "import": "./dist/tokenizers.min.mjs"
       },
       "browser": {
-        "import": "./dist/models.min.mjs"
+        "import": "./dist/tokenizers.min.mjs"
       },
-      "default": "./dist/models.min.mjs"
+      "default": "./dist/tokenizers.min.mjs"
     },
     "./normalizers": {
       "types": "./types/normalizers.d.ts",
       "node": {
-        "require": "./dist/normalizers.min.cjs",
-        "import": "./dist/normalizers.min.mjs"
+        "require": "./dist/tokenizers.min.cjs",
+        "import": "./dist/tokenizers.min.mjs"
       },
       "browser": {
-        "import": "./dist/normalizers.min.mjs"
+        "import": "./dist/tokenizers.min.mjs"
       },
-      "default": "./dist/normalizers.min.mjs"
+      "default": "./dist/tokenizers.min.mjs"
     },
     "./decoders": {
       "types": "./types/decoders.d.ts",
       "node": {
-        "require": "./dist/decoders.min.cjs",
-        "import": "./dist/decoders.min.mjs"
+        "require": "./dist/tokenizers.min.cjs",
+        "import": "./dist/tokenizers.min.mjs"
       },
       "browser": {
-        "import": "./dist/decoders.min.mjs"
+        "import": "./dist/tokenizers.min.mjs"
       },
-      "default": "./dist/decoders.min.mjs"
+      "default": "./dist/tokenizers.min.mjs"
     },
     "./post-processors": {
       "types": "./types/post-processors.d.ts",
       "node": {
-        "require": "./dist/post-processors.min.cjs",
-        "import": "./dist/post-processors.min.mjs"
+        "require": "./dist/tokenizers.min.cjs",
+        "import": "./dist/tokenizers.min.mjs"
       },
       "browser": {
-        "import": "./dist/post-processors.min.mjs"
+        "import": "./dist/tokenizers.min.mjs"
       },
-      "default": "./dist/post-processors.min.mjs"
+      "default": "./dist/tokenizers.min.mjs"
     }
   },
   "files": [
