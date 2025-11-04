@@ -8,5 +8,5 @@
     "outDir": "types",
     "noEmit": false
   },
-  "include": ["src/index.ts"]
+  "include": ["src/index.ts", "src/pre-tokenizers.ts", "src/models.ts"]
 }

@@ -25,7 +25,7 @@ const reportSize = (outfile) => {
   console.log(`⚡ Done\n`);
 };
 
-const build = async (outfile) => {
+const build = async (entryPoint, outfile) => {
   const format = outfile.endsWith(".mjs") ? "esm" : "cjs";
   const minifyOptions = /\.min\.[cm]js$/.test(outfile)
     ? { minify: true, minifySyntax: true }
@@ -35,7 +35,7 @@ const build = async (outfile) => {
     bundle: true,
     treeShaking: true,
     logLevel: "silent",
-    entryPoints: ["src/index.ts"],
+    entryPoints: [entryPoint],
     platform: "neutral",
     metafile: true,
     format,
@@ -45,7 +45,17 @@ const build = async (outfile) => {
   reportSize(outfile);
 };
 
-await build("dist/tokenizers.mjs");
-await build("dist/tokenizers.cjs");
-await build("dist/tokenizers.min.mjs");
-await build("dist/tokenizers.min.cjs");
+await build("src/index.ts", "dist/tokenizers.mjs");
+await build("src/index.ts", "dist/tokenizers.cjs");
+await build("src/index.ts", "dist/tokenizers.min.mjs");
+await build("src/index.ts", "dist/tokenizers.min.cjs");
+
+await build("src/pre-tokenizers.ts", "dist/pre-tokenizers.mjs");
+await build("src/pre-tokenizers.ts", "dist/pre-tokenizers.cjs");
+await build("src/pre-tokenizers.ts", "dist/pre-tokenizers.min.mjs");
+await build("src/pre-tokenizers.ts", "dist/pre-tokenizers.min.cjs");
+
+await build("src/models.ts", "dist/models.mjs");
+await build("src/models.ts", "dist/models.cjs");
+await build("src/models.ts", "dist/models.min.mjs");
+await build("src/models.ts", "dist/models.min.cjs");

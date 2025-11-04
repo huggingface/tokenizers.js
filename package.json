@@ -18,6 +18,28 @@
         "import": "./dist/tokenizers.min.mjs"
       },
       "default": "./dist/tokenizers.min.mjs"
+    },
+    "./pre-tokenizers": {
+      "types": "./types/pre-tokenizers.d.ts",
+      "node": {
+        "require": "./dist/pre-tokenizers.min.cjs",
+        "import": "./dist/pre-tokenizers.min.mjs"
+      },
+      "browser": {
+        "import": "./dist/pre-tokenizers.min.mjs"
+      },
+      "default": "./dist/pre-tokenizers.min.mjs"
+    },
+    "./models": {
+      "types": "./types/models.d.ts",
+      "node": {
+        "require": "./dist/models.min.cjs",
+        "import": "./dist/models.min.mjs"
+      },
+      "browser": {
+        "import": "./dist/models.min.mjs"
+      },
+      "default": "./dist/models.min.mjs"
     }
   },
   "files": [
