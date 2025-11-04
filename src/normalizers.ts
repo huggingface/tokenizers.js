@@ -4,10 +4,11 @@ export { default as NFD } from "./core/normalizer/NFD";
 export { default as NFKD } from "./core/normalizer/NFKD";
 export { default as NFC } from "./core/normalizer/NFC";
 export { default as NFKC } from "./core/normalizer/NFKC";
-export { default as Sequence } from "./core/normalizer/NormalizerSequence";
+export { default as NormalizerSequence } from "./core/normalizer/NormalizerSequence";
 export { default as Lowercase } from "./core/normalizer/Lowercase";
 export { default as Prepend } from "./core/normalizer/Prepend";
 export { default as Strip } from "./core/normalizer/StripNormalizer";
 export { default as StripAccents } from "./core/normalizer/StripAccents";
 export { default as Precompiled } from "./core/normalizer/Precompiled";
 export { default as Replace } from "./core/normalizer/Replace";
+

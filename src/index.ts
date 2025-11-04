@@ -4,16 +4,16 @@ export type { Encoding } from "./static/types";
 // Decoders
 export {
   Decoder,
-  ByteLevel as ByteLevelDecoder,
-  Replace as ReplaceDecoder,
-  WordPiece as WordPieceDecoder,
+  ByteLevelDecoder,
+  ReplaceDecoder,
+  WordPieceDecoder,
   ByteFallback,
   Fuse,
-  Strip as StripDecoder,
-  Metaspace as MetaspaceDecoder,
+  StripDecoder,
+  MetaspaceDecoder,
   BPEDecoder,
   CTC,
-  Sequence as DecoderSequence,
+  DecoderSequence,
 } from "./decoders";
 
 // Models
@@ -27,7 +27,7 @@ export {
   NFKD,
   NFC,
   NFKC,
-  Sequence as NormalizerSequence,
+  NormalizerSequence,
   Lowercase,
   Prepend,
   Strip,
@@ -40,11 +40,11 @@ export {
 export {
   PreTokenizer,
   BertPreTokenizer,
-  ByteLevel as ByteLevelPreTokenizer,
+  ByteLevelPreTokenizer,
   Digits,
-  Metaspace as MetaspacePreTokenizer,
+  MetaspacePreTokenizer,
   Punctuation,
-  Sequence as PreTokenizerSequence,
+  PreTokenizerSequence,
   Split,
   Whitespace,
   WhitespaceSplit,
@@ -54,9 +54,9 @@ export {
 export {
   PostProcessor,
   BertProcessing,
-  ByteLevel as ByteLevelPostProcessor,
+  ByteLevelPostProcessor,
   RobertaProcessing,
-  Sequence as PostProcessorSequence,
+  PostProcessorSequence,
   TemplateProcessing,
 } from "./post-processors";
 
