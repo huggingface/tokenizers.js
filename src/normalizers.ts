@@ -11,4 +11,3 @@ export { default as Strip } from "./core/normalizer/StripNormalizer";
 export { default as StripAccents } from "./core/normalizer/StripAccents";
 export { default as Precompiled } from "./core/normalizer/Precompiled";
 export { default as Replace } from "./core/normalizer/Replace";
-

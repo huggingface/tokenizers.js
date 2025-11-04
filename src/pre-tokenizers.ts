@@ -8,4 +8,3 @@ export { default as PreTokenizerSequence } from "./core/preTokenizer/PreTokenize
 export { default as Split } from "./core/preTokenizer/SplitPreTokenizer";
 export { default as Whitespace } from "./core/preTokenizer/WhitespacePreTokenizer";
 export { default as WhitespaceSplit } from "./core/preTokenizer/WhitespaceSplit";
-

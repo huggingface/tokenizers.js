@@ -8,11 +8,11 @@ export {
   ReplaceDecoder,
   WordPieceDecoder,
   ByteFallback,
-  Fuse,
+  FuseDecoder,
   StripDecoder,
   MetaspaceDecoder,
   BPEDecoder,
-  CTC,
+  CTCDecoder,
   DecoderSequence,
 } from "./decoders";
 
@@ -59,4 +59,3 @@ export {
   PostProcessorSequence,
   TemplateProcessing,
 } from "./post-processors";
-
