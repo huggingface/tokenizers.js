@@ -1,7 +1,7 @@
 import { Tokenizer } from "../src";
 import type { Encoding } from "../src";
-import { Metaspace, Whitespace } from "../src/pre-tokenizers";
-import { BPE } from "../src/models";
+import { MetaspacePreTokenizer, Whitespace } from "../src";
+import { BPE } from "../src";
 
 describe("Additional exports", () => {
   describe("Main exports", () => {
@@ -21,14 +21,14 @@ describe("Additional exports", () => {
   });
 
   describe("Pre-tokenizer exports", () => {
-    it("should export Metaspace pre-tokenizer", () => {
-      expect(Metaspace).toBeDefined();
-      const metaspace = new Metaspace({
+    it("should export MetaspacePreTokenizer", () => {
+      expect(MetaspacePreTokenizer).toBeDefined();
+      const metaspace = new MetaspacePreTokenizer({
         type: "Metaspace",
         replacement: "▁",
         add_prefix_space: true,
       });
-      expect(metaspace).toBeInstanceOf(Metaspace);
+      expect(metaspace).toBeInstanceOf(MetaspacePreTokenizer);
     });
 
     it("should export Whitespace pre-tokenizer", () => {
@@ -37,8 +37,8 @@ describe("Additional exports", () => {
       expect(whitespace).toBeInstanceOf(Whitespace);
     });
 
-    it("Metaspace pre-tokenizer should work correctly", () => {
-      const metaspace = new Metaspace({
+    it("MetaspacePreTokenizer should work correctly", () => {
+      const metaspace = new MetaspacePreTokenizer({
         type: "Metaspace",
         replacement: "▁",
         add_prefix_space: true,
@@ -71,23 +71,18 @@ describe("Additional exports", () => {
     });
   });
 
-  describe("Integration test - import paths", () => {
-    it("should support the documented import syntax", async () => {
-      // This test verifies that the documented import paths work
-      // import { Tokenizer, Encoding } from "@huggingface/tokenizers";
-      const { Tokenizer: T1 } = await import("../src/index");
+  describe("Integration test - import from main export", () => {
+    it("should support importing everything from main export", async () => {
+      // All exports should be available from the main index
+      const {
+        Tokenizer: T1,
+        MetaspacePreTokenizer: M1,
+        Whitespace: W1,
+        BPE: B1,
+      } = await import("../src/index");
       expect(T1).toBeDefined();
-      // Encoding is a type-only export, so we can't test it at runtime
-
-      // import { Metaspace, Whitespace } from "@huggingface/tokenizers/pre-tokenizers";
-      const { Metaspace: M1, Whitespace: W1 } = await import(
-        "../src/pre-tokenizers"
-      );
       expect(M1).toBeDefined();
       expect(W1).toBeDefined();
-
-      // import { BPE } from "@huggingface/tokenizers/models";
-      const { BPE: B1 } = await import("../src/models");
       expect(B1).toBeDefined();
     });
   });

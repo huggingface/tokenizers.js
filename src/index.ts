@@ -17,12 +17,7 @@ export {
 } from "./decoders";
 
 // Models
-export {
-  Model,
-  BPE,
-  Unigram,
-  WordPiece,
-} from "./models";
+export { Model, BPE, Unigram, WordPiece } from "./models";
 
 // Normalizers
 export {
@@ -45,9 +40,9 @@ export {
 export {
   PreTokenizer,
   BertPreTokenizer,
-  ByteLevel,
+  ByteLevel as ByteLevelPreTokenizer,
   Digits,
-  Metaspace,
+  Metaspace as MetaspacePreTokenizer,
   Punctuation,
   Sequence as PreTokenizerSequence,
   Split,
@@ -64,5 +59,4 @@ export {
   Sequence as PostProcessorSequence,
   TemplateProcessing,
 } from "./post-processors";
-
 
