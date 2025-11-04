@@ -158,24 +158,6 @@ export const regex_split = (text: string, regex: RegExp): string[] => {
 export const remove_accents = (text: string): string =>
   text.replace(/\p{M}/gu, "");
 
-/**
- * Helper function for truncating values of an object, which are each arrays.
- * NOTE: No additional checks are made here for validity of arguments.
- * @param item The input object.
- * @param length The length to truncate to.
- * @private
- */
-export const truncate_helper = (
-  item: Record<string, any[]>,
-  length: number,
-): void => {
-  // Setting .length to a lower value truncates the array in-place:
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
-  for (const key of Object.keys(item)) {
-    item[key].length = length;
-  }
-};
-
 export const validate_object = (
   obj: Object,
   name: string,
