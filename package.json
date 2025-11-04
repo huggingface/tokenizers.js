@@ -40,6 +40,39 @@
         "import": "./dist/models.min.mjs"
       },
       "default": "./dist/models.min.mjs"
+    },
+    "./normalizers": {
+      "types": "./types/normalizers.d.ts",
+      "node": {
+        "require": "./dist/normalizers.min.cjs",
+        "import": "./dist/normalizers.min.mjs"
+      },
+      "browser": {
+        "import": "./dist/normalizers.min.mjs"
+      },
+      "default": "./dist/normalizers.min.mjs"
+    },
+    "./decoders": {
+      "types": "./types/decoders.d.ts",
+      "node": {
+        "require": "./dist/decoders.min.cjs",
+        "import": "./dist/decoders.min.mjs"
+      },
+      "browser": {
+        "import": "./dist/decoders.min.mjs"
+      },
+      "default": "./dist/decoders.min.mjs"
+    },
+    "./post-processors": {
+      "types": "./types/post-processors.d.ts",
+      "node": {
+        "require": "./dist/post-processors.min.cjs",
+        "import": "./dist/post-processors.min.mjs"
+      },
+      "browser": {
+        "import": "./dist/post-processors.min.mjs"
+      },
+      "default": "./dist/post-processors.min.mjs"
     }
   },
   "files": [

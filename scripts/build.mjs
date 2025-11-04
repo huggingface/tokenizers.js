@@ -59,3 +59,18 @@ await build("src/models.ts", "dist/models.mjs");
 await build("src/models.ts", "dist/models.cjs");
 await build("src/models.ts", "dist/models.min.mjs");
 await build("src/models.ts", "dist/models.min.cjs");
+
+await build("src/normalizers.ts", "dist/normalizers.mjs");
+await build("src/normalizers.ts", "dist/normalizers.cjs");
+await build("src/normalizers.ts", "dist/normalizers.min.mjs");
+await build("src/normalizers.ts", "dist/normalizers.min.cjs");
+
+await build("src/decoders.ts", "dist/decoders.mjs");
+await build("src/decoders.ts", "dist/decoders.cjs");
+await build("src/decoders.ts", "dist/decoders.min.mjs");
+await build("src/decoders.ts", "dist/decoders.min.cjs");
+
+await build("src/post-processors.ts", "dist/post-processors.mjs");
+await build("src/post-processors.ts", "dist/post-processors.cjs");
+await build("src/post-processors.ts", "dist/post-processors.min.mjs");
+await build("src/post-processors.ts", "dist/post-processors.min.cjs");
