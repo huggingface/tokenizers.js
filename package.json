@@ -64,8 +64,5 @@
   "bugs": {
     "url": "https://github.com/huggingface/tokenizers.js/issues"
   },
-  "homepage": "https://github.com/huggingface/tokenizers.js#readme",
-  "dependencies": {
-    "@huggingface/tokenizers": "^0.0.2"
-  }
+  "homepage": "https://github.com/huggingface/tokenizers.js#readme"
 }
