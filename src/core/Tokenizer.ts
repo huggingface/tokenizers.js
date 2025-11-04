@@ -50,7 +50,6 @@ class Tokenizer {
   private added_tokens_map: Map<string, AddedToken>;
   private special_tokens: Array<string | TokenConfig>;
   private all_special_ids: Array<number>;
-  private model_max_length: number;
   private remove_space: boolean;
   private clean_up_tokenization_spaces: boolean;
   private do_lowercase_and_remove_accent: boolean;
@@ -120,7 +119,6 @@ class Tokenizer {
     this.added_tokens_map = new Map(
       this.added_tokens.map((x) => [x.content, x]),
     );
-    this.model_max_length = this.config.model_max_length;
     this.remove_space = this.config.remove_space;
     this.clean_up_tokenization_spaces =
       this.config.clean_up_tokenization_spaces ?? true;
