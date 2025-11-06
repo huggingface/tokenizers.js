@@ -8,7 +8,7 @@ export { default as NFKCNormalizer } from "./core/normalizer/NFKC";
 export { default as SequenceNormalizer } from "./core/normalizer/Sequence";
 export { default as LowercaseNormalizer } from "./core/normalizer/Lowercase";
 export { default as PrependNormalizer } from "./core/normalizer/Prepend";
-export { default as Strip } from "./core/normalizer/Strip";
+export { default as StripNormalizer } from "./core/normalizer/Strip";
 export { default as StripAccentsNormalizer } from "./core/normalizer/StripAccents";
 export { default as PrecompiledNormalizer } from "./core/normalizer/Precompiled";
 export { default as ReplaceNormalizer } from "./core/normalizer/Replace";
