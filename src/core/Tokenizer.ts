@@ -19,7 +19,11 @@ import type PreTokenizer from "./PreTokenizer";
 import type TokenizerModel from "./TokenizerModel";
 import type PostProcessor from "./PostProcessor";
 import type Decoder from "./Decoder";
-import type { TokenConfig, TokenizerConfig, TokenizerJSON } from "@static/tokenizer";
+import type {
+  TokenConfig,
+  TokenizerConfig,
+  TokenizerJSON,
+} from "@static/tokenizer";
 
 interface EncodeOptions {
   text_pair?: string | null;
