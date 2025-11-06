@@ -3,9 +3,8 @@ import { TokenizerConfigDecoderMetaspace } from "@static/tokenizer";
 
 /**
  * MetaspaceDecoder class extends the Decoder class and decodes Metaspace tokenization.
- * @extends Decoder
  */
-class MetaspaceDecoder extends Decoder {
+class Metaspace extends Decoder {
   add_prefix_space?: boolean;
   replacement: string;
 
@@ -33,4 +32,4 @@ class MetaspaceDecoder extends Decoder {
   }
 }
 
-export default MetaspaceDecoder;
+export default Metaspace;

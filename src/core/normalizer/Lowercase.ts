@@ -1,9 +1,9 @@
 import Normalizer from "../Normalizer";
-import { TokenizerConfigNormalizerLowercase } from "@static/tokenizer";
+
+import type { TokenizerConfigNormalizerLowercase } from "@static/tokenizer";
 
 /**
  * A Normalizer that lowercases the input string.
- * @extends Normalizer
  */
 class Lowercase extends Normalizer {
   declare config: TokenizerConfigNormalizerLowercase;

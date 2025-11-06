@@ -1,17 +1,19 @@
-import Normalizer from "../Normalizer";
+
 import BertNormalizer from "./BertNormalizer";
 import Precompiled from "./Precompiled";
-import NormalizerSequence from "./NormalizerSequence";
+import Sequence from "./Sequence";
 import Replace from "./Replace";
 import NFC from "./NFC";
 import NFD from "./NFD";
 import NFKC from "./NFKC";
 import NFKD from "./NFKD";
-import StripNormalizer from "./StripNormalizer";
+import Strip from "./Strip";
 import StripAccents from "./StripAccents";
 import Lowercase from "./Lowercase";
 import Prepend from "./Prepend";
-import { TokenizerConfigNormalizer } from "@static/tokenizer";
+
+import type { TokenizerConfigNormalizer } from "@static/tokenizer";
+import type Normalizer from "../Normalizer";
 
 function create_normalizer(
   config: TokenizerConfigNormalizer,
@@ -24,7 +26,7 @@ function create_normalizer(
     case "Precompiled":
       return new Precompiled(config);
     case "Sequence":
-      return new NormalizerSequence(config);
+      return new Sequence(config);
     case "Replace":
       return new Replace(config);
     case "NFC":
@@ -36,7 +38,7 @@ function create_normalizer(
     case "NFKD":
       return new NFKD(config);
     case "Strip":
-      return new StripNormalizer(config);
+      return new Strip(config);
     case "StripAccents":
       return new StripAccents(config);
     case "Lowercase":

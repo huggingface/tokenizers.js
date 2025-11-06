@@ -1,11 +1,10 @@
-import PostProcessor, { PostProcessedOutput } from "../PostProcessor";
+import PostProcessor, { type PostProcessedOutput } from "../PostProcessor";
 import { merge_arrays } from "@utils/core";
 
 /**
  * A PostProcessor that returns the given tokens as is.
- * @extends PostProcessor
  */
-class ByteLevelPostProcessor extends PostProcessor {
+class ByteLevel extends PostProcessor {
   /**
    * Post process the given tokens.
    * @param tokens The list of tokens for the first sequence.
@@ -23,4 +22,4 @@ class ByteLevelPostProcessor extends PostProcessor {
   }
 }
 
-export default ByteLevelPostProcessor;
+export default ByteLevel;

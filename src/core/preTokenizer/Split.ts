@@ -1,12 +1,12 @@
 import PreTokenizer from "@core/PreTokenizer";
 import { regex_split, create_pattern } from "@utils/core";
-import { TokenizerConfigPreTokenizerSplit } from "@static/tokenizer";
+
+import type { TokenizerConfigPreTokenizerSplit } from "@static/tokenizer";
 
 /**
  * Splits text using a given pattern.
- * @extends PreTokenizer
  */
-class SplitPreTokenizer extends PreTokenizer {
+class Split extends PreTokenizer {
   config: TokenizerConfigPreTokenizerSplit;
   pattern: RegExp | null;
 
@@ -44,4 +44,4 @@ class SplitPreTokenizer extends PreTokenizer {
   }
 }
 
-export default SplitPreTokenizer;
+export default Split;

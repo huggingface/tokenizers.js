@@ -3,11 +3,11 @@ import CharTrie from "@utils/data-structures/CharTrie";
 import TokenLattice from "@utils/data-structures/TokenLattice";
 import { min } from "@utils/maths";
 import { len } from "@utils/core";
-import { TokenizerConfigUnigramModel } from "@static/tokenizer";
+
+import type { TokenizerConfigUnigramModel } from "@static/tokenizer";
 
 /**
  * Class representing a Unigram tokenizer model.
- * @extends TokenizerModel
  */
 class Unigram extends TokenizerModel {
   scores: number[];

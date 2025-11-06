@@ -1,7 +1,7 @@
 import Decoder from "../Decoder";
 import { TokenizerConfigDecoderStrip } from "@static/tokenizer";
 
-class StripDecoder extends Decoder {
+class Strip extends Decoder {
   content: string;
   start: number;
   stop: number;
@@ -42,4 +42,4 @@ class StripDecoder extends Decoder {
   }
 }
 
-export default StripDecoder;
+export default Strip;

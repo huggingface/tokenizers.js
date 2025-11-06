@@ -1,9 +1,10 @@
 import PreTokenizer from "@core/PreTokenizer";
 import { create_pattern } from "@utils/core";
-import { TokenizerConfigPreTokenizerReplace } from "@static/tokenizer";
 
-// NOTE: `ReplacePreTokenizer` is custom (to support `BlenderbotSmallTokenizer`)
-class ReplacePreTokenizer extends PreTokenizer {
+import type { TokenizerConfigPreTokenizerReplace } from "@static/tokenizer";
+
+// NOTE: `Replace` PreTokenizer is custom (to support `BlenderbotSmallTokenizer`)
+class Replace extends PreTokenizer {
   config: TokenizerConfigPreTokenizerReplace;
   pattern: RegExp | null;
   content: string;
@@ -31,4 +32,4 @@ class ReplacePreTokenizer extends PreTokenizer {
   }
 }
 
-export default ReplacePreTokenizer;
+export default Replace;

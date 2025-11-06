@@ -1,12 +1,12 @@
 import PreTokenizer from "@core/PreTokenizer";
-import { TokenizerConfigPreTokenizerSequence } from "@static/tokenizer";
 import create_pre_tokenizer from "./create_pre_tokenizer";
+
+import type { TokenizerConfigPreTokenizerSequence } from "@static/tokenizer";
 
 /**
  * A pre-tokenizer that applies a sequence of pre-tokenizers to the input text.
- * @extends PreTokenizer
  */
-class PreTokenizerSequence extends PreTokenizer {
+class Sequence extends PreTokenizer {
   tokenizers: (PreTokenizer | null)[];
 
   /**
@@ -39,4 +39,4 @@ class PreTokenizerSequence extends PreTokenizer {
   }
 }
 
-export default PreTokenizerSequence;
+export default Sequence;

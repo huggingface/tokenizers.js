@@ -1,6 +1,7 @@
 import { is_chinese_char } from "@utils/core";
 import Normalizer from "../Normalizer";
-import { TokenizerConfigNormalizerBert } from "@static/tokenizer";
+
+import type { TokenizerConfigNormalizerBert } from "@static/tokenizer";
 
 /**
  * A class representing a normalizer used in BERT tokenization.

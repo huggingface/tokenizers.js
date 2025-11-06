@@ -1,10 +1,10 @@
 import Normalizer from "../Normalizer";
 import { create_pattern } from "@utils/core";
-import { TokenizerConfigNormalizerReplace } from "@static/tokenizer";
+
+import type { TokenizerConfigNormalizerReplace } from "@static/tokenizer";
 
 /**
  * Replace normalizer that replaces occurrences of a pattern with a given string or regular expression.
- * @extends Normalizer
  */
 class Replace extends Normalizer {
   declare config: TokenizerConfigNormalizerReplace;

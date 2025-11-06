@@ -1,11 +1,11 @@
 import PreTokenizer from "@core/PreTokenizer";
-import { TokenizerConfigPreTokenizerDigits } from "@static/tokenizer";
+
+import type { TokenizerConfigPreTokenizerDigits } from "@static/tokenizer";
 
 /**
  * Splits text based on digits.
- * @extends PreTokenizer
  */
-class DigitsPreTokenizer extends PreTokenizer {
+class Digits extends PreTokenizer {
   config: TokenizerConfigPreTokenizerDigits;
   pattern: RegExp;
 
@@ -31,4 +31,4 @@ class DigitsPreTokenizer extends PreTokenizer {
   }
 }
 
-export default DigitsPreTokenizer;
+export default Digits;

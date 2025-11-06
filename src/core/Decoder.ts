@@ -1,12 +1,12 @@
 import { Callable } from "@utils";
-import AddedToken from "./AddedToken";
-import { TokenizerConfigDecoder } from "@static/tokenizer";
+
+import type AddedToken from "./AddedToken";
+import type { TokenizerConfigDecoder } from "@static/tokenizer";
 
 /**
  * The base class for token decoders.
- * @extends Callable
  */
-class Decoder extends Callable<[string[]], string> {
+abstract class Decoder extends Callable<[string[]], string> {
   config: TokenizerConfigDecoder;
   added_tokens: AddedToken[];
   end_of_word_suffix: string | null;
@@ -50,11 +50,8 @@ class Decoder extends Callable<[string[]], string> {
    *
    * @param tokens The list of tokens.
    * @returns The decoded list of tokens.
-   * @throws {Error} If the `decode_chain` method is not implemented in the subclass.
    */
-  decode_chain(tokens: string[]): string[] {
-    throw Error("`decode_chain` should be implemented in subclass.");
-  }
+  abstract decode_chain(tokens: string[]): string[];
 }
 
 export default Decoder;

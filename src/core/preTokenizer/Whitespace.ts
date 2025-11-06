@@ -3,7 +3,7 @@ import PreTokenizer from "@core/PreTokenizer";
 /**
  * Splits on word boundaries (using the following regular expression: `\w+|[^\w\s]+`).
  */
-class WhitespacePreTokenizer extends PreTokenizer {
+class Whitespace extends PreTokenizer {
   /**
    * Pre-tokenizes the input text by splitting it on word boundaries.
    * @param text The text to be pre-tokenized.
@@ -15,4 +15,4 @@ class WhitespacePreTokenizer extends PreTokenizer {
   }
 }
 
-export default WhitespacePreTokenizer;
+export default Whitespace;

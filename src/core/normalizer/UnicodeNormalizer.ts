@@ -2,10 +2,8 @@ import Normalizer from "../Normalizer";
 
 /**
  * A normalizer that applies Unicode normalization to the input text.
- * @extends Normalizer
- * @abstract
  */
-class UnicodeNormalizer extends Normalizer {
+abstract class UnicodeNormalizer extends Normalizer {
   /**
    * The Unicode normalization form to apply.
    * Should be one of: 'NFC', 'NFD', 'NFKC', or 'NFKD'.

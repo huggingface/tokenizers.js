@@ -2,7 +2,8 @@ import TokenizerModel from "../TokenizerModel";
 import { object_to_map } from "@utils/core";
 import PriorityQueue from "@utils/data-structures/PriorityQueue";
 import LRUCache from "@utils/data-structures/LRUCache";
-import { TokenizerConfigBPEModel } from "@static/tokenizer";
+
+import type { TokenizerConfigBPEModel } from "@static/tokenizer";
 
 interface BPENode {
   token: string;

@@ -5,10 +5,10 @@ import Decoder from "../Decoder";
  * It's usually the last decoding step anyway, but this decoder
  * exists incase some decoders need to happen after that step
  */
-class FuseDecoder extends Decoder {
+class Fuse extends Decoder {
   decode_chain(tokens: string[]): string[] {
     return [tokens.join("")];
   }
 }
 
-export default FuseDecoder;
+export default Fuse;

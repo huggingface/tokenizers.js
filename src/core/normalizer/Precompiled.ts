@@ -1,5 +1,6 @@
 import Normalizer from "../Normalizer";
-import { TokenizerConfigNormalizerPrecompiled } from "@static/tokenizer";
+
+import type { TokenizerConfigNormalizerPrecompiled } from "@static/tokenizer";
 
 /**
  * A normalizer that applies a precompiled charsmap.

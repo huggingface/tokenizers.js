@@ -4,7 +4,6 @@ import { PUNCTUATION_REGEX } from "@static/constants";
 /**
  * A PreTokenizer that splits text into wordpieces using a basic tokenization scheme
  * similar to that used in the original implementation of BERT.
- * @extends PreTokenizer
  */
 class BertPreTokenizer extends PreTokenizer {
   pattern: RegExp;

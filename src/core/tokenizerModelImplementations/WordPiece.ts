@@ -4,7 +4,6 @@ import { TokenizerConfigWordPieceModel } from "@static/tokenizer";
 
 /**
  * A subclass of TokenizerModel that uses WordPiece encoding to encode tokens.
- * @extends TokenizerModel
  */
 class WordPieceTokenizer extends TokenizerModel {
   declare config: TokenizerConfigWordPieceModel;

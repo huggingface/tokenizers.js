@@ -4,9 +4,8 @@ import { TokenizerConfigDecoderWordPiece } from "@static/tokenizer";
 
 /**
  * A decoder that decodes a list of WordPiece tokens into a single string.
- * @extends Decoder
  */
-class WordPieceDecoder extends Decoder {
+class WordPiece extends Decoder {
   declare config: TokenizerConfigDecoderWordPiece;
   cleanup?: boolean;
 
@@ -39,4 +38,4 @@ class WordPieceDecoder extends Decoder {
   }
 }
 
-export default WordPieceDecoder;
+export default WordPiece;

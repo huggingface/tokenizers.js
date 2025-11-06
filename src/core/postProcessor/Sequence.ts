@@ -1,15 +1,16 @@
-import PostProcessor, { PostProcessedOutput } from "../PostProcessor";
-import { TokenizerConfigPostProcessorSequence } from "@static/tokenizer";
+import PostProcessor, { type PostProcessedOutput } from "../PostProcessor";
 import create_post_processor from "./create_post_processor";
+
+import type { TokenizerConfigPostProcessorSequence } from "@static/tokenizer";
 
 /**
  * A post-processor that applies multiple post-processors in sequence.
  */
-class PostProcessorSequence extends PostProcessor {
+class Sequence extends PostProcessor {
   processors: PostProcessor[];
 
   /**
-   * Creates a new instance of PostProcessorSequence.
+   * Creates a new instance of Sequence post-processor.
    * @param config The configuration object.
    */
   constructor(config: TokenizerConfigPostProcessorSequence) {
@@ -45,4 +46,4 @@ class PostProcessorSequence extends PostProcessor {
   }
 }
 
-export default PostProcessorSequence;
+export default Sequence;

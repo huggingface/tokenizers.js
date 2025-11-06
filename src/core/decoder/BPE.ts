@@ -1,7 +1,8 @@
 import Decoder from "../Decoder";
-import { TokenizerConfigDecoderBPE } from "@static/tokenizer";
 
-class BPEDecoder extends Decoder {
+import type { TokenizerConfigDecoderBPE } from "@static/tokenizer";
+
+class BPE extends Decoder {
   suffix: string;
 
   constructor(config: TokenizerConfigDecoderBPE) {
@@ -17,4 +18,4 @@ class BPEDecoder extends Decoder {
   }
 }
 
-export default BPEDecoder;
+export default BPE;

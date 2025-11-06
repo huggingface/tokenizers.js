@@ -1,12 +1,12 @@
 import PreTokenizer from "@core/PreTokenizer";
 import { BYTES_TO_UNICODE } from "@static/constants";
-import { TokenizerConfigPreTokenizerByteLevel } from "@static/tokenizer";
+
+import type { TokenizerConfigPreTokenizerByteLevel } from "@static/tokenizer";
 
 /**
  * A pre-tokenizer that splits text into Byte-Pair-Encoding (BPE) subwords.
- * @extends PreTokenizer
  */
-class ByteLevelPreTokenizer extends PreTokenizer {
+class ByteLevel extends PreTokenizer {
   config: TokenizerConfigPreTokenizerByteLevel;
   add_prefix_space: boolean;
   trim_offsets: boolean;
@@ -73,4 +73,4 @@ class ByteLevelPreTokenizer extends PreTokenizer {
   }
 }
 
-export default ByteLevelPreTokenizer;
+export default ByteLevel;

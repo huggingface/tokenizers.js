@@ -6,7 +6,7 @@ import { TokenizerConfigDecoderCTC } from "@static/tokenizer";
  * The CTC (Connectionist Temporal Classification) decoder.
  * See https://github.com/huggingface/tokenizers/blob/bb38f390a61883fc2f29d659af696f428d1cda6b/tokenizers/src/decoders/ctc.rs
  */
-class CTCDecoder extends Decoder {
+class CTC extends Decoder {
   pad_token: string;
   word_delimiter_token: string;
   cleanup?: boolean;
@@ -55,4 +55,4 @@ class CTCDecoder extends Decoder {
   }
 }
 
-export default CTCDecoder;
+export default CTC;

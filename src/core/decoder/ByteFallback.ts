@@ -1,5 +1,6 @@
 import Decoder from "../Decoder";
-import { TokenizerConfigDecoderByteFallback } from "@static/tokenizer";
+
+import type { TokenizerConfigDecoderByteFallback } from "@static/tokenizer";
 
 class ByteFallback extends Decoder {
   text_decoder: TextDecoder;

@@ -1,11 +1,12 @@
 import { Callable } from "@utils";
 import { fuse_unk } from "@utils/core";
-import { TokenizerModelConfig } from "@static/tokenizer";
+
+import type { TokenizerModelConfig } from "@static/tokenizer";
 
 /**
  * Abstract base class for tokenizer models.
  */
-class TokenizerModel extends Callable<[string[]], string[]> {
+abstract class TokenizerModel extends Callable<[string[]], string[]> {
   config: TokenizerModelConfig;
   vocab: string[];
   /** A mapping of tokens to ids. */
@@ -48,11 +49,8 @@ class TokenizerModel extends Callable<[string[]], string[]> {
    * Encodes a list of tokens into a list of token IDs.
    * @param tokens The tokens to encode.
    * @returns The encoded tokens.
-   * @throws Will throw an error if not implemented in a subclass.
    */
-  encode(tokens: string[]): string[] {
-    throw new Error("encode should be implemented in subclass.");
-  }
+  abstract encode(tokens: string[]): string[];
 
   /**
    * Converts a list of tokens into a list of token IDs.

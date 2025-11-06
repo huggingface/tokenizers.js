@@ -2,7 +2,7 @@ import Decoder from "../Decoder";
 import { create_pattern } from "@utils/core";
 import { TokenizerConfigDecoderReplace } from "@static/tokenizer";
 
-class ReplaceDecoder extends Decoder {
+class Replace extends Decoder {
   declare config: TokenizerConfigDecoderReplace;
   decode_chain(tokens: string[]): string[] {
     const pattern = create_pattern(this.config.pattern);
@@ -13,4 +13,4 @@ class ReplaceDecoder extends Decoder {
   }
 }
 
-export default ReplaceDecoder;
+export default Replace;

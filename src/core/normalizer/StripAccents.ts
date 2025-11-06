@@ -1,10 +1,10 @@
 import Normalizer from "../Normalizer";
 import { remove_accents } from "@utils/core";
-import { TokenizerConfigNormalizerStripAccents } from "@static/tokenizer";
+
+import type { TokenizerConfigNormalizerStripAccents } from "@static/tokenizer";
 
 /**
  * StripAccents normalizer removes all accents from the text.
- * @extends Normalizer
  */
 class StripAccents extends Normalizer {
   declare config: TokenizerConfigNormalizerStripAccents;

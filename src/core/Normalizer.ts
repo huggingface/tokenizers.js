@@ -1,11 +1,11 @@
 import { Callable } from "@utils";
-import { TokenizerConfigNormalizer } from "@static/tokenizer";
+
+import type { TokenizerConfigNormalizer } from "@static/tokenizer";
 
 /**
  * A base class for text normalization.
- * @abstract
  */
-class Normalizer extends Callable<[string], string> {
+abstract class Normalizer extends Callable<[string], string> {
   config: TokenizerConfigNormalizer;
 
   /**
@@ -18,14 +18,10 @@ class Normalizer extends Callable<[string], string> {
 
   /**
    * Normalize the input text.
-   * @abstract
    * @param text The text to normalize.
    * @returns The normalized text.
-   * @throws {Error} If this method is not implemented in a subclass.
    */
-  normalize(text: string): string {
-    throw new Error("normalize should be implemented in subclass.");
-  }
+  abstract normalize(text: string): string;
 
   /**
    * Alias for {@link Normalizer#normalize}.

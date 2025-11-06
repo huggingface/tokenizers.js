@@ -1,12 +1,12 @@
 import Decoder from "../Decoder";
 import { UNICODE_TO_BYTES } from "@static/constants";
-import { TokenizerConfigDecoderByteLevel } from "@static/tokenizer";
+
+import type { TokenizerConfigDecoderByteLevel } from "@static/tokenizer";
 
 /**
  * Byte-level decoder for tokenization output. Inherits from the `Decoder` class.
- * @extends Decoder
  */
-class ByteLevelDecoder extends Decoder {
+class ByteLevel extends Decoder {
   byte_decoder: Record<string, number>;
   text_decoder: TextDecoder;
 
@@ -74,4 +74,4 @@ class ByteLevelDecoder extends Decoder {
   }
 }
 
-export default ByteLevelDecoder;
+export default ByteLevel;

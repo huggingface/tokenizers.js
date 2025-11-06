@@ -1,15 +1,16 @@
-import PreTokenizer from "../PreTokenizer";
-import ByteLevelPreTokenizer from "./ByteLevelPreTokenizer";
-import WhitespacePreTokenizer from "./WhitespacePreTokenizer";
-import MetaspacePreTokenizer from "./MetaspacePreTokenizer";
-import SplitPreTokenizer from "./SplitPreTokenizer";
-import PunctuationPreTokenizer from "./PunctuationPreTokenizer";
-import DigitsPreTokenizer from "./DigitsPreTokenizer";
+import ByteLevel from "./ByteLevel";
+import Whitespace from "./Whitespace";
+import Metaspace from "./Metaspace";
+import Split from "./Split";
+import Punctuation from "./Punctuation";
+import Digits from "./Digits";
 import BertPreTokenizer from "./BertPreTokenizer";
-import ReplacePreTokenizer from "./ReplacePreTokenizer";
-import PreTokenizerSequence from "./PreTokenizerSequence";
+import Replace from "./Replace";
+import Sequence from "./Sequence";
 import WhitespaceSplit from "./WhitespaceSplit";
-import { TokenizerConfigPreTokenizer } from "@static/tokenizer";
+
+import type PreTokenizer from "../PreTokenizer";
+import type { TokenizerConfigPreTokenizer } from "@static/tokenizer";
 
 function create_pre_tokenizer(
   config: TokenizerConfigPreTokenizer,
@@ -20,23 +21,23 @@ function create_pre_tokenizer(
     case "BertPreTokenizer":
       return new BertPreTokenizer();
     case "Sequence":
-      return new PreTokenizerSequence(config);
+      return new Sequence(config);
     case "Whitespace":
-      return new WhitespacePreTokenizer();
+      return new Whitespace();
     case "WhitespaceSplit":
       return new WhitespaceSplit();
     case "Metaspace":
-      return new MetaspacePreTokenizer(config);
+      return new Metaspace(config);
     case "ByteLevel":
-      return new ByteLevelPreTokenizer(config);
+      return new ByteLevel(config);
     case "Split":
-      return new SplitPreTokenizer(config);
+      return new Split(config);
     case "Punctuation":
-      return new PunctuationPreTokenizer(config);
+      return new Punctuation(config);
     case "Digits":
-      return new DigitsPreTokenizer(config);
+      return new Digits(config);
     case "Replace":
-      return new ReplacePreTokenizer(config);
+      return new Replace(config);
     default:
       throw new Error(`Unknown PreTokenizer type: ${config.type}`);
   }

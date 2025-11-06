@@ -1,12 +1,12 @@
 import Normalizer from "../Normalizer";
-import { TokenizerConfigNormalizerSequence } from "@static/tokenizer";
 import create_normalizer from "./create_normalizer";
+
+import type { TokenizerConfigNormalizerSequence } from "@static/tokenizer";
 
 /**
  * A Normalizer that applies a sequence of Normalizers.
- * @extends Normalizer
  */
-class NormalizerSequence extends Normalizer {
+class Sequence extends Normalizer {
   normalizers: (Normalizer | null)[];
 
   /**
@@ -32,4 +32,4 @@ class NormalizerSequence extends Normalizer {
   }
 }
 
-export default NormalizerSequence;
+export default Sequence;

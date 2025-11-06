@@ -1,6 +1,7 @@
-import PostProcessor, { PostProcessedOutput } from "../PostProcessor";
-import { TokenizerConfigPostProcessorRoberta } from "@static/tokenizer";
+import PostProcessor, { type PostProcessedOutput } from "../PostProcessor";
 import { merge_arrays } from "@utils/core";
+
+import type { TokenizerConfigPostProcessorRoberta } from "@static/tokenizer";
 
 /**
  * A post-processor that adds special tokens to the beginning and end of the input.

@@ -1,4 +1,3 @@
-import { TokenConfig, TokenizerConfig, TokenizerJSON } from "@static/tokenizer";
 import DictionarySplitter from "@utils/data-structures/DictionarySplitter";
 import AddedToken from "./AddedToken";
 import {
@@ -8,17 +7,19 @@ import {
   merge_arrays,
   validate_object,
 } from "@utils/core";
-import { Encoding } from "@static/types";
-import type Normalizer from "./Normalizer";
-import type PreTokenizer from "./PreTokenizer";
-import type TokenizerModel from "./TokenizerModel";
-import type PostProcessor from "./PostProcessor";
-import type Decoder from "./Decoder";
 import create_normalizer from "./normalizer/create_normalizer";
 import create_pre_tokenizer from "./preTokenizer/create_pre_tokenizer";
 import create_tokenizer_model from "./tokenizerModelImplementations/create_tokenizer_model";
 import create_post_processor from "./postProcessor/create_post_processor";
 import create_decoder from "./decoder/create_decoder";
+
+import type { Encoding } from "@static/types";
+import type Normalizer from "./Normalizer";
+import type PreTokenizer from "./PreTokenizer";
+import type TokenizerModel from "./TokenizerModel";
+import type PostProcessor from "./PostProcessor";
+import type Decoder from "./Decoder";
+import type { TokenConfig, TokenizerConfig, TokenizerJSON } from "@static/tokenizer";
 
 interface EncodeOptions {
   text_pair?: string | null;

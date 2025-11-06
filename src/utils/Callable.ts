@@ -6,7 +6,7 @@ interface Callable<TArgs extends any[] = any[], TReturn = any> {
   (...args: TArgs): TReturn;
 }
 
-class Callable<TArgs extends any[] = any[], TReturn = any> {
+abstract class Callable<TArgs extends any[] = any[], TReturn = any> {
   /**
    * Creates a new instance of the Callable class.
    */
@@ -28,11 +28,8 @@ class Callable<TArgs extends any[] = any[], TReturn = any> {
    * functionality of the callable object.
    *
    * @param args Arguments passed to the callable
-   * @throws {Error} If the subclass does not implement the `_call` method.
    */
-  _call(...args: TArgs): TReturn {
-    throw new Error("Must implement _call method in subclass");
-  }
+  abstract _call(...args: TArgs): TReturn;
 }
 
 export default Callable;

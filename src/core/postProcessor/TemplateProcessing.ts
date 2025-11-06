@@ -1,10 +1,10 @@
-import PostProcessor, { PostProcessedOutput } from "../PostProcessor";
-import { TokenizerConfigPostProcessorTemplateProcessing } from "@static/tokenizer";
+import PostProcessor, { type PostProcessedOutput } from "../PostProcessor";
 import { merge_arrays } from "@utils/core";
+
+import type { TokenizerConfigPostProcessorTemplateProcessing } from "@static/tokenizer";
 
 /**
  * Post processor that replaces special tokens in a template with actual tokens.
- * @extends PostProcessor
  */
 class TemplateProcessing extends PostProcessor {
   declare config: TokenizerConfigPostProcessorTemplateProcessing;

@@ -3,7 +3,6 @@ import { whitespace_split } from "@utils/core";
 
 /**
  * Splits a string of text by whitespace characters into individual tokens.
- * @extends PreTokenizer
  */
 class WhitespaceSplit extends PreTokenizer {
   /**

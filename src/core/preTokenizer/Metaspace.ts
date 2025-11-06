@@ -1,5 +1,6 @@
 import PreTokenizer from "@core/PreTokenizer";
-import {
+
+import type {
   TokenizerConfigPreTokenizerMetaspace,
   PrependScheme,
   PreTokenizeTextOptions,
@@ -8,9 +9,8 @@ import {
 /**
  * This PreTokenizer replaces spaces with the given replacement character, adds a prefix space if requested,
  * and returns a list of tokens.
- * @extends PreTokenizer
  */
-class MetaspacePreTokenizer extends PreTokenizer {
+class Metaspace extends PreTokenizer {
   /** Whether to add a prefix space to the first token. */
   add_prefix_space: boolean;
   /** The character to replace spaces with. */
@@ -61,4 +61,4 @@ class MetaspacePreTokenizer extends PreTokenizer {
   }
 }
 
-export default MetaspacePreTokenizer;
+export default Metaspace;

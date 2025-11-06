@@ -1,10 +1,11 @@
 import Normalizer from "../Normalizer";
-import { TokenizerConfigNormalizerStrip } from "@static/tokenizer";
+
+import type { TokenizerConfigNormalizerStrip } from "@static/tokenizer";
 
 /**
  * A normalizer that strips leading and/or trailing whitespace from the input text.
  */
-class StripNormalizer extends Normalizer {
+class Strip extends Normalizer {
   declare config: TokenizerConfigNormalizerStrip;
   /**
    * Strip leading and/or trailing whitespace from the input text.
@@ -27,4 +28,4 @@ class StripNormalizer extends Normalizer {
   }
 }
 
-export default StripNormalizer;
+export default Strip;

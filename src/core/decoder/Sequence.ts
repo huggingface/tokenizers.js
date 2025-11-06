@@ -4,9 +4,8 @@ import create_decoder from "./create_decoder";
 
 /**
  * Apply a sequence of decoders.
- * @extends Decoder
  */
-class DecoderSequence extends Decoder {
+class Sequence extends Decoder {
   decoders: Decoder[];
 
   /**
@@ -26,4 +25,4 @@ class DecoderSequence extends Decoder {
   }
 }
 
-export default DecoderSequence;
+export default Sequence;

@@ -1,9 +1,9 @@
 import Normalizer from "../Normalizer";
-import { TokenizerConfigNormalizerStripPrepend } from "@static/tokenizer";
+
+import type { TokenizerConfigNormalizerStripPrepend } from "@static/tokenizer";
 
 /**
  * A Normalizer that prepends a string to the input string.
- * @extends Normalizer
  */
 class Prepend extends Normalizer {
   declare config: TokenizerConfigNormalizerStripPrepend;

@@ -1,12 +1,12 @@
 import PreTokenizer from "@core/PreTokenizer";
 import { PUNCTUATION_REGEX } from "@static/constants";
-import { TokenizerConfigPreTokenizerPunctuation } from "@static/tokenizer";
+
+import type { TokenizerConfigPreTokenizerPunctuation } from "@static/tokenizer";
 
 /**
  * Splits text based on punctuation.
- * @extends PreTokenizer
  */
-class PunctuationPreTokenizer extends PreTokenizer {
+class Punctuation extends PreTokenizer {
   config: TokenizerConfigPreTokenizerPunctuation;
   pattern: RegExp;
 
@@ -32,4 +32,4 @@ class PunctuationPreTokenizer extends PreTokenizer {
   }
 }
 
-export default PunctuationPreTokenizer;
+export default Punctuation;

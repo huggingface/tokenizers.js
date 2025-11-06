@@ -1,9 +1,10 @@
-import TokenizerModel from "../TokenizerModel";
-import WordPieceTokenizer from "./WordPieceTokenizer";
+import WordPiece from "./WordPiece";
 import Unigram from "./Unigram";
 import BPE from "./BPE";
-import LegacyTokenizerModel from "./LegacyTokenizerModel";
-import { TokenizerModelConfig, TokenizerConfig } from "@static/tokenizer";
+import Legacy from "./Legacy";
+
+import type TokenizerModel from "../TokenizerModel";
+import type { TokenizerModelConfig, TokenizerConfig } from "@static/tokenizer";
 
 function create_tokenizer_model(
   model_config: TokenizerModelConfig,
@@ -11,7 +12,7 @@ function create_tokenizer_model(
 ): TokenizerModel {
   switch (model_config.type) {
     case "WordPiece":
-      return new WordPieceTokenizer(model_config);
+      return new WordPiece(model_config);
     case "Unigram":
       return new Unigram(model_config, config.eos_token);
     case "BPE":
@@ -32,10 +33,10 @@ function create_tokenizer_model(
             return new BPE(model_config);
           } else {
             // @ts-ignore
-            return new WordPieceTokenizer(model_config);
+            return new WordPiece(model_config);
           }
         } else {
-          return new LegacyTokenizerModel(model_config, {
+          return new Legacy(model_config, {
             target_lang: config.target_lang,
             bos_token: config.bos_token,
             eos_token: config.eos_token,

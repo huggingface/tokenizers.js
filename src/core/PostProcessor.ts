@@ -1,5 +1,6 @@
 import { Callable } from "@utils";
-import { TokenizerConfigPostProcessor } from "@static/tokenizer";
+
+import type { TokenizerConfigPostProcessor } from "@static/tokenizer";
 
 export interface PostProcessedOutput {
   tokens: string[];
@@ -8,9 +9,8 @@ export interface PostProcessedOutput {
 
 /**
  * Base class for post-processors.
- * @extends Callable
  */
-class PostProcessor extends Callable<
+abstract class PostProcessor extends Callable<
   [string[], ...any[]],
   PostProcessedOutput
 > {
@@ -30,11 +30,8 @@ class PostProcessor extends Callable<
    * @param tokens The input tokens to be post-processed.
    * @param args Additional arguments required by the post-processing logic.
    * @returns The post-processed tokens.
-   * @throws {Error} If the method is not implemented in subclass.
    */
-  post_process(tokens: string[], ...args: any[]): PostProcessedOutput {
-    throw new Error("post_process should be implemented in subclass.");
-  }
+  abstract post_process(tokens: string[], ...args: any[]): PostProcessedOutput;
 
   /**
    * Alias for {@link PostProcessor#post_process}.
