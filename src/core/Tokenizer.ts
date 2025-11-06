@@ -292,6 +292,36 @@ class Tokenizer {
       ? this.post_processor(tokens1, tokens2, add_special_tokens)
       : { tokens: merge_arrays(tokens1 ?? [], tokens2 ?? []) };
   }
+
+  /**
+   * Converts a token string to its corresponding token ID.
+   * @param token The token string to convert.
+   * @returns The token ID, or undefined if the token is not in the vocabulary.
+   */
+  public token_to_id(token: string): number | undefined {
+    return this.model.tokens_to_ids.get(token);
+  }
+
+  /**
+   * Converts a token ID to its corresponding token string.
+   * @param id The token ID to convert.
+   * @returns The token string, or undefined if the ID is not in the vocabulary.
+   */
+  public id_to_token(id: number): string | undefined {
+    return this.model.vocab[id];
+  }
+
+  /**
+   * Returns a mapping of token IDs to AddedToken objects for all added tokens.
+   * @returns A Map where keys are token IDs and values are AddedToken objects.
+   */
+  public get_added_tokens_decoder(): Map<number, AddedToken> {
+    const decoder = new Map<number, AddedToken>();
+    for (const token of this.added_tokens) {
+      decoder.set(token.id, token);
+    }
+    return decoder;
+  }
 }
 
 export default Tokenizer;
