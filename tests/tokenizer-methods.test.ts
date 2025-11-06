@@ -6,16 +6,30 @@ describe("Tokenizer methods", () => {
   // - 3 special tokens: <s>, </s>, <pad>
   // - 1 unk token: <unk>
   // - 5 regular tokens: a, b, c, ab, bc
+  
+  // Helper to create added token configuration
+  const createAddedToken = (id: number, content: string) => ({
+    id,
+    content,
+    single_word: false,
+    lstrip: false,
+    rstrip: false,
+    normalized: false,
+    special: true,
+  });
+
+  const addedTokens = [
+    createAddedToken(0, "<unk>"),
+    createAddedToken(1, "<s>"),
+    createAddedToken(2, "</s>"),
+    createAddedToken(3, "<pad>"),
+  ];
+
   const tokenizerJson = {
     version: "1.0",
     truncation: null as any,
     padding: null as any,
-    added_tokens: [
-      { id: 0, content: "<unk>", single_word: false, lstrip: false, rstrip: false, normalized: false, special: true },
-      { id: 1, content: "<s>", single_word: false, lstrip: false, rstrip: false, normalized: false, special: true },
-      { id: 2, content: "</s>", single_word: false, lstrip: false, rstrip: false, normalized: false, special: true },
-      { id: 3, content: "<pad>", single_word: false, lstrip: false, rstrip: false, normalized: false, special: true },
-    ],
+    added_tokens: addedTokens,
     normalizer: null as any,
     pre_tokenizer: null as any,
     post_processor: null as any,
@@ -50,12 +64,12 @@ describe("Tokenizer methods", () => {
   const tokenizerConfig = {
     add_bos_token: false,
     add_prefix_space: false,
-    added_tokens_decoder: {
-      "0": { id: 0, content: "<unk>", special: true },
-      "1": { id: 1, content: "<s>", special: true },
-      "2": { id: 2, content: "</s>", special: true },
-      "3": { id: 3, content: "<pad>", special: true },
-    },
+    added_tokens_decoder: Object.fromEntries(
+      addedTokens.map(token => [
+        String(token.id),
+        { id: token.id, content: token.content, special: token.special },
+      ])
+    ),
     bos_token: "<s>",
     clean_up_tokenization_spaces: false,
     eos_token: "</s>",
@@ -140,7 +154,6 @@ describe("Tokenizer methods", () => {
 
     test("should return AddedToken objects with correct properties", () => {
       const decoder = tokenizer.get_added_tokens_decoder();
-      
       const unkToken = decoder.get(0);
       expect(unkToken).toBeDefined();
       expect(unkToken?.content).toBe("<unk>");
