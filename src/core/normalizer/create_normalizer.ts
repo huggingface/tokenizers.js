@@ -1,4 +1,3 @@
-
 import BertNormalizer from "./BertNormalizer";
 import Precompiled from "./Precompiled";
 import Sequence from "./Sequence";
