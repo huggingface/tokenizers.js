@@ -11,8 +11,6 @@ import type {
  * and returns a list of tokens.
  */
 class Metaspace extends PreTokenizer {
-  /** Whether to add a prefix space to the first token. */
-  add_prefix_space: boolean;
   /** The character to replace spaces with. */
   replacement: string;
   /** An optional string representation of the replacement character. */
@@ -26,7 +24,6 @@ class Metaspace extends PreTokenizer {
   constructor(config: TokenizerConfigPreTokenizerMetaspace) {
     super();
 
-    this.add_prefix_space = config.add_prefix_space ?? false;
     this.replacement = config.replacement ?? "▁";
     this.str_rep = config.str_rep || this.replacement;
     this.prepend_scheme = config.prepend_scheme ?? "always";
@@ -45,9 +42,7 @@ class Metaspace extends PreTokenizer {
 
     if (
       // We add a prefix space if:
-      //  (1) The add_prefix_space option is enabled and the normalized
-      //      token does not already start with the replacement character.
-      this.add_prefix_space &&
+      //  (1) The normalized token does not already start with the replacement character.
       !normalized.startsWith(this.replacement) &&
       // and (2) either:
       //  (a) prepend_scheme is 'always'
