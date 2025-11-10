@@ -5,7 +5,6 @@ import { TokenizerConfigDecoderMetaspace } from "@static/tokenizer";
  * MetaspaceDecoder class extends the Decoder class and decodes Metaspace tokenization.
  */
 class Metaspace extends Decoder {
-  add_prefix_space?: boolean;
   replacement: string;
 
   /**
@@ -15,7 +14,6 @@ class Metaspace extends Decoder {
   constructor(config: TokenizerConfigDecoderMetaspace) {
     super(config);
 
-    this.add_prefix_space = config.add_prefix_space;
     this.replacement = config.replacement ?? "▁";
   }
 
@@ -23,7 +21,7 @@ class Metaspace extends Decoder {
     const result = [];
     for (let i = 0; i < tokens.length; ++i) {
       let normalized = tokens[i].replaceAll(this.replacement, " ");
-      if (this.add_prefix_space && i == 0 && normalized.startsWith(" ")) {
+      if (i == 0 && normalized.startsWith(" ")) {
         normalized = normalized.substring(1);
       }
       result.push(normalized);

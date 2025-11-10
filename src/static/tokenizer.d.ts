@@ -205,7 +205,6 @@ export interface TokenizerConfigPreTokenizerMetaspace {
   type: "Metaspace";
   replacement?: string;
   str_rep?: string;
-  add_prefix_space?: boolean;
   prepend_scheme?: PrependScheme;
 }
 
@@ -355,7 +354,6 @@ export interface TokenizerConfigDecoderWordPiece {
 export interface TokenizerConfigDecoderMetaspace {
   type: "Metaspace";
   replacement?: string;
-  add_prefix_space?: boolean;
   prepend_scheme?: "always" | "never" | "first";
 }
 
