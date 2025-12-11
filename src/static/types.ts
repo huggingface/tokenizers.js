@@ -37,4 +37,5 @@ export interface Encoding {
   tokens: string[];
   attention_mask: number[];
   token_type_ids?: number[];
+  offset_mapping?: Array<[number, number]>;
 }
