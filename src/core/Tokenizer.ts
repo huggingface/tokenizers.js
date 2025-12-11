@@ -24,11 +24,13 @@ import type {
   TokenizerConfig,
   TokenizerJSON,
 } from "@static/tokenizer";
+import { calculateWordPieceOffsets } from "@utils/offsetCalculator";
 
 interface EncodeOptions {
   text_pair?: string | null;
   add_special_tokens?: boolean;
   return_token_type_ids?: boolean | null;
+  return_offsets_mapping?: boolean;
 }
 
 interface DecodeOptions {
@@ -155,6 +157,7 @@ class Tokenizer {
       text_pair = null,
       add_special_tokens = true,
       return_token_type_ids = null,
+      return_offsets_mapping = false,
     }: EncodeOptions = {},
   ): Encoding {
     const { tokens, token_type_ids } = this.tokenize_helper(text, {
@@ -172,6 +175,11 @@ class Tokenizer {
     if (return_token_type_ids && token_type_ids) {
       result.token_type_ids = token_type_ids;
     }
+
+    if (return_offsets_mapping) {
+      result.offset_mapping = this.calculateOffsetMapping(text, tokens);
+    }
+
     return result;
   }
 
@@ -325,6 +333,66 @@ class Tokenizer {
       decoder.set(token.id, token);
     }
     return decoder;
+  }
+
+  /**
+   * Calculate offset mapping for tokens based on the model type.
+   * @param text The original input text
+   * @param tokens The tokenized output
+   * @returns Array of [start, end] character offset pairs
+   */
+  private calculateOffsetMapping(text: string, tokens: string[]): Array<[number, number]> {
+    const modelType = this.model.config.type;
+
+    switch (modelType) {
+      case 'WordPiece':
+        return calculateWordPieceOffsets(text, tokens);
+
+      case 'BPE':
+        throw new Error(
+          'Offset mapping for BPE tokenizers is not yet implemented. ' +
+          'BPE merge operations make character position tracking complex. ' +
+          'Consider using WordPiece models for offset mapping support.'
+        );
+
+      case 'Unigram':
+        throw new Error(
+          'Offset mapping for Unigram tokenizers is not yet implemented. ' +
+          'Unigram uses a probabilistic segmentation algorithm that makes ' +
+          'deterministic offset mapping challenging.'
+        );
+
+      case 'Legacy':
+        throw new Error(
+          'Offset mapping for Legacy tokenizers is not supported. ' +
+          'Legacy tokenizers lack the structured configuration needed ' +
+          'for reliable character position tracking.'
+        );
+
+      default:
+        // Try to infer the model type
+        const config = this.model.config as any;
+        if (config.continuing_subword_prefix === '##') {
+          // Likely WordPiece
+          console.warn(
+            `Unknown model type "${modelType}", but detected WordPiece pattern (## prefix). ` +
+            'Attempting WordPiece offset calculation...'
+          );
+          return calculateWordPieceOffsets(text, tokens);
+        } else if (config.continuing_subword_prefix?.startsWith('Ġ')) {
+          // Likely BPE
+          throw new Error(
+            `Unknown model type "${modelType}", detected BPE pattern (Ġ prefix). ` +
+            'BPE offset mapping is not yet implemented.'
+          );
+        } else {
+          throw new Error(
+            `Offset mapping is not supported for model type "${modelType}". ` +
+            'Currently supported: WordPiece. ' +
+            'BPE and Unigram support is planned for future releases.'
+          );
+        }
+    }
   }
 }
 
