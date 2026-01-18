@@ -14,25 +14,18 @@ describe("hard-coded", () => {
       reversible?: boolean;
     }>
   > = {
-    // Test legacy compatibility
+    // Test normalized=true special tokens
     "Xenova/llama-tokenizer": [
       {
         data: [
           {
             text: "<s>\n",
-            ids: [1, 29871, 13],
-          }
-        ],
-      },
-    ],
-    // Test normalized=true special tokens
-    "Xenova/llama-tokenizer_new": [
-      {
-        data: [
+            ids: [1, 13],
+          },
           {
             text: " <s>",
             ids: [29871, 1],
-          }
+          },
         ],
       },
     ],
