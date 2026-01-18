@@ -4,6 +4,7 @@ import type { TokenizerConfigPostProcessor } from "@static/tokenizer";
 
 export interface PostProcessedOutput {
   tokens: string[];
+  tokens_pair?: string[];
   token_type_ids?: number[];
 }
 

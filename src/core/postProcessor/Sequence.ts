@@ -32,12 +32,12 @@ class Sequence extends PostProcessor {
     tokens_pair: string[] = null,
     add_special_tokens: boolean = true,
   ): PostProcessedOutput {
-    let processed_tokens: PostProcessedOutput = { tokens };
+    let processed_tokens: PostProcessedOutput = { tokens, tokens_pair };
 
     for (const processor of this.processors) {
       processed_tokens = processor.post_process(
         processed_tokens.tokens,
-        tokens_pair,
+        processed_tokens.tokens_pair,
         add_special_tokens,
       );
     }

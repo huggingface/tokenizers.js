@@ -1,5 +1,4 @@
 import PostProcessor, { type PostProcessedOutput } from "../PostProcessor";
-import { merge_arrays } from "@utils/core";
 
 /**
  * A PostProcessor that returns the given tokens as is.
@@ -15,10 +14,7 @@ class ByteLevel extends PostProcessor {
     tokens: string[],
     tokens_pair: string[] = null,
   ): PostProcessedOutput {
-    const merged_tokens = !tokens_pair
-      ? tokens
-      : merge_arrays(tokens, tokens_pair);
-    return { tokens: merged_tokens };
+    return { tokens, tokens_pair };
   }
 }
 
