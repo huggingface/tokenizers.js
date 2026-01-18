@@ -5,36 +5,80 @@ describe("hard-coded", () => {
   const TESTS: Record<
     string,
     Array<{
-      data: Record<string, Array<number>>;
+      data: Array<{
+        text: string;
+        text_pair?: string;
+        ids: Array<number>;
+        decoded?: string;
+      }>;
       reversible?: boolean;
     }>
   > = {
     // Test legacy compatibility
     "Xenova/llama-tokenizer": [
       {
-        data: {
-          "<s>\n": [1, 29871, 13],
-        },
+        data: [
+          {
+            text: "<s>\n",
+            ids: [1, 29871, 13],
+          }
+        ],
+      },
+    ],
+    // Test normalized=true special tokens
+    "Xenova/llama-tokenizer_new": [
+      {
+        data: [
+          {
+            text: " <s>",
+            ids: [29871, 1],
+          }
+        ],
+      },
+    ],
+    // Text-pair
+    "Xenova/llama3-tokenizer-new": [
+      {
+        data: [
+          {
+            text: "hello",
+            text_pair: "world",
+            ids: [15339, 14957],
+            decoded: "helloworld",
+          },
+        ],
       },
     ],
     // new serialization format (tokenizers >= 0.20.0)
     // BPE merges are now [string, string][] instead of string[]
     "Xenova/Llama-3.2-Tokenizer": [
       {
-        data: {
-          "hello world": [15339, 1917],
-          " belirtilen": [120909],
-        },
+        data: [
+          {
+            text: "hello world",
+            ids: [15339, 1917],
+          },
+          {
+            text: " belirtilen",
+            ids: [120909],
+          }
+        ],
         reversible: true,
       },
     ],
     "Xenova/Llama-3.2-Tokenizer_no_ignore_merges": [
       // Test ignore_merges=false
       {
-        data: {
-          "hello world": [15339, 1917],
-          " belirtilen": [101664, 1678, 268],
-        },
+        data: [
+          {
+            text: "hello world",
+            ids: [15339, 1917],
+          },
+          {
+            text: " belirtilen",
+            ids: [101664, 1678, 268],
+          }
+        ],
         reversible: true,
       },
     ],
@@ -48,16 +92,13 @@ describe("hard-coded", () => {
           const { tokenizerJson, tokenizerConfig } = await fetchConfigById(tokenizerName);
           const tokenizer = new Tokenizer(tokenizerJson, tokenizerConfig);
 
-          for (const [text, expected] of Object.entries(data)) {
-            const encoded = tokenizer.encode(text, {
-              add_special_tokens: false,
-            });
+          for (const { text, text_pair, ids: expected, decoded } of data) {
+            const encoded = tokenizer.encode(text, { add_special_tokens: false, text_pair });
             expect(encoded.ids).toEqual(expected);
 
             // If reversible, test that decoding produces the original text
-            if (reversible) {
-              const decoded = tokenizer.decode(encoded.ids);
-              expect(decoded).toEqual(text);
+            if (decoded || reversible) {
+              expect(tokenizer.decode(encoded.ids)).toEqual(decoded || text);
             }
           }
         }
