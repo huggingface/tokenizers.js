@@ -60,18 +60,3 @@ export const PROBLEMATIC_REGEX_MAP = new Map([
 
 export const PUNCTUATION_REGEX =
   "\\p{P}\\u0021-\\u002F\\u003A-\\u0040\\u005B-\\u0060\\u007B-\\u007E";
-export const PUNCTUATION_ONLY_REGEX = new RegExp(
-  `^[${PUNCTUATION_REGEX}]+$`,
-  "gu",
-);
-
-export const SPECIAL_TOKEN_ATTRIBUTES = [
-  "bos_token",
-  "eos_token",
-  "unk_token",
-  "sep_token",
-  "pad_token",
-  "cls_token",
-  "mask_token",
-  // additional_special_tokens (TODO)
-];
