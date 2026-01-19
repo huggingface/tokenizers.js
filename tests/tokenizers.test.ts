@@ -139,7 +139,6 @@ describe("Tokenizer methods", () => {
       ],
     },
   } as any;
-  console.log(JSON.stringify(tokenizerJson, null, 2));
 
   const tokenizerConfig = {
     add_bos_token: false,
