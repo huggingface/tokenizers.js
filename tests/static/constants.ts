@@ -33,6 +33,7 @@ export const BERT_TEST_STRINGS = {
   SIMPLE_WITH_ACCENTS: "H\u00e9llo",
   MIXED_CASE_WITHOUT_ACCENTS: " \tHeLLo!how  \n Are yoU?  ",
   MIXED_CASE_WITH_ACCENTS: " \tHäLLo!how  \n Are yoU?  ",
+  LOWER_CASE_WITH_SPECIAL_TOKENS: "[CLS]hello[MASK]world[SEP]"
 };
 
 // SentencePiece-specific test cases

@@ -176,6 +176,12 @@ export default {
       ids: [101, 102],
       decoded: "[CLS] [SEP]",
     },
+    LOWER_CASE_WITH_SPECIAL_TOKEN: {
+      text: BERT_TEST_STRINGS.LOWER_CASE_WITH_SPECIAL_TOKENS,
+      tokens: ["[CLS]", "hello", "[MASK]", "world", "[SEP]"],
+      ids: [101, 101, 7592, 103, 2088, 102, 102],
+      decoded: "[CLS] [CLS] hello [MASK] world [SEP] [SEP]",
+    },
 
     TEXT_PAIR: {
       text: "hello",
