@@ -18,7 +18,7 @@ class AddedToken {
   /** Whether this token is special. */
   special: boolean;
   /** Whether this token should be normalized. */
-  normalized: boolean | null;
+  normalized: boolean;
 
   /**
    * Creates a new instance of AddedToken.
@@ -31,7 +31,7 @@ class AddedToken {
     this.lstrip = config.lstrip ?? false;
     this.rstrip = config.rstrip ?? false;
     this.special = config.special ?? false;
-    this.normalized = config.normalized ?? null;
+    this.normalized = config.normalized ?? true;
   }
 }
 
