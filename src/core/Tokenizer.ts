@@ -45,11 +45,11 @@ class Tokenizer {
   private tokenizer: TokenizerJSON;
   private config: TokenizerConfig;
 
-  public normalizer: Normalizer|null;
-  public pre_tokenizer: PreTokenizer|null;
-  public model: TokenizerModel|null;
-  public post_processor: PostProcessor|null;
-  public decoder: Decoder|null;
+  public normalizer: Normalizer | null;
+  public pre_tokenizer: PreTokenizer | null;
+  public model: TokenizerModel | null;
+  public post_processor: PostProcessor | null;
+  public decoder: Decoder | null;
 
   private added_tokens_splitter: DictionarySplitter;
   private added_tokens: Array<AddedToken>;
@@ -330,10 +330,10 @@ class Tokenizer {
 
   /**
    * Get the underlying vocabulary
-   * @param with_added_tokens Whether to include the added tokens 
+   * @param with_added_tokens Whether to include the added tokens
    * @returns The vocabulary
    */
-  public get_vocab(with_added_tokens=true): Map<string, number> {
+  public get_vocab(with_added_tokens = true): Map<string, number> {
     const vocab = new Map<string, number>();
     for (let i = 0; i < this.model.vocab.length; ++i) {
       const token = this.model.vocab[i];
