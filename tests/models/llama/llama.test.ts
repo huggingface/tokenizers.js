@@ -25,6 +25,7 @@ describe("hard-coded", () => {
           {
             text: " <s>",
             ids: [29871, 1],
+            decoded: "<s>",
           },
           {
             text: "</s>test</s>",
@@ -35,9 +36,17 @@ describe("hard-coded", () => {
             ids: [29871, 2, 1243, 2, 29871],
           },
           {
+            text: "A\n'll",
+            ids: [319, 13, 29915, 645],
+          },
+          {
             text: "Hey </s>. how are you",
             ids: [18637, 2, 29889, 920, 526, 366],
-          }
+          },
+          {
+            text: "  Hi  Hello  ",
+            ids: [259, 6324, 29871, 15043, 259],
+          },
         ],
       },
     ],
@@ -70,7 +79,7 @@ describe("hard-coded", () => {
           {
             text: "Hey <|end_of_text|>. how are you",
             ids: [19182, 220, 128001, 13, 1268, 527, 499],
-          }
+          },
         ],
       },
     ],
