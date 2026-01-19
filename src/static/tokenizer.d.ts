@@ -146,7 +146,7 @@ export interface TokenizerConfigNormalizerStripAccents {
   type: "StripAccents";
 }
 
-export interface TokenizerConfigNormalizerStripPrepend {
+export interface TokenizerConfigNormalizerPrepend {
   type: "Prepend";
   prepend: string;
 }
@@ -162,7 +162,7 @@ export type TokenizerConfigNormalizer =
   | TokenizerConfigNormalizerReplace
   | TokenizerConfigNormalizerBert
   | TokenizerConfigNormalizerSequence
-  | TokenizerConfigNormalizerStripPrepend
+  | TokenizerConfigNormalizerPrepend
   | TokenizerConfigNormalizerPrecompiled;
 
 export interface ReplacePattern {
