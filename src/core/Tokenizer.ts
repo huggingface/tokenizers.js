@@ -51,7 +51,8 @@ class Tokenizer {
   public post_processor: PostProcessor | null;
   public decoder: Decoder | null;
 
-  private added_tokens_splitter: DictionarySplitter;
+  private splitter_unnormalized: DictionarySplitter;
+  private splitter_normalized: DictionarySplitter;
   private added_tokens: Array<AddedToken>;
   private added_tokens_map: Map<string, AddedToken>;
   private special_tokens: Array<string | TokenConfig>;
@@ -90,8 +91,10 @@ class Tokenizer {
     this.special_tokens = [];
     this.all_special_ids = [];
     this.added_tokens = [];
-
-    this.tokenizer.added_tokens.forEach((added_token) => {
+    const unnormalized_contents: string[] = [];
+    const normalized_contents: string[] = [];
+    this.added_tokens_map = new Map();
+    for (const added_token of this.tokenizer.added_tokens) {
       const token = new AddedToken(added_token);
       this.added_tokens.push(token);
       this.model.tokens_to_ids.set(token.content, token.id);
@@ -101,8 +104,16 @@ class Tokenizer {
         this.special_tokens.push(token.content);
         this.all_special_ids.push(token.id);
       }
-    });
 
+      this.added_tokens_map.set(token.content, token);
+      if (token.normalized && this.normalizer !== null) {
+        const normalized_content = this.normalizer(token.content);
+        normalized_contents.push(normalized_content);
+        this.added_tokens_map.set(normalized_content, token);
+      } else {
+        unnormalized_contents.push(token.content);
+      }
+    }
     (this.config.additional_special_tokens ?? []).forEach((token) => {
       if (!this.special_tokens.includes(token)) this.special_tokens.push(token);
     });
@@ -114,17 +125,12 @@ class Tokenizer {
       // Another slight hack to add `end_of_word_suffix` (if present) to the decoder
       // This is needed for cases where BPE model and ByteLevel decoder are used
       // For more information, see https://github.com/huggingface/transformers.js/issues/74
-      // TODO: save this to the decoder when exporting?
       this.decoder.end_of_word_suffix = this.model.end_of_word_suffix;
     }
 
-    this.added_tokens_splitter = new DictionarySplitter(
-      this.added_tokens.map((x) => x.content),
-    );
+    this.splitter_unnormalized = new DictionarySplitter(unnormalized_contents);
+    this.splitter_normalized = new DictionarySplitter(normalized_contents);
 
-    this.added_tokens_map = new Map(
-      this.added_tokens.map((x) => [x.content, x]),
-    );
     this.remove_space = this.config.remove_space;
     this.clean_up_tokenization_spaces =
       this.config.clean_up_tokenization_spaces ?? true;
@@ -163,7 +169,12 @@ class Tokenizer {
       add_special_tokens,
     });
 
-    const input_ids = this.model.convert_tokens_to_ids(tokens);
+    const input_ids = tokens.map(
+      (t) =>
+        this.added_tokens_map.get(t)?.id ??
+        this.model.tokens_to_ids.get(t) ??
+        this.model.unk_token_id!,
+    );
     const result: Encoding = {
       ids: input_ids,
       tokens,
@@ -239,7 +250,10 @@ class Tokenizer {
     // Actual function which does encoding, for a single text
     // First, we take care of special tokens. Needed to avoid issues arising from
     // normalization and/or pretokenization (which may not preserve special tokens)
-    const sections = this.added_tokens_splitter.split(text);
+    // We handle this in two phases:
+    // 1. Split by unnormalized added tokens (normalized: false) on original text
+    // 2. Normalize, then split by normalized added tokens (normalized: true)
+    const sections = this.splitter_unnormalized.split(text);
 
     sections.forEach((section, i) => {
       const added_token = this.added_tokens_map.get(section);
@@ -258,7 +272,7 @@ class Tokenizer {
         return [];
       }
       if (this.added_tokens_map.has(processed_text)) {
-        return [processed_text]; // Return added tokens unchanged
+        return [processed_text];
       }
 
       if (this.remove_space === true) {
@@ -276,13 +290,37 @@ class Tokenizer {
         return [];
       }
 
-      const section_tokens =
-        this.pre_tokenizer !== null
-          ? this.pre_tokenizer(processed_text, {
-              section_index,
-            })
-          : [processed_text];
-      return this.model(section_tokens);
+      // Phase 2: Split by normalized tokens on the normalized text
+      const subsections = this.splitter_normalized.split(processed_text);
+
+      subsections.forEach((subsection, j) => {
+        const added_token = this.added_tokens_map.get(subsection);
+        if (added_token) {
+          if (added_token.lstrip && j > 0) {
+            subsections[j - 1] = subsections[j - 1].trimEnd();
+          }
+          if (added_token.rstrip && j < subsections.length - 1) {
+            subsections[j + 1] = subsections[j + 1].trimStart();
+          }
+        }
+      });
+
+      return subsections.flatMap((subsection) => {
+        if (subsection.length === 0) {
+          return [];
+        }
+        if (this.added_tokens_map.has(subsection)) {
+          return [subsection];
+        }
+
+        const section_tokens =
+          this.pre_tokenizer !== null
+            ? this.pre_tokenizer(subsection, {
+                section_index,
+              })
+            : [subsection];
+        return this.model(section_tokens);
+      });
     });
   }
 
