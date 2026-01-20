@@ -108,7 +108,6 @@ describe("Tokenizer methods", () => {
       type: "Prepend",
       prepend: " ",
     },
-    // normalizer: null,
     pre_tokenizer: null,
     post_processor: null,
     decoder: null,
@@ -292,9 +291,9 @@ describe("Tokenizer methods", () => {
       const encoded = tokenizer.encode(text);
 
       expect(encoded).toEqual({
-        ids: [1, 8, 7, 10, 11, 4, 12, 4, 4, 0, 0, 0, 0, 0, 0, 0],
-        tokens: [" <s>", "ab", "c", " <added>", " <normalized_special>", " ", "<unnormalized_special>", " ", " ", "<unk>", "<unk>", "<unk>", "<unk>", "<unk>", "<unk>", "<unk>"],
-        attention_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        ids: [1, 4, 8, 7, 10, 11, 4, 12, 4, 4, 0, 0, 0, 2],
+        tokens: ["<s>", " ", "ab", "c", " <added>", " <normalized_special>", " ", "<unnormalized_special>", " ", " ", "<unk>", "<unk>", "<unk>", "</s>"],
+        attention_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       });
     });
   });
