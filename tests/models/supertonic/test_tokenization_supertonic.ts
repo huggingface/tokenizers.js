@@ -1,0 +1,168 @@
+import { BASE_TEST_STRINGS } from "../../static/constants";
+
+export default {
+  "onnx-community/Supertonic-TTS-ONNX": {
+    SIMPLE: {
+      text: BASE_TEST_STRINGS.SIMPLE,
+      tokens: ["H", "o", "w", " ", "a", "r", "e", " ", "y", "o", "u", " ", "d", "o", "i", "n", "g", "?"],
+      ids: [34, 67, 75, 0, 53, 70, 57, 0, 77, 67, 73, 0, 56, 67, 61, 66, 59, 26],
+      decoded: "How are you doing?",
+    },
+    SIMPLE_WITH_PUNCTUATION: {
+      text: BASE_TEST_STRINGS.SIMPLE_WITH_PUNCTUATION,
+      tokens: ["Y", "o", "u", " ", "s", "h", "o", "u", "l", "d", "'", "v", "e", " ", "d", "o", "n", "e", " ", "t", "h", "i", "s"],
+      ids: [51, 67, 73, 0, 71, 60, 67, 73, 64, 56, 6, 74, 57, 0, 56, 67, 66, 57, 0, 72, 60, 61, 71],
+      decoded: "You should've done this",
+    },
+    NUMBERS: {
+      text: BASE_TEST_STRINGS.NUMBERS,
+      tokens: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", " ", "0", " ", "1", " ", "2", " ", "3", " ", "4", " ", "5", " ", "6", " ", "7", " ", "8", " ", "9", " ", "1", "0", " ", "1", "0", "0", " ", "1", "0", "0", "0"],
+      ids: [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 14, 0, 15, 0, 16, 0, 17, 0, 18, 0, 19, 0, 20, 0, 21, 0, 22, 0, 23, 0, 15, 14, 0, 15, 14, 14, 0, 15, 14, 14, 14],
+      decoded: "0123456789 0 1 2 3 4 5 6 7 8 9 10 100 1000",
+    },
+    TEXT_WITH_NUMBERS: {
+      text: BASE_TEST_STRINGS.TEXT_WITH_NUMBERS,
+      tokens: ["T", "h", "e", " ", "c", "o", "m", "p", "a", "n", "y", " ", "w", "a", "s", " ", "f", "o", "u", "n", "d", "e", "d", " ", "i", "n", " ", "2", "0", "1", "6", "."],
+      ids: [46, 60, 57, 0, 55, 67, 65, 68, 53, 66, 77, 0, 75, 53, 71, 0, 58, 67, 73, 66, 56, 57, 56, 0, 61, 66, 0, 16, 14, 15, 20, 13],
+      decoded: "The company was founded in 2016.",
+    },
+    PUNCTUATION: {
+      text: BASE_TEST_STRINGS.PUNCTUATION,
+      tokens: ["A", " ", "'", "l", "l", " ", "!", "!", "t", "o", "?", "'", "d", "'", "'", "d", " ", "o", "f", ",", " ", "c", "a", "n", "'", "t", "."],
+      ids: [27, 0, 6, 64, 64, 0, 1, 1, 72, 67, 26, 6, 56, 6, 6, 56, 0, 67, 58, 11, 0, 55, 53, 66, 6, 72, 13],
+      decoded: "A 'll!!to?'d''d of, can't.",
+    },
+    PYTHON_CODE: {
+      text: BASE_TEST_STRINGS.PYTHON_CODE,
+      tokens: ["d", "e", "f", " ", "m", "a", "i", "n", "(", ")", ":", " ", "p", "a", "s", "s"],
+      ids: [56, 57, 58, 0, 65, 53, 61, 66, 7, 8, 24, 0, 68, 53, 71, 71],
+      decoded: "def main(): pass",
+    },
+    JAVASCRIPT_CODE: {
+      text: BASE_TEST_STRINGS.JAVASCRIPT_CODE,
+      tokens: ["l", "e", "t", " ", "a", " ", " ", "o", "b", "j", ".", "t", "o", "S", "t", "r", "i", "n", "g", "(", ")", ";", " ", "t", "o", "S", "t", "r", "i", "n", "g", "(", ")", ";"],
+      ids: [64, 57, 72, 0, 53, 0, 0, 67, 54, 62, 13, 72, 67, 45, 72, 70, 61, 66, 59, 7, 8, 25, 0, 72, 67, 45, 72, 70, 61, 66, 59, 7, 8, 25],
+      decoded: "let a  obj.toString(); toString();",
+    },
+    NEWLINES: {
+      text: BASE_TEST_STRINGS.NEWLINES,
+      tokens: ["T", "h", "i", "s", " ", "i", "s", " ", "a", " ", "t", "e", "s", "t", "."],
+      ids: [46, 60, 61, 71, 0, 61, 71, 0, 53, 0, 72, 57, 71, 72, 13],
+      decoded: "This is a test.",
+    },
+    BASIC: {
+      text: BASE_TEST_STRINGS.BASIC,
+      tokens: ["U", "N", "w", "a", "n", "t", "e", "́", "d", ",", "r", "u", "n", "n", "i", "n", "g"],
+      ids: [47, 40, 75, 53, 66, 72, 57, 80, 56, 11, 70, 73, 66, 66, 61, 66, 59],
+      decoded: "UNwantéd,running",
+    },
+    CONTROL_TOKENS: {
+      text: BASE_TEST_STRINGS.CONTROL_TOKENS,
+      tokens: ["1", "2", "3"],
+      ids: [15, 16, 17],
+      decoded: "123",
+    },
+    HELLO_WORLD_TITLECASE: {
+      text: BASE_TEST_STRINGS.HELLO_WORLD_TITLECASE,
+      tokens: ["H", "e", "l", "l", "o", " ", "W", "o", "r", "l", "d"],
+      ids: [34, 57, 64, 64, 67, 0, 49, 67, 70, 64, 56],
+      decoded: "Hello World",
+    },
+    HELLO_WORLD_LOWERCASE: {
+      text: BASE_TEST_STRINGS.HELLO_WORLD_LOWERCASE,
+      tokens: ["h", "e", "l", "l", "o", " ", "w", "o", "r", "l", "d"],
+      ids: [60, 57, 64, 64, 67, 0, 75, 67, 70, 64, 56],
+      decoded: "hello world",
+    },
+    CHINESE_ONLY: {
+      text: BASE_TEST_STRINGS.CHINESE_ONLY,
+      tokens: [],
+      ids: [],
+      decoded: "",
+    },
+    LEADING_SPACE: {
+      text: BASE_TEST_STRINGS.LEADING_SPACE,
+      tokens: [" ", "l", "e", "a", "d", "i", "n", "g", " ", "s", "p", "a", "c", "e"],
+      ids: [0, 64, 57, 53, 56, 61, 66, 59, 0, 71, 68, 53, 55, 57],
+      decoded: " leading space",
+    },
+    TRAILING_SPACE: {
+      text: BASE_TEST_STRINGS.TRAILING_SPACE,
+      tokens: ["t", "r", "a", "i", "l", "i", "n", "g", " ", "s", "p", "a", "c", "e", " "],
+      ids: [72, 70, 53, 61, 64, 61, 66, 59, 0, 71, 68, 53, 55, 57, 0],
+      decoded: "trailing space ",
+    },
+    SURROUNDING_SPACE: {
+      text: BASE_TEST_STRINGS.SURROUNDING_SPACE,
+      tokens: [" ", "s", "u", "r", "r", "o", "u", "n", "d", "i", "n", "g", " ", "s", "p", "a", "c", "e", " "],
+      ids: [0, 71, 73, 70, 70, 67, 73, 66, 56, 61, 66, 59, 0, 71, 68, 53, 55, 57, 0],
+      decoded: " surrounding space ",
+    },
+    DOUBLE_SPACE: {
+      text: BASE_TEST_STRINGS.DOUBLE_SPACE,
+      tokens: ["H", "i", " ", "H", "e", "l", "l", "o"],
+      ids: [34, 61, 0, 34, 57, 64, 64, 67],
+      decoded: "Hi Hello",
+    },
+    CURRENCY: {
+      text: BASE_TEST_STRINGS.CURRENCY,
+      tokens: ["t", "e", "s", "t", " ", "$", "1", " ", "R", "2", " ", "3", " ", "4", " ", "£", "5", " ", "6", " ", "7", " ", "8", " ", "9", " ", "t", "e", "s", "t"],
+      ids: [72, 57, 71, 72, 0, 3, 15, 0, 44, 16, 0, 17, 0, 18, 0, 79, 19, 0, 20, 0, 21, 0, 22, 0, 23, 0, 72, 57, 71, 72],
+      decoded: "test $1 R2 3 4 £5 6 7 8 9 test",
+    },
+    CURRENCY_WITH_DECIMALS: {
+      text: BASE_TEST_STRINGS.CURRENCY_WITH_DECIMALS,
+      tokens: ["I", " ", "b", "o", "u", "g", "h", "t", " ", "a", "n", " ", "a", "p", "p", "l", "e", " ", "f", "o", "r", " ", "$", "1", ".", "0", "0", " ", "a", "t", " ", "t", "h", "e", " ", "s", "t", "o", "r", "e", "."],
+      ids: [35, 0, 54, 67, 73, 59, 60, 72, 0, 53, 66, 0, 53, 68, 68, 64, 57, 0, 58, 67, 70, 0, 3, 15, 13, 14, 14, 0, 53, 72, 0, 72, 60, 57, 0, 71, 72, 67, 70, 57, 13],
+      decoded: "I bought an apple for $1.00 at the store.",
+    },
+    ELLIPSIS: {
+      text: BASE_TEST_STRINGS.ELLIPSIS,
+      tokens: ["y", "o", "u", ".", ".", ".", " "],
+      ids: [77, 67, 73, 13, 13, 13, 0],
+      decoded: "you... ",
+    },
+    TEXT_WITH_ESCAPE_CHARACTERS: {
+      text: BASE_TEST_STRINGS.TEXT_WITH_ESCAPE_CHARACTERS,
+      tokens: ["y", "o", "u", ".", ".", ".", " "],
+      ids: [77, 67, 73, 13, 13, 13, 0],
+      decoded: "you... ",
+    },
+    TEXT_WITH_ESCAPE_CHARACTERS_2: {
+      text: BASE_TEST_STRINGS.TEXT_WITH_ESCAPE_CHARACTERS_2,
+      tokens: ["y", "o", "u", ".", ".", ".", " ", "y", "o", "u", ".", ".", ".", " "],
+      ids: [77, 67, 73, 13, 13, 13, 0, 77, 67, 73, 13, 13, 13, 0],
+      decoded: "you... you... ",
+    },
+    TILDE_NORMALIZATION: {
+      text: BASE_TEST_STRINGS.TILDE_NORMALIZATION,
+      tokens: ["w", "e", "i", "r", "d", " ", " ", "e", "d", "g", "e", " ", " ", "c", "a", "s", "e"],
+      ids: [75, 57, 61, 70, 56, 0, 0, 57, 56, 59, 57, 0, 0, 55, 53, 71, 57],
+      decoded: "weird  edge  case",
+    },
+    SPIECE_UNDERSCORE: {
+      text: BASE_TEST_STRINGS.SPIECE_UNDERSCORE,
+      tokens: ["T", "h", "i", "s", " ", "i", "s", " ", "a", " ", "t", "e", "s", "t", " ", "."],
+      ids: [46, 60, 61, 71, 0, 61, 71, 0, 53, 0, 72, 57, 71, 72, 0, 13],
+      decoded: "This is a test.",
+    },
+    POPULAR_EMOJIS: {
+      text: BASE_TEST_STRINGS.POPULAR_EMOJIS,
+      tokens: [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+      ids: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      decoded: "                                      ",
+    },
+    MULTIBYTE_EMOJIS: {
+      text: BASE_TEST_STRINGS.MULTIBYTE_EMOJIS,
+      tokens: [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+      ids: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      decoded: "            ",
+    },
+    ONLY_WHITESPACE: {
+      text: BASE_TEST_STRINGS.ONLY_WHITESPACE,
+      tokens: [" "],
+      ids: [0],
+      decoded: " ",
+    },
+  },
+};

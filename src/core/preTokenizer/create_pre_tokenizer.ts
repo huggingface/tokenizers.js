@@ -8,6 +8,7 @@ import BertPreTokenizer from "./BertPreTokenizer";
 import Replace from "./Replace";
 import Sequence from "./Sequence";
 import WhitespaceSplit from "./WhitespaceSplit";
+import FixedLength from "./FixedLength";
 
 import type PreTokenizer from "../PreTokenizer";
 import type { TokenizerConfigPreTokenizer } from "@static/tokenizer";
@@ -38,6 +39,8 @@ function create_pre_tokenizer(
       return new Digits(config);
     case "Replace":
       return new Replace(config);
+    case "FixedLength":
+      return new FixedLength(config);
     default:
       throw new Error(`Unknown PreTokenizer type: ${config.type}`);
   }
