@@ -255,6 +255,11 @@ export interface TokenizerConfigPreTokenizerUnicodeScripts {
   type: "UnicodeScripts";
 }
 
+export interface TokenizerConfigPreTokenizerFixedLength {
+  type: "FixedLength";
+  length: number;
+}
+
 export type TokenizerConfigPreTokenizer =
   | TokenizerConfigPreTokenizerByteLevel
   | TokenizerConfigPreTokenizerWhitespace
@@ -267,7 +272,8 @@ export type TokenizerConfigPreTokenizer =
   | TokenizerConfigPreTokenizerSequence
   | TokenizerConfigPreTokenizerDigits
   | TokenizerConfigPreTokenizerUnicodeScripts
-  | TokenizerConfigPreTokenizerReplace;
+  | TokenizerConfigPreTokenizerReplace
+  | TokenizerConfigPreTokenizerFixedLength;
 
 // ----------------------------------------------------------------------------
 // PostProcessor
