@@ -187,6 +187,13 @@ describe("Tokenizer methods", () => {
     test("should return undefined for non-existing token", () => {
       expect(tokenizer.token_to_id("xyz")).toBeUndefined();
     });
+
+    test("should not perform mapping for normalized versions of tokens", () => {
+      expect(tokenizer.token_to_id("<normalized_special>")).toBe(11);
+      expect(tokenizer.token_to_id(" <normalized_special>")).toBeUndefined();
+      expect(tokenizer.token_to_id("<unnormalized_special>")).toBe(12);
+      expect(tokenizer.token_to_id(" <unnormalized_special>")).toBeUndefined();
+    });
   });
 
   describe("id_to_token", () => {
@@ -289,7 +296,6 @@ describe("Tokenizer methods", () => {
         tokens: [" <s>", "ab", "c", " <added>", " <normalized_special>", " ", "<unnormalized_special>", " ", " ", "<unk>", "<unk>", "<unk>", "<unk>", "<unk>", "<unk>", "<unk>"],
         attention_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       });
-      throw new Error(JSON.stringify(text) + "||" + JSON.stringify(encoded));
     });
   });
 });
