@@ -51,26 +51,6 @@ abstract class TokenizerModel extends Callable<[string[]], string[]> {
    * @returns The encoded tokens.
    */
   abstract encode(tokens: string[]): string[];
-
-  /**
-   * Converts a list of tokens into a list of token IDs.
-   * @param tokens The tokens to convert.
-   * @returns The converted token IDs.
-   */
-  convert_tokens_to_ids(tokens: string[]): number[] {
-    return tokens.map((t) => {
-      return this.tokens_to_ids.get(t) ?? this.unk_token_id!;
-    });
-  }
-
-  /**
-   * Converts a list of token IDs into a list of tokens.
-   * @param ids The token IDs to convert.
-   * @returns The converted tokens.
-   */
-  convert_ids_to_tokens(ids: number[] | bigint[]): string[] {
-    return ids.map((i) => this.vocab[Number(i)] ?? this.unk_token!);
-  }
 }
 
 export default TokenizerModel;

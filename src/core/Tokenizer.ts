@@ -199,7 +199,7 @@ class Tokenizer {
       throw Error("token_ids must be a non-empty array of integers.");
     }
 
-    let tokens = this.model.convert_ids_to_tokens(token_ids);
+    let tokens = token_ids.map((i) => this.model.vocab[Number(i)] ?? this.model.unk_token!)
     if (options.skip_special_tokens) {
       tokens = tokens.filter((x) => !this.special_tokens.includes(x));
     }
