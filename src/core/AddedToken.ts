@@ -31,7 +31,7 @@ class AddedToken {
     this.lstrip = config.lstrip ?? false;
     this.rstrip = config.rstrip ?? false;
     this.special = config.special ?? false;
-    this.normalized = config.normalized ?? true;
+    this.normalized = config.normalized ?? !this.special;
   }
 }
 
