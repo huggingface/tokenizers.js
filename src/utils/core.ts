@@ -68,7 +68,12 @@ export const create_pattern = (
       });
 
       if (!changed) throw error;
-      return new RegExp(fixed, "gu");
+      try {
+        return new RegExp(fixed, "gu");
+      } catch (e) {
+        // If it still fails, re-throw the original error for clarity.
+        throw error;
+      }
     }
   } else if (pattern.String !== undefined) {
     const escaped = escape_reg_exp(pattern.String);
