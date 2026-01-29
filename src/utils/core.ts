@@ -43,7 +43,33 @@ export const create_pattern = (
       regex = regex.replaceAll(key, value);
     }
 
-    return new RegExp(regex, "gu");
+    // For JavaScript regular expressions, when you want to match a specific script using \p{...}, you must explicitly specify the property name Script (or sc).
+    // For example, to match Hangul characters, you need to use \p{Script=Hangul} or \p{sc=Hangul}, instead of just \p{Hangul} (which is valid in Python).
+    // General_Category properties, on the other hand, can be used without specifying the property name.
+    // https://unicode.org/reports/tr18/#General_Category_Property
+    try {
+      return new RegExp(regex, "gu");
+    } catch (error) {
+      if (
+        !(error instanceof SyntaxError) ||
+        !error.message.toLowerCase().includes("invalid property name")
+      )
+        throw error;
+
+      let changed = false;
+      const fixed = regex.replace(/(\\[pP])\{([^}=]+)\}/g, (_, p, n) => {
+        try {
+          new RegExp(`\\p{${n}}`, "u");
+          return `${p}{${n}}`;
+        } catch {
+          changed = true;
+          return `${p}{Script=${n}}`;
+        }
+      });
+
+      if (!changed) throw error;
+      return new RegExp(fixed, "gu");
+    }
   } else if (pattern.String !== undefined) {
     const escaped = escape_reg_exp(pattern.String);
     // NOTE: if invert is true, we wrap the pattern in a group so that it is kept when performing .split()
