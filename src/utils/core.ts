@@ -43,13 +43,13 @@ export const create_pattern = (
       regex = regex.replaceAll(key, value);
     }
 
-    // For JavaScript regular expressions, when you want to match a specific script using \p{...}, you must explicitly specify the property name Script (or sc).
-    // For example, to match Hangul characters, you need to use \p{Script=Hangul} or \p{sc=Hangul}, instead of just \p{Hangul} (which is valid in Python).
-    // General_Category properties, on the other hand, can be used without specifying the property name.
-    // https://unicode.org/reports/tr18/#General_Category_Property
     try {
       return new RegExp(regex, "gu");
     } catch (error) {
+      // For JavaScript regular expressions, when you want to match a specific script using \p{...}, you must explicitly specify the property name Script (or sc).
+      // For example, to match Hangul characters, you need to use \p{Script=Hangul} or \p{sc=Hangul}, instead of just \p{Hangul} (which is valid in Python).
+      // General_Category properties, on the other hand, can be used without specifying the property name (see https://unicode.org/reports/tr18/#General_Category_Property).
+      // If we encounter a property name error, we attempt to fix it by adding 'Script=' where necessary.
       if (
         !(error instanceof SyntaxError) ||
         !error.message.toLowerCase().includes("invalid property name")
