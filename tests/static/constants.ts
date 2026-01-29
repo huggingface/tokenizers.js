@@ -124,3 +124,7 @@ export const NORMALIZATION_TEST_STRINGS = {
   // Original | NFC | NFD | NFKC | NFKD
   COMBINED_EXAMPLE: "\u1E9B\u0323 | \u1E9B\u0323 | \u017F\u0323\u0307 | \u1E69 | \u0073\u0323\u0307",
 };
+
+export const YOUTU_TEST_STRINGS = {
+  MIXED_HANGUL_ENGLISH: "a한글bcd한e글f",
+};
