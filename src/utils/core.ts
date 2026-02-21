@@ -45,7 +45,7 @@ export const create_pattern = (
     // - \Z matches the end of a string, or before a final newline. This is not affected by multiline mode.
     //
     // Since JavaScript does not support \A, \Z, or \z, we need to replace them with ^ and $.
-    // Fortunately, we are not using the multiline flag, we can safely replace them with ^ and $.
+    // Fortunately, we are not using the multiline flag, so we can safely replace them with ^ and $.
     // For \Z, we replace it with a lookahead for the end of the string, allowing for an optional final newline.
     regex = regex
       .replace(/\\A/g, "^")
