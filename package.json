@@ -1,6 +1,6 @@
 {
   "name": "@huggingface/tokenizers",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "🤗 Tokenizers.js: A pure JS/TS implementation of today's most used tokenizers",
   "type": "module",
   "main": "dist/tokenizers.mjs",
