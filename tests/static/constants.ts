@@ -128,3 +128,41 @@ export const NORMALIZATION_TEST_STRINGS = {
 export const YOUTU_TEST_STRINGS = {
   MIXED_HANGUL_ENGLISH: "a한글bcd한e글f",
 };
+
+export const AFMOE_TEST_STRINGS = {
+  // Digits + first split: force chunking into 510-digit windows
+  DIGITS_EXACT_510: "9".repeat(510),
+  DIGITS_EXACT_1020: "8".repeat(1020),
+  DIGITS_510_BOUNDARY: "1".repeat(511),
+  DIGITS_510_MULTI_CHUNK: "7".repeat(1021),
+  DIGITS_509_THEN_LETTER: `${"6".repeat(509)}a`,
+
+  // Digits + second/third splits: optional 1-2 prefix, then groups of 3
+  DIGITS_GROUP_4: "1234",
+  DIGITS_GROUP_5: "12345",
+  DIGITS_GROUP_6: "123456",
+  DIGITS_GROUP_7: "1234567",
+  DIGITS_GROUP_8: "12345678",
+  DIGITS_GROUP_9: "123456789",
+  DIGITS_GROUP_10: "1234567890",
+  UNICODE_DIGITS_GROUPING: "١٢٣٤٥٦٧٨٩٠١", // Arabic-Indic digits (\p{Nd})
+
+  // Script-isolation split (CJK / Kana / Thai / Lao / Khmer / Myanmar / Hangul)
+  CJK_HIRAGANA_KATAKANA: "中文ひらがなカタカナ",
+  CJK_EXTENSION_A: "㐀㐁",
+  HALFWIDTH_KATAKANA: "ｶﾀｶﾅ",
+  KANGXI_RADICALS: "⼀⼁⼂",
+  THAI_LAO_KHMER: "ไทยລາວខ្មែរ",
+  MYANMAR_HANGUL: "မြန်မာ한글",
+
+  // Final split alternatives
+  PUNCT_PLUS_LATIN: "!Hello #World",
+  NON_LETTER_PREFIX_PLUS_LETTERS: "1abc 2def",
+  LETTERS_WITH_COMBINING_MARKS: " cafe\u0301 nai\u0308ve",
+  OPTIONAL_SPACE_PUNCT_BRANCH: " !!! ???",
+  SYMBOL_RUN_WITH_NEWLINE: " $$$\n",
+  WHITESPACE_BEFORE_NEWLINE: "x \t\r\n\ty",
+  MIXED_NEWLINES_AND_SPACES: "line1\r\n\tline2\n\n",
+  TRAILING_WHITESPACE: "ends with spaces   ",
+  GENERAL_WHITESPACE: "a\tb  c",
+};

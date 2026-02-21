@@ -53,6 +53,17 @@ export const PROBLEMATIC_REGEX_MAP = new Map([
   ["[^\\r\\n\\p{L}\\p{N}]?+", "[^\\r\\n\\p{L}\\p{N}]?"],
   ["[^\\s\\p{L}\\p{N}]++", "[^\\s\\p{L}\\p{N}]+"],
 
+  // JS doesn't support atomic groups (these are used in AFMoE tokenizers).
+  ["(?>\\p{Nd}{510})", "(?:\\p{Nd}{510})"],
+
+  // JS doesn't support stacking quantifiers.
+  // Uncaught SyntaxError: Invalid regular expression: /\p{Nd}{3}+/u: Nothing to repeat
+  ["\\p{Nd}{3}+", "(?:\\p{Nd}{3})+"],
+
+  // \G is an invalid escape in JS, and in most cases is just used as an optimization.
+  // So, we can safely remove it.
+  ["\\G", ""],
+
   // Used to override the default (invalid) regex of the bloom pretokenizer.
   // For more information, see https://github.com/huggingface/transformers.js/issues/94
   [` ?[^(\\s|[${BLOOM_SPLIT_CHARS}])]+`, ` ?[^\\s${BLOOM_SPLIT_CHARS}]+`],

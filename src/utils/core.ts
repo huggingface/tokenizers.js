@@ -38,6 +38,20 @@ export const create_pattern = (
     // See https://stackoverflow.com/a/63007777/13989043 for more information
     let regex = pattern.Regex.replace(/\\([#&~])/g, "$1"); // TODO: add more characters to this list if necessary
 
+    // Certain special sequences in the regex patterns are not supported in JavaScript, and need to be replaced with compatible alternatives.
+    // For example, \A, \Z, and \z are not supported in JavaScript:
+    // - \A matches the start of a string only. Unlike ^, this is not affected by multiline mode.
+    // - \z matches the end of a string only. Unlike $, this is not affected by multiline mode.
+    // - \Z matches the end of a string, or before a final newline. This is not affected by multiline mode.
+    //
+    // Since JavaScript does not support \A, \Z, or \z, we need to replace them with ^ and $.
+    // Fortunately, we are not using the multiline flag, so we can safely replace them with ^ and $.
+    // For \Z, we replace it with a lookahead for the end of the string, allowing for an optional final newline.
+    regex = regex
+      .replace(/\\A/g, "^")
+      .replace(/\\z/g, "$")
+      .replace(/\\Z/g, "(?=\\r?\\n?$)");
+
     // We also handle special cases where the regex contains invalid (non-JS compatible) syntax.
     for (const [key, value] of PROBLEMATIC_REGEX_MAP) {
       regex = regex.replaceAll(key, value);
