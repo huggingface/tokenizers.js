@@ -271,10 +271,10 @@ class BPE extends TokenizerModel {
             // we fall back to the unknown token. For more information, see
             // https://github.com/huggingface/transformers/issues/28096.
             output_tokens.push(...byte_tokens);
-          } else {
+          } else if (this.unk_token != null) {
             output_tokens.push(this.unk_token);
           }
-        } else {
+        } else if (this.unk_token != null) {
           output_tokens.push(this.unk_token);
         }
       }
