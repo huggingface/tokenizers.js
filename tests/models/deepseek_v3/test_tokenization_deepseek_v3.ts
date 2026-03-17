@@ -10,6 +10,9 @@ export default {
     },
   },
   "onnx-internal-testing/tiny-random-DeepseekV3ForCausalLM": {
+    // Same as hf-internal-testing version, but saved with transformers v5.
+    // This causes certain issues, which need to be addressed.
+    // See https://github.com/huggingface/transformers/issues/44779
     SIMPLE: {
       text: BASE_TEST_STRINGS.SIMPLE,
       tokens: ["How", "Ġare", "Ġyou", "Ġdoing", "?"],
