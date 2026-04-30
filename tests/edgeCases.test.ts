@@ -1,5 +1,6 @@
 import fetchConfigById from "./utils/fetchConfigById";
 import { Tokenizer } from "../src";
+import { create_pattern } from "../src/utils/core";
 
 describe("Edge cases", () => {
   it("should not take too long", async () => {
@@ -35,4 +36,18 @@ describe("Edge cases", () => {
     let { ids } = tokenizer.encode(text);
     expect(ids).toEqual([128000, 15339, 1917, 0]);
   }, 5000); // NOTE: 5 seconds
+
+  it("normalizes Python-oriented regex for JS", () => {
+    const quotePattern = create_pattern({ Regex: "['\\\\\"]" });
+    expect(quotePattern).not.toBeNull();
+    expect(quotePattern!.test("\"")).toBe(true);
+    quotePattern!.lastIndex = 0;
+    expect(quotePattern!.test("'")).toBe(true);
+
+    const wordPattern = create_pattern({ Regex: "\\w+" });
+    expect(wordPattern).not.toBeNull();
+    expect(wordPattern!.test("abc")).toBe(true);
+    wordPattern!.lastIndex = 0;
+    expect(wordPattern!.test("שלום")).toBe(true);
+  });
 });

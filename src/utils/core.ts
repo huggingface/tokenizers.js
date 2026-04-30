@@ -36,7 +36,7 @@ export const create_pattern = (
     // This isn't an issue when creating the regex w/o the 'u' flag, but it is when the 'u' flag is used.
     // For this reason, it is necessary to remove these backslashes before creating the regex.
     // See https://stackoverflow.com/a/63007777/13989043 for more information
-    let regex = pattern.Regex.replace(/\\([#&~])/g, "$1"); // TODO: add more characters to this list if necessary
+    let regex = pattern.Regex.replace(/\\+([#&~"'])/g, "$1"); // TODO: add more characters to this list if necessary
 
     // Certain special sequences in the regex patterns are not supported in JavaScript, and need to be replaced with compatible alternatives.
     // For example, \A, \Z, and \z are not supported in JavaScript:
@@ -51,6 +51,18 @@ export const create_pattern = (
       .replace(/\\A/g, "^")
       .replace(/\\z/g, "$")
       .replace(/\\Z/g, "(?=\\r?\\n?$)");
+
+    // JavaScript treats shorthands like \w and \d as ASCII-only, while Python/Rust tokenizers use Unicode-aware semantics.
+    // Normalize these shorthands so multilingual tokenizers keep expected behavior in JS.
+    regex = normalize_unicode_shorthands(regex);
+
+    // JavaScript word boundaries (\b/\B) are ASCII-oriented with respect to word characters.
+    // Keep behavior unchanged for compatibility, but warn once when these tokens are present.
+    if (/\\[bB]/.test(regex)) {
+      console.warn(
+        "Tokenizer regex contains \\b or \\B, which can be ASCII-oriented in JavaScript Unicode regex.",
+      );
+    }
 
     // We also handle special cases where the regex contains invalid (non-JS compatible) syntax.
     for (const [key, value] of PROBLEMATIC_REGEX_MAP) {
@@ -97,6 +109,59 @@ export const create_pattern = (
     console.warn("Unknown pattern type:", pattern);
     return null;
   }
+};
+
+const normalize_unicode_shorthands = (regex: string): string => {
+  let normalized = "";
+  let inCharClass = false;
+
+  for (let i = 0; i < regex.length; ++i) {
+    const char = regex[i];
+
+    if (char === "\\" && i + 1 < regex.length) {
+      const next = regex[i + 1];
+
+      if (next === "\\") {
+        normalized += "\\\\";
+        ++i;
+        continue;
+      }
+
+      if (next === "w") {
+        normalized += inCharClass ? "\\p{L}\\p{N}_" : "[\\p{L}\\p{N}_]";
+        ++i;
+        continue;
+      }
+
+      if (next === "W") {
+        normalized += inCharClass ? "\\W" : "[^\\p{L}\\p{N}_]";
+        ++i;
+        continue;
+      }
+
+      if (next === "d") {
+        normalized += "\\p{Nd}";
+        ++i;
+        continue;
+      }
+
+      if (next === "D") {
+        normalized += "\\P{Nd}";
+        ++i;
+        continue;
+      }
+    }
+
+    if (char === "[" && !inCharClass) {
+      inCharClass = true;
+    } else if (char === "]" && inCharClass) {
+      inCharClass = false;
+    }
+
+    normalized += char;
+  }
+
+  return normalized;
 };
 
 export const escape_reg_exp = (string: string): string =>
