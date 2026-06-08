@@ -65,4 +65,16 @@ describe("Edge cases", () => {
       warn.mockRestore();
     }
   });
+
+  it("tracks character classes across escaped brackets", () => {
+    const escapedOpen = create_pattern({ Regex: "\\[\\w+" });
+    expect(escapedOpen).not.toBeNull();
+    expect(escapedOpen!.test("[שלום")).toBe(true);
+
+    const escapedCloseInClass = create_pattern({ Regex: "[\\]\\w]" });
+    expect(escapedCloseInClass).not.toBeNull();
+    expect(escapedCloseInClass!.test("]")).toBe(true);
+    escapedCloseInClass!.lastIndex = 0;
+    expect(escapedCloseInClass!.test("ש")).toBe(true);
+  });
 });

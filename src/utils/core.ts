@@ -160,6 +160,10 @@ const normalize_unicode_shorthands = (regex: string): string => {
         ++i;
         continue;
       }
+
+      normalized += `\\${next}`;
+      ++i;
+      continue;
     }
 
     if (char === "[" && !inCharClass) {
