@@ -36,10 +36,7 @@ export const create_pattern = (
     // This isn't an issue when creating the regex w/o the 'u' flag, but it is when the 'u' flag is used.
     // For this reason, it is necessary to remove these backslashes before creating the regex.
     // See https://stackoverflow.com/a/63007777/13989043 for more information
-    let regex = pattern.Regex.replace(
-      /(^|[^\\])\\([#&~"'])/g,
-      "$1$2",
-    ); // TODO: add more characters to this list if necessary
+    let regex = pattern.Regex.replace(/(^|[^\\])\\([#&~"'])/g, "$1$2"); // TODO: add more characters to this list if necessary
 
     // Certain special sequences in the regex patterns are not supported in JavaScript, and need to be replaced with compatible alternatives.
     // For example, \A, \Z, and \z are not supported in JavaScript:
@@ -116,7 +113,7 @@ export const create_pattern = (
 
 const normalize_unicode_shorthands = (regex: string): string => {
   let normalized = "";
-  let inCharClass = false;
+  let in_char_class = false;
 
   for (let i = 0; i < regex.length; ++i) {
     const char = regex[i];
@@ -131,13 +128,13 @@ const normalize_unicode_shorthands = (regex: string): string => {
       }
 
       if (next === "w") {
-        normalized += inCharClass ? "\\p{L}\\p{N}_" : "[\\p{L}\\p{N}_]";
+        normalized += in_char_class ? "\\p{L}\\p{N}_" : "[\\p{L}\\p{N}_]";
         ++i;
         continue;
       }
 
       if (next === "W") {
-        if (inCharClass) {
+        if (in_char_class) {
           console.warn(
             "Tokenizer regex contains \\W inside a character class, which is not Unicode-normalized yet.",
           );
@@ -166,10 +163,10 @@ const normalize_unicode_shorthands = (regex: string): string => {
       continue;
     }
 
-    if (char === "[" && !inCharClass) {
-      inCharClass = true;
-    } else if (char === "]" && inCharClass) {
-      inCharClass = false;
+    if (char === "[" && !in_char_class) {
+      in_char_class = true;
+    } else if (char === "]" && in_char_class) {
+      in_char_class = false;
     }
 
     normalized += char;
