@@ -137,7 +137,14 @@ const normalize_unicode_shorthands = (regex: string): string => {
       }
 
       if (next === "W") {
-        normalized += inCharClass ? "\\W" : "[^\\p{L}\\p{N}_]";
+        if (inCharClass) {
+          console.warn(
+            "Tokenizer regex contains \\W inside a character class, which is not Unicode-normalized yet.",
+          );
+          normalized += "\\W";
+        } else {
+          normalized += "[^\\p{L}\\p{N}_]";
+        }
         ++i;
         continue;
       }

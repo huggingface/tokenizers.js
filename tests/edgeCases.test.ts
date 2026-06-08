@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import fetchConfigById from "./utils/fetchConfigById";
 import { Tokenizer } from "../src";
 import { create_pattern } from "../src/utils/core";
@@ -49,5 +50,19 @@ describe("Edge cases", () => {
     expect(wordPattern!.test("abc")).toBe(true);
     wordPattern!.lastIndex = 0;
     expect(wordPattern!.test("שלום")).toBe(true);
+  });
+
+  it("warns for unsupported \\W normalization inside character classes", () => {
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const pattern = create_pattern({ Regex: "[\\W]" });
+      expect(pattern).not.toBeNull();
+      expect(warn).toHaveBeenCalledWith(
+        "Tokenizer regex contains \\W inside a character class, which is not Unicode-normalized yet.",
+      );
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
