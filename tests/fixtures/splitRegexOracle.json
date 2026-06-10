@@ -1,0 +1,500 @@
+{
+  "tokenizersVersion": "0.21.1",
+  "cases": [
+    {
+      "name": "issue 23 escaped quote and backslash pattern",
+      "pattern": "['\\\\\\\"]",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["' \\\"", "abc'def\"ghi\\j", "no quotes"],
+      "expected": [
+        {
+          "input": "' \\\"",
+          "tokens": ["'", "\\", "\""]
+        },
+        {
+          "input": "abc'def\"ghi\\j",
+          "tokens": ["'", "\"", "\\"]
+        },
+        {
+          "input": "no quotes",
+          "tokens": []
+        }
+      ]
+    },
+    {
+      "name": "unicode word matches",
+      "pattern": "\\w+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["hello, שלום 123", "abc_123 café", "नमस्ते world"],
+      "expected": [
+        {
+          "input": "hello, שלום 123",
+          "tokens": ["hello", "שלום", "123"]
+        },
+        {
+          "input": "abc_123 café",
+          "tokens": ["abc_123", "café"]
+        },
+        {
+          "input": "नमस्ते world",
+          "tokens": ["नमस्ते", "world"]
+        }
+      ]
+    },
+    {
+      "name": "issue 23 unicode word matches inside character class",
+      "pattern": "[\\w]+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["hi שלום", "abc_123 café", "مرحبا_١٢٣"],
+      "expected": [
+        {
+          "input": "hi שלום",
+          "tokens": ["hi", "שלום"]
+        },
+        {
+          "input": "abc_123 café",
+          "tokens": ["abc_123", "café"]
+        },
+        {
+          "input": "مرحبا_١٢٣",
+          "tokens": ["مرحبا_١٢٣"]
+        }
+      ]
+    },
+    {
+      "name": "unicode digit matches",
+      "pattern": "\\d+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["abc 123 १२३", "room ４２", "٣ apples"],
+      "expected": [
+        {
+          "input": "abc 123 १२३",
+          "tokens": ["123", "१२३"]
+        },
+        {
+          "input": "room ４２",
+          "tokens": ["４２"]
+        },
+        {
+          "input": "٣ apples",
+          "tokens": ["٣"]
+        }
+      ]
+    },
+    {
+      "name": "issue 23 unicode non-digit matches",
+      "pattern": "\\D+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["abc 123 १२३", "room ４２", "٣ apples"],
+      "expected": [
+        {
+          "input": "abc 123 १२३",
+          "tokens": ["abc ", " "]
+        },
+        {
+          "input": "room ４２",
+          "tokens": ["room "]
+        },
+        {
+          "input": "٣ apples",
+          "tokens": [" apples"]
+        }
+      ]
+    },
+    {
+      "name": "issue 23 unicode non-word matches",
+      "pattern": "\\W+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["hello, שלום 123", "abc_123 café!", "नमस्ते-world"],
+      "expected": [
+        {
+          "input": "hello, שלום 123",
+          "tokens": [", ", " "]
+        },
+        {
+          "input": "abc_123 café!",
+          "tokens": [" ", "!"]
+        },
+        {
+          "input": "नमस्ते-world",
+          "tokens": ["-"]
+        }
+      ]
+    },
+    {
+      "name": "mixed shorthand tokenizer pattern",
+      "pattern": "\\s+|\\w+|[^\\w\\s]+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["hello, שלום!", "नमस्ते-world १२३", "emoji🙂test"],
+      "expected": [
+        {
+          "input": "hello, שלום!",
+          "tokens": ["hello", ",", " ", "שלום", "!"]
+        },
+        {
+          "input": "नमस्ते-world १२३",
+          "tokens": ["नमस्ते", "-", "world", " ", "१२३"]
+        },
+        {
+          "input": "emoji🙂test",
+          "tokens": ["emoji", "🙂", "test"]
+        }
+      ]
+    },
+    {
+      "name": "whitespace isolated",
+      "pattern": "\\s+",
+      "behavior": "Isolated",
+      "invert": false,
+      "inputs": ["hello  world", "a\n\tb", "trim "],
+      "expected": [
+        {
+          "input": "hello  world",
+          "tokens": ["hello", "  ", "world"]
+        },
+        {
+          "input": "a\n\tb",
+          "tokens": ["a", "\n\t", "b"]
+        },
+        {
+          "input": "trim ",
+          "tokens": ["trim", " "]
+        }
+      ]
+    },
+    {
+      "name": "whitespace removed",
+      "pattern": "\\s+",
+      "behavior": "Removed",
+      "invert": false,
+      "inputs": ["hello  world", "a\n\tb", " trim "],
+      "expected": [
+        {
+          "input": "hello  world",
+          "tokens": ["hello", "world"]
+        },
+        {
+          "input": "a\n\tb",
+          "tokens": ["a", "b"]
+        },
+        {
+          "input": " trim ",
+          "tokens": ["trim"]
+        }
+      ]
+    },
+    {
+      "name": "gpt2 style unicode pieces",
+      "pattern": "'s|'t|'re|'ve|'m|'ll|'d| ?\\p{L}+| ?\\p{N}+| ?[^\\s\\p{L}\\p{N}]+|\\s+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["Hello, world! 123 can't", "café déjà vu", "שלום עולם 42"],
+      "expected": [
+        {
+          "input": "Hello, world! 123 can't",
+          "tokens": ["Hello", ",", " world", "!", " 123", " can", "'t"]
+        },
+        {
+          "input": "café déjà vu",
+          "tokens": ["café", " déjà", " vu"]
+        },
+        {
+          "input": "שלום עולם 42",
+          "tokens": ["שלום", " עולם", " 42"]
+        }
+      ]
+    },
+    {
+      "name": "case insensitive contractions",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\\r\\n\\p{L}\\p{N}]?\\p{L}+|\\p{N}{1,3}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["I'm testing, you're testing.", "WE'RE here", "abc1234"],
+      "expected": [
+        {
+          "input": "I'm testing, you're testing.",
+          "tokens": ["I", "'m", " testing", ",", " you", "'re", " testing", "."]
+        },
+        {
+          "input": "WE'RE here",
+          "tokens": ["WE", "'RE", " here"]
+        },
+        {
+          "input": "abc1234",
+          "tokens": ["abc", "123", "4"]
+        }
+      ]
+    },
+    {
+      "name": "french case insensitive contractions",
+      "pattern": "(?i: ?(?:[jtmslndcy]['’]|qu['’]|jusqu['’]|lorsqu['’]|puisqu['’]|quoiqu['’]|aujourd['’]hui)|['’][stmd]|['’][rv]e|['’]ll)| ?\\p{L}+|\\p{N}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": [
+        "j’aime qu’il vienne",
+        "QU’IL arrive",
+        "Aujourd’hui AUJOURD’HUI"
+      ],
+      "expected": [
+        {
+          "input": "j’aime qu’il vienne",
+          "tokens": ["j’", "aime", " qu’", "il", " vienne"]
+        },
+        {
+          "input": "QU’IL arrive",
+          "tokens": ["QU’", "IL", " arrive"]
+        },
+        {
+          "input": "Aujourd’hui AUJOURD’HUI",
+          "tokens": ["Aujourd’hui", " AUJOURD’HUI"]
+        }
+      ]
+    },
+    {
+      "name": "openai possessive quantifiers",
+      "pattern": "'(?i:[sdmt]|ll|ve|re)|[^\\r\\n\\p{L}\\p{N}]?+\\p{L}+|\\p{N}| ?[^\\s\\p{L}\\p{N}]++[\\r\\n]*|\\s*[\\r\\n]|\\s+(?!\\S)|\\s+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["Hello!!!", "can't stop", "A\nB"],
+      "expected": [
+        {
+          "input": "Hello!!!",
+          "tokens": ["Hello", "!!!"]
+        },
+        {
+          "input": "can't stop",
+          "tokens": ["can", "'t", " stop"]
+        },
+        {
+          "input": "A\nB",
+          "tokens": ["A", "\n", "B"]
+        }
+      ]
+    },
+    {
+      "name": "atomic digit chunks",
+      "pattern": "\\p{Nd}{1,510}(?=(?>\\p{Nd}{510})*(?:\\P{Nd}|$))|\\G\\p{Nd}{510}",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["1234567890", "abc123", "１２３４５６７８９０"],
+      "expected": [
+        {
+          "input": "1234567890",
+          "tokens": ["1234567890"]
+        },
+        {
+          "input": "abc123",
+          "tokens": ["123"]
+        },
+        {
+          "input": "１２３４５６７８９０",
+          "tokens": ["１２３４５６７８９０"]
+        }
+      ]
+    },
+    {
+      "name": "absolute digit chunk anchors",
+      "pattern": "\\A\\p{Nd}{1,2}(?=\\p{Nd}{3}+\\z)",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["12345", "123456", "abc12345", "１２３４５"],
+      "expected": [
+        {
+          "input": "12345",
+          "tokens": ["12"]
+        },
+        {
+          "input": "123456",
+          "tokens": []
+        },
+        {
+          "input": "abc12345",
+          "tokens": []
+        },
+        {
+          "input": "１２３４５",
+          "tokens": ["１２"]
+        }
+      ]
+    },
+    {
+      "name": "line start negative lookbehind",
+      "pattern": "(?<!\\n)^ ",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": [" leading", "no leading", "line\n leading"],
+      "expected": [
+        {
+          "input": " leading",
+          "tokens": [" "]
+        },
+        {
+          "input": "no leading",
+          "tokens": []
+        },
+        {
+          "input": "line\n leading",
+          "tokens": []
+        }
+      ]
+    },
+    {
+      "name": "bengali colon lookbehind",
+      "pattern": "(?<=[\\u0980-\\u09ff]):",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["বাংলা: text", "abc: text", "অ:আ"],
+      "expected": [
+        {
+          "input": "বাংলা: text",
+          "tokens": [":"]
+        },
+        {
+          "input": "abc: text",
+          "tokens": []
+        },
+        {
+          "input": "অ:আ",
+          "tokens": [":"]
+        }
+      ]
+    },
+    {
+      "name": "horizontal whitespace",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)| (?!\\h?\\p{N})\\h?(?:\\p{L}\\p{M}*)+|\\p{N}| ?[^\\s\\p{L}\\p{N}\\p{M}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["abc 123 def", "a\tb", " 42 answer", " I'm here"],
+      "expected": [
+        {
+          "input": "abc 123 def",
+          "tokens": [" ", "1", "2", "3", " def"]
+        },
+        {
+          "input": "a\tb",
+          "tokens": ["\t"]
+        },
+        {
+          "input": " 42 answer",
+          "tokens": [" ", "4", "2", " answer"]
+        },
+        {
+          "input": " I'm here",
+          "tokens": [" I", "'m", " here"]
+        }
+      ]
+    },
+    {
+      "name": "smiles tokens",
+      "pattern": "(\\[[^\\]]+]|Br?|Cl?|N|O|S|P|F|I|b|c|n|o|s|p|\\(|\\)|\\.|=|#|-|\\+|\\\\|\\/|:|~|@|\\?|>>?|\\*|\\$|\\%[0-9]{2}|[0-9])",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["CC(=O)O", "ClCBr", "[NH4+]"],
+      "expected": [
+        {
+          "input": "CC(=O)O",
+          "tokens": ["C", "C", "(", "=", "O", ")", "O"]
+        },
+        {
+          "input": "ClCBr",
+          "tokens": ["Cl", "C", "Br"]
+        },
+        {
+          "input": "[NH4+]",
+          "tokens": ["[NH4+]"]
+        }
+      ]
+    },
+    {
+      "name": "repeated punctuation backreference",
+      "pattern": "[\\(\\)\\[\\]\\{\\}]|([!\\\"\\#\\$%\\&'\\*\\+,\\-\\./:;<=>\\?\\\\\\^_`\\|\\~])\\1*",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["hello!!!??", "foo---bar", "((test))"],
+      "expected": [
+        {
+          "input": "hello!!!??",
+          "tokens": ["!!!", "??"]
+        },
+        {
+          "input": "foo---bar",
+          "tokens": ["---"]
+        },
+        {
+          "input": "((test))",
+          "tokens": ["(", "(", ")", ")"]
+        }
+      ]
+    },
+    {
+      "name": "unicode category case aware words",
+      "pattern": "[^\\r\\n\\p{L}\\p{N}]?[\\p{Lu}\\p{Lt}\\p{Lm}\\p{Lo}\\p{M}]*[\\p{Ll}\\p{Lm}\\p{Lo}\\p{M}]+|[^\\r\\n\\p{L}\\p{N}]?[\\p{Lu}\\p{Lt}\\p{Lm}\\p{Lo}\\p{M}]+[\\p{Ll}\\p{Lm}\\p{Lo}\\p{M}]*|\\p{N}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n/]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["Hello WORLD", "éclair café", "שלום עולם 42"],
+      "expected": [
+        {
+          "input": "Hello WORLD",
+          "tokens": ["Hello", " WORLD"]
+        },
+        {
+          "input": "éclair café",
+          "tokens": ["éclair", " café"]
+        },
+        {
+          "input": "שלום עולם 42",
+          "tokens": ["שלום", " עולם", " ", "4", "2"]
+        }
+      ]
+    },
+    {
+      "name": "cjk and southeast asian ranges",
+      "pattern": "(?:[\\u4E00-\\u9FFF\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\uf900-\\uFAFF\\uFF65-\\uFF9F\\u2F00-\\u2FDF]+|[\\u0E00-\\u0E7F]+|[\\u0E80-\\u0EFF]+|[\\u1780-\\u17FF]+|[\\u1000-\\u109F\\uAA60-\\uAA7F\\uA9E0-\\uA9FF]+|[\\uAC00-\\uD7AF\\u1100-\\u11FF]+)",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["中文かなカナ", "ไทย Lao ລາວ", "한국어 abc"],
+      "expected": [
+        {
+          "input": "中文かなカナ",
+          "tokens": ["中文かなカナ"]
+        },
+        {
+          "input": "ไทย Lao ລາວ",
+          "tokens": ["ไทย", "ລາວ"]
+        },
+        {
+          "input": "한국어 abc",
+          "tokens": ["한국어"]
+        }
+      ]
+    },
+    {
+      "name": "newline escaped pattern",
+      "pattern": "\\\n(?=[ \\w])",
+      "behavior": "Removed",
+      "invert": true,
+      "inputs": ["a\\\nb", "a\nb", "\\\n word"],
+      "expected": [
+        {
+          "input": "a\\\nb",
+          "tokens": ["\n"]
+        },
+        {
+          "input": "a\nb",
+          "tokens": ["\n"]
+        },
+        {
+          "input": "\\\n word",
+          "tokens": ["\n"]
+        }
+      ]
+    }
+  ]
+}

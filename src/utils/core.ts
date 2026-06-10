@@ -36,7 +36,11 @@ export const create_pattern = (
     // This isn't an issue when creating the regex w/o the 'u' flag, but it is when the 'u' flag is used.
     // For this reason, it is necessary to remove these backslashes before creating the regex.
     // See https://stackoverflow.com/a/63007777/13989043 for more information
-    let regex = pattern.Regex.replace(/(^|[^\\])\\([#&~"'`%])/g, "$1$2"); // TODO: add more characters to this list if necessary
+    let regex = pattern.Regex.replace(
+      /(\\+)([#&~"'`%])/g,
+      (match, slashes, char) =>
+        slashes.length % 2 === 0 ? match : `${slashes.slice(1)}${char}`,
+    ); // TODO: add more characters to this list if necessary
 
     // Certain special sequences in the regex patterns are not supported in JavaScript, and need to be replaced with compatible alternatives.
     // For example, \A, \Z, and \z are not supported in JavaScript:
@@ -56,6 +60,8 @@ export const create_pattern = (
     // JavaScript treats shorthands like \w and \d as ASCII-only, while Python/Rust tokenizers use Unicode-aware semantics.
     // Normalize these shorthands so multilingual tokenizers keep expected behavior in JS.
     regex = normalize_unicode_shorthands(regex);
+
+    regex = normalize_inline_case_insensitive_groups(regex);
 
     // JavaScript word boundaries (\b/\B) are ASCII-oriented with respect to word characters.
     // Keep behavior unchanged for compatibility, but warn once when these tokens are present.
@@ -112,6 +118,104 @@ export const create_pattern = (
   }
 };
 
+const normalize_inline_case_insensitive_groups = (regex: string): string => {
+  let normalized = "";
+
+  for (let i = 0; i < regex.length; ++i) {
+    if (!regex.startsWith("(?i:", i)) {
+      normalized += regex[i];
+      continue;
+    }
+
+    const start = i + 4;
+    let depth = 1;
+    let in_char_class = false;
+    let end = start;
+
+    for (; end < regex.length; ++end) {
+      const char = regex[end];
+
+      if (char === "\\") {
+        ++end;
+        continue;
+      }
+
+      if (char === "[" && !in_char_class) {
+        in_char_class = true;
+        continue;
+      }
+
+      if (char === "]" && in_char_class) {
+        in_char_class = false;
+        continue;
+      }
+
+      if (in_char_class) continue;
+
+      if (char === "(") {
+        ++depth;
+      } else if (char === ")" && --depth === 0) {
+        break;
+      }
+    }
+
+    if (depth !== 0) {
+      normalized += regex.slice(i);
+      break;
+    }
+
+    normalized += `(?:${make_ascii_case_insensitive(regex.slice(start, end))})`;
+    i = end;
+  }
+
+  return normalized;
+};
+
+const make_ascii_case_insensitive = (regex: string): string => {
+  let normalized = "";
+  let in_char_class = false;
+
+  for (let i = 0; i < regex.length; ++i) {
+    const char = regex[i];
+
+    if (char === "\\" && i + 1 < regex.length) {
+      normalized += `${char}${regex[++i]}`;
+      continue;
+    }
+
+    if (char === "[" && !in_char_class) {
+      in_char_class = true;
+      normalized += char;
+      continue;
+    }
+
+    if (char === "]" && in_char_class) {
+      in_char_class = false;
+      normalized += char;
+      continue;
+    }
+
+    if (is_ascii_letter(char)) {
+      if (in_char_class) {
+        const prev = regex[i - 1];
+        const next = regex[i + 1];
+        normalized +=
+          prev === "-" || next === "-"
+            ? char
+            : `${char.toLowerCase()}${char.toUpperCase()}`;
+      } else {
+        normalized += `[${char.toLowerCase()}${char.toUpperCase()}]`;
+      }
+    } else {
+      normalized += char;
+    }
+  }
+
+  return normalized;
+};
+
+const is_ascii_letter = (char: string): boolean => /[A-Za-z]/.test(char);
+
 const normalize_unicode_shorthands = (regex: string): string => {
   let normalized = "";
   let in_char_class = false;
@@ -129,7 +233,9 @@ const normalize_unicode_shorthands = (regex: string): string => {
       }
 
       if (next === "w") {
-        normalized += in_char_class ? "\\p{L}\\p{N}_" : "[\\p{L}\\p{N}_]";
+        normalized += in_char_class
+          ? "\\p{L}\\p{M}\\p{N}_"
+          : "[\\p{L}\\p{M}\\p{N}_]";
         ++i;
         continue;
       }
@@ -141,7 +247,7 @@ const normalize_unicode_shorthands = (regex: string): string => {
           );
           normalized += "\\W";
         } else {
-          normalized += "[^\\p{L}\\p{N}_]";
+          normalized += "[^\\p{L}\\p{M}\\p{N}_]";
         }
         ++i;
         continue;
