@@ -36,11 +36,17 @@ const fetchConfigById = async (
     const text = await response.text();
     const contentType = response.headers.get("content-type") ?? "";
 
-    if (!response.ok || !contentType.includes("json")) {
+    if (!response.ok) {
       throw new Error(`Failed to fetch JSON from ${url}: ${response.status} ${response.statusText} (${contentType}). Body starts with: ${text.slice(0, 120)}`);
     }
 
-    return JSON.parse(text);
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      throw new Error(`Failed to parse JSON from ${url}: ${response.status} ${response.statusText} (${contentType}). Body starts with: ${text.slice(0, 120)}`, {
+        cause: error,
+      });
+    }
   };
 
   const [tokenizerJson, tokenizerConfig] = await Promise.all([loadJson(remoteUrl), loadJson(remoteUrlConfig)]);
