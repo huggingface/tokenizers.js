@@ -66,9 +66,7 @@ export const create_pattern = (
     // JavaScript word boundaries (\b/\B) are ASCII-oriented with respect to word characters.
     // Keep behavior unchanged for compatibility, but warn once when these tokens are present.
     if (/\\[bB]/.test(regex)) {
-      console.warn(
-        "Tokenizer regex contains \\b or \\B, which can be ASCII-oriented in JavaScript Unicode regex.",
-      );
+      // Tokenizer regex contains \\b or \\B, which can be ASCII-oriented in JavaScript Unicode regex.
     }
 
     // We also handle special cases where the regex contains invalid (non-JS compatible) syntax.
@@ -242,9 +240,7 @@ const normalize_unicode_shorthands = (regex: string): string => {
 
       if (next === "W") {
         if (in_char_class) {
-          console.warn(
-            "Tokenizer regex contains \\W inside a character class, which is not Unicode-normalized yet.",
-          );
+          // Tokenizer regex contains \\W inside a character class, which is not Unicode-normalized yet.
           normalized += "\\W";
         } else {
           normalized += "[^\\p{L}\\p{M}\\p{N}_]";
