@@ -37,15 +37,13 @@ const fetchConfigById = async (
     const contentType = response.headers.get("content-type") ?? "";
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch JSON from ${url}: ${response.status} ${response.statusText} (${contentType}). Body starts with: ${text.slice(0, 120)}`);
+      throw new Error(`Failed to fetch JSON from ${url} : ${response.status} ${response.statusText} (${contentType}). Body starts with: ${text.slice(0, 120)}`);
     }
 
     try {
       return JSON.parse(text);
     } catch (error) {
-      throw new Error(`Failed to parse JSON from ${url}: ${response.status} ${response.statusText} (${contentType}). Body starts with: ${text.slice(0, 120)}`, {
-        cause: error,
-      });
+      throw new Error(`Failed to parse JSON from ${url} : ${response.status} ${response.statusText} (${contentType}). ${error instanceof Error ? error.message : String(error)}. Body starts with: ${text.slice(0, 120)}`);
     }
   };
 
