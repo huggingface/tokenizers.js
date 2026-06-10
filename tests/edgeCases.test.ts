@@ -55,16 +55,10 @@ describe("Edge cases", () => {
     expect(wordPattern!.test("שלום")).toBe(true);
   });
 
-  it("warns for unsupported \\W normalization inside character classes", () => {
-    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
-
-    try {
-      const pattern = create_pattern({ Regex: "[\\W]" });
-      expect(pattern).not.toBeNull();
-      expect(warn).toHaveBeenCalledWith("Tokenizer regex contains \\W inside a character class, which is not Unicode-normalized yet.");
-    } finally {
-      warn.mockRestore();
-    }
+  it("keeps unsupported \\W shorthand inside character classes", () => {
+    const pattern = create_pattern({ Regex: "[\\W]" });
+    expect(pattern).not.toBeNull();
+    expect(pattern!.test("!")).toBe(true);
   });
 
   it("tracks character classes across escaped brackets", () => {

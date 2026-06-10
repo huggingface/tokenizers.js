@@ -1,5 +1,4 @@
 import { ReplacePattern } from "@static/tokenizer";
-import { PROBLEMATIC_REGEX_MAP } from "@static/constants";
 
 /**
  * Clean up a list of simple English tokenization artifacts like spaces before punctuations and abbreviated forms.
@@ -62,17 +61,7 @@ export const create_pattern = (
     regex = normalize_unicode_shorthands(regex);
 
     regex = normalize_inline_case_insensitive_groups(regex);
-
-    // JavaScript word boundaries (\b/\B) are ASCII-oriented with respect to word characters.
-    // Keep behavior unchanged for compatibility, but warn once when these tokens are present.
-    if (/\\[bB]/.test(regex)) {
-      // Tokenizer regex contains \\b or \\B, which can be ASCII-oriented in JavaScript Unicode regex.
-    }
-
-    // We also handle special cases where the regex contains invalid (non-JS compatible) syntax.
-    for (const [key, value] of PROBLEMATIC_REGEX_MAP) {
-      regex = regex.replaceAll(key, value);
-    }
+    regex = normalize_non_js_regex_syntax(regex);
 
     try {
       return new RegExp(regex, "gu");
@@ -114,6 +103,54 @@ export const create_pattern = (
     console.warn("Unknown pattern type:", pattern);
     return null;
   }
+};
+
+const normalize_non_js_regex_syntax = (regex: string): string =>
+  escape_literal_closing_brackets(
+    normalize_nested_negated_char_classes(
+      regex
+        // JS doesn't support \h; approximate it with horizontal whitespace.
+        .replace(/\\h/g, "[^\\S\\r\\n]")
+        // \G is an invalid escape in JS. This is not fully equivalent, but current Hub patterns use it in alternatives that still work after removal.
+        .replace(/\\G/g, "")
+        // JS doesn't support atomic groups; keep the group without atomic backtracking behavior.
+        .replace(/\(\?>/g, "(?:")
+        // Some tokenizer regexes use one-or-more fixed-width Unicode property chunks, e.g. \p{Nd}{3}+.
+        .replace(/((?:\\[pP]\{[^}]+\})\{\d+\})\+/g, "(?:$1)+"),
+    ),
+  ).replace(/([?+*])\+/g, "$1");
+
+const normalize_nested_negated_char_classes = (regex: string): string =>
+  regex.replace(/\[\^\(\\s\|\[([^\]]+)\]\)\]/g, "[^\\s$1]");
+
+const escape_literal_closing_brackets = (regex: string): string => {
+  let normalized = "";
+  let in_char_class = false;
+
+  for (let i = 0; i < regex.length; ++i) {
+    const char = regex[i];
+
+    if (char === "\\" && i + 1 < regex.length) {
+      normalized += `${char}${regex[++i]}`;
+      continue;
+    }
+
+    if (char === "[" && !in_char_class) {
+      in_char_class = true;
+      normalized += char;
+      continue;
+    }
+
+    if (char === "]" && in_char_class) {
+      in_char_class = false;
+      normalized += char;
+      continue;
+    }
+
+    normalized += char === "]" ? "\\]" : char;
+  }
+
+  return normalized;
 };
 
 const normalize_inline_case_insensitive_groups = (regex: string): string => {
