@@ -64,6 +64,14 @@ This library expects two files from Hugging Face models:
 - `tokenizer.json` - Contains the tokenizer configuration
 - `tokenizer_config.json` - Contains additional metadata
 
+## Regex compatibility
+
+Tokenizer configs are usually produced for Python/Rust tokenizers, whose regex syntax and Unicode behavior do not always match JavaScript `RegExp`. Tokenizers.js normalizes common differences in-library, including Python-only identity escapes, Unicode-aware `\w`/`\d` shorthands, selected anchors, inline case-insensitive groups, possessive quantifiers, atomic groups, and other regex patterns seen in tokenizer configs on the Hugging Face Hub.
+
+The test suite includes Python-generated oracle fixtures for regex `Split` pre-tokenizers. These compare Python `tokenizers` output with the JavaScript implementation for edge cases such as Hebrew word characters, non-ASCII digits, escaped quote/backslash patterns, contractions, lookarounds, script ranges, and repeated punctuation.
+
+Some regex behavior is still a known limitation. In particular, `\G`, `\b`/`\B`, full Unicode case folding, unsupported regex constructs, and `Split` behaviors such as `MergedWithPrevious`, `MergedWithNext`, and `Contiguous` may differ from Python/Rust tokenizers.
+
 ## Components
 
 Tokenizers.js supports [Hugging Face tokenizer components](https://huggingface.co/docs/tokenizers/components):
