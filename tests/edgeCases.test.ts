@@ -44,6 +44,8 @@ describe("Edge cases", () => {
     expect(quotePattern!.test("\"")).toBe(true);
     quotePattern!.lastIndex = 0;
     expect(quotePattern!.test("'")).toBe(true);
+    quotePattern!.lastIndex = 0;
+    expect(quotePattern!.test("\\")).toBe(true);
 
     const wordPattern = create_pattern({ Regex: "\\w+" });
     expect(wordPattern).not.toBeNull();
