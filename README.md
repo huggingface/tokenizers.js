@@ -27,7 +27,7 @@ Run today's most used tokenizers directly in your browser or Node.js application
 ## Installation
 
 ```bash
-pnpm add @huggingface/tokenizers
+npm install @huggingface/tokenizers
 ```
 
 Alternatively, you can use it via a CDN as follows:
