@@ -36,7 +36,7 @@ export const create_pattern = (
     // This isn't an issue when creating the regex w/o the 'u' flag, but it is when the 'u' flag is used.
     // For this reason, it is necessary to remove these backslashes before creating the regex.
     // See https://stackoverflow.com/a/63007777/13989043 for more information
-    let regex = pattern.Regex.replace(/(^|[^\\])\\([#&~"'])/g, "$1$2"); // TODO: add more characters to this list if necessary
+    let regex = pattern.Regex.replace(/(^|[^\\])\\([#&~"'`%])/g, "$1$2"); // TODO: add more characters to this list if necessary
 
     // Certain special sequences in the regex patterns are not supported in JavaScript, and need to be replaced with compatible alternatives.
     // For example, \A, \Z, and \z are not supported in JavaScript:
@@ -50,7 +50,8 @@ export const create_pattern = (
     regex = regex
       .replace(/\\A/g, "^")
       .replace(/\\z/g, "$")
-      .replace(/\\Z/g, "(?=\\r?\\n?$)");
+      .replace(/\\Z/g, "(?=\\r?\\n?$)")
+      .replace(/\\\n/g, "\\n");
 
     // JavaScript treats shorthands like \w and \d as ASCII-only, while Python/Rust tokenizers use Unicode-aware semantics.
     // Normalize these shorthands so multilingual tokenizers keep expected behavior in JS.

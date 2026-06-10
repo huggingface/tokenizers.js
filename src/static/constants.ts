@@ -48,6 +48,11 @@ export const PROBLEMATIC_REGEX_MAP = new Map([
     "(?i:[sdmt]|ll|ve|re)",
     "(?:[sS]|[dD]|[mM]|[tT]|[lL][lL]|[vV][eE]|[rR][eE])",
   ],
+  // Fall back to a non-capturing group for other inline case-insensitive groups.
+  ["(?i:", "(?:"],
+
+  // JS doesn't support \h; approximate it with horizontal whitespace.
+  [String.raw`\h`, String.raw`[^\S\r\n]`],
 
   // JS doesn't support possessive quantifiers (these are used in recent OpenAI tokenizers).
   ["[^\\r\\n\\p{L}\\p{N}]?+", "[^\\r\\n\\p{L}\\p{N}]?"],
@@ -64,9 +69,13 @@ export const PROBLEMATIC_REGEX_MAP = new Map([
   // So, we can safely remove it.
   ["\\G", ""],
 
+  // JS Unicode regexes require literal ] to be escaped outside character classes.
+  [String.raw`\[[^\]]+]`, String.raw`\[[^\]]+\]`],
+
   // Used to override the default (invalid) regex of the bloom pretokenizer.
   // For more information, see https://github.com/huggingface/transformers.js/issues/94
   [` ?[^(\\s|[${BLOOM_SPLIT_CHARS}])]+`, ` ?[^\\s${BLOOM_SPLIT_CHARS}]+`],
+  [" ?[^(\\s|[.,!?…。،])]+", " ?[^\\s.,!?…。،]+"],
 ]);
 
 export const PUNCTUATION_REGEX =

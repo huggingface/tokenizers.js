@@ -2,6 +2,7 @@ import { jest } from "@jest/globals";
 import fetchConfigById from "./utils/fetchConfigById";
 import { Tokenizer } from "../src";
 import { create_pattern } from "../src/utils/core";
+import { HUB_REGEX_PATTERNS } from "./fixtures/hubRegexPatterns";
 
 describe("Edge cases", () => {
   it("should not take too long", async () => {
@@ -41,7 +42,7 @@ describe("Edge cases", () => {
   it("normalizes Python-oriented regex for JS", () => {
     const quotePattern = create_pattern({ Regex: "['\\\\\"]" });
     expect(quotePattern).not.toBeNull();
-    expect(quotePattern!.test("\"")).toBe(true);
+    expect(quotePattern!.test('"')).toBe(true);
     quotePattern!.lastIndex = 0;
     expect(quotePattern!.test("'")).toBe(true);
     quotePattern!.lastIndex = 0;
@@ -60,9 +61,7 @@ describe("Edge cases", () => {
     try {
       const pattern = create_pattern({ Regex: "[\\W]" });
       expect(pattern).not.toBeNull();
-      expect(warn).toHaveBeenCalledWith(
-        "Tokenizer regex contains \\W inside a character class, which is not Unicode-normalized yet.",
-      );
+      expect(warn).toHaveBeenCalledWith("Tokenizer regex contains \\W inside a character class, which is not Unicode-normalized yet.");
     } finally {
       warn.mockRestore();
     }
@@ -78,5 +77,24 @@ describe("Edge cases", () => {
     expect(escapedCloseInClass!.test("]")).toBe(true);
     escapedCloseInClass!.lastIndex = 0;
     expect(escapedCloseInClass!.test("ש")).toBe(true);
+  });
+
+  it("compiles tokenizer regexes sampled from the HF Hub", () => {
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const failures: string[] = [];
+
+    try {
+      for (const regex of HUB_REGEX_PATTERNS) {
+        try {
+          expect(create_pattern({ Regex: regex })).not.toBeNull();
+        } catch (error) {
+          failures.push(`${JSON.stringify(regex)}: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+    } finally {
+      warn.mockRestore();
+    }
+
+    expect(failures).toEqual([]);
   });
 });
