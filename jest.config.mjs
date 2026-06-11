@@ -169,7 +169,7 @@ export default {
       {
         useESM: true,
         tsconfig: {
-          module: "es2022",
+          module: "esnext",
           target: "es2022",
         },
       },
