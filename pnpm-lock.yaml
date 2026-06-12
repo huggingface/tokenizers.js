@@ -8,9 +8,6 @@ importers:
 
   .:
     devDependencies:
-      '@jest/globals':
-        specifier: ^30.4.1
-        version: 30.4.1
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0

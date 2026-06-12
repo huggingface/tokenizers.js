@@ -40,7 +40,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "@jest/globals": "^30.4.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.9.2",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
