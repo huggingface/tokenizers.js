@@ -1,4 +1,3 @@
-import { jest } from "@jest/globals";
 import fetchConfigById from "./utils/fetchConfigById";
 import { Tokenizer } from "../src";
 import { create_pattern } from "../src/utils/core";
@@ -73,20 +72,21 @@ describe("Edge cases", () => {
     expect(escapedCloseInClass!.test("ש")).toBe(true);
   });
 
+  it("preserves escaped quantifier literals", () => {
+    const literalPlusRun = create_pattern({ Regex: "\\++" });
+    expect(literalPlusRun).not.toBeNull();
+    expect("++".match(literalPlusRun!)).toEqual(["++"]);
+  });
+
   it("compiles tokenizer regexes sampled from the HF Hub", () => {
-    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
     const failures: string[] = [];
 
-    try {
-      for (const regex of HUB_REGEX_PATTERNS) {
-        try {
-          expect(create_pattern({ Regex: regex })).not.toBeNull();
-        } catch (error) {
-          failures.push(`${JSON.stringify(regex)}: ${error instanceof Error ? error.message : String(error)}`);
-        }
+    for (const regex of HUB_REGEX_PATTERNS) {
+      try {
+        expect(create_pattern({ Regex: regex })).not.toBeNull();
+      } catch (error) {
+        failures.push(`${JSON.stringify(regex)}: ${error instanceof Error ? error.message : String(error)}`);
       }
-    } finally {
-      warn.mockRestore();
     }
 
     expect(failures).toEqual([]);
