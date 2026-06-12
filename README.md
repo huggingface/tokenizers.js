@@ -70,7 +70,7 @@ Tokenizer configs are usually produced for Python/Rust tokenizers, whose regex s
 
 The test suite includes Python-generated oracle fixtures for regex `Split` pre-tokenizers. These compare Python `tokenizers` output with the JavaScript implementation for edge cases such as Hebrew word characters, non-ASCII digits, escaped quote/backslash patterns, contractions, lookarounds, script ranges, and repeated punctuation.
 
-Some regex behavior is still a known limitation. In particular, `\G`, `\b`/`\B`, full Unicode case folding, unsupported regex constructs, and `Split` behaviors such as `MergedWithPrevious`, `MergedWithNext`, and `Contiguous` may differ from Python/Rust tokenizers.
+Some regex behavior is still a known limitation. In particular, `\G`, full Unicode case folding, unsupported regex constructs, and `Split` behaviors such as `MergedWithPrevious`, `MergedWithNext`, and `Contiguous` may differ from Python/Rust tokenizers.
 
 ## Components
 

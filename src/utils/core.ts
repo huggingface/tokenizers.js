@@ -47,14 +47,15 @@ export const create_pattern = (
     // - \z matches the end of a string only. Unlike $, this is not affected by multiline mode.
     // - \Z matches the end of a string, or before a final newline. This is not affected by multiline mode.
     //
-    // Since JavaScript does not support \A, \Z, or \z, we need to replace them with ^ and $.
-    // Fortunately, we are not using the multiline flag, so we can safely replace them with ^ and $.
+    // Since JavaScript does not support \A, \Z, or \z, we replace them with absolute lookarounds.
+    // This lets us keep Python/Rust-style multiline ^ behavior without changing absolute anchors.
     // For \Z, we replace it with a lookahead for the end of the string, allowing for an optional final newline.
     regex = regex
-      .replace(/\\A/g, "^")
-      .replace(/\\z/g, "$")
-      .replace(/\\Z/g, "(?=\\r?\\n?$)")
-      .replace(/\\\n/g, "\\n");
+      .replace(/\\A/g, "(?<![\\s\\S])")
+      .replace(/\\z/g, "(?![\\s\\S])")
+      .replace(/\\Z/g, "(?=\\r?\\n?(?![\\s\\S]))")
+      .replace(/\\\n/g, "\\n")
+      .replace(/\\\t/g, "\\t");
 
     // JavaScript treats shorthands like \w and \d as ASCII-only, while Python/Rust tokenizers use Unicode-aware semantics.
     // Normalize these shorthands so multilingual tokenizers keep expected behavior in JS.
@@ -62,9 +63,10 @@ export const create_pattern = (
 
     regex = normalize_inline_case_insensitive_groups(regex);
     regex = normalize_non_js_regex_syntax(regex);
+    regex = normalize_dot_wildcards(regex);
 
     try {
-      return new RegExp(regex, "gu");
+      return new RegExp(regex, "gmu");
     } catch (error) {
       // For JavaScript regular expressions, when you want to match a specific script using \p{...}, you must explicitly specify the property name Script (or sc).
       // For example, to match Hangul characters, you need to use \p{Script=Hangul} or \p{sc=Hangul}, instead of just \p{Hangul} (which is valid in Python).
@@ -89,7 +91,7 @@ export const create_pattern = (
 
       if (!changed) throw error;
       try {
-        return new RegExp(fixed, "gu");
+        return new RegExp(fixed, "gmu");
       } catch (e) {
         // If it still fails, re-throw the original error for clarity.
         throw error;
@@ -105,23 +107,137 @@ export const create_pattern = (
   }
 };
 
+// Normalizes tokenizer regex constructs that Python/Rust accept but JavaScript RegExp does not.
+// This replaces the old PROBLEMATIC_REGEX_MAP with structural rewrites so equivalent patterns are covered too.
 const normalize_non_js_regex_syntax = (regex: string): string =>
-  escape_literal_closing_brackets(
-    normalize_nested_negated_char_classes(
-      regex
-        // JS doesn't support \h; approximate it with horizontal whitespace.
-        .replace(/\\h/g, "[^\\S\\r\\n]")
-        // \G is an invalid escape in JS. This is not fully equivalent, but current Hub patterns use it in alternatives that still work after removal.
-        .replace(/\\G/g, "")
-        // JS doesn't support atomic groups; keep the group without atomic backtracking behavior.
-        .replace(/\(\?>/g, "(?:")
-        // Some tokenizer regexes use one-or-more fixed-width Unicode property chunks, e.g. \p{Nd}{3}+.
-        .replace(/((?:\\[pP]\{[^}]+\})\{\d+\})\+/g, "(?:$1)+"),
+  strip_possessive_quantifiers(
+    escape_literal_closing_brackets(
+      normalize_bloom_split_char_class(
+        regex
+          // JS doesn't support \h; approximate it with horizontal whitespace.
+          .replace(/\\h/g, "[^\\S\\r\\n]")
+          // \G is an invalid escape in JS. Hub patterns mostly use it for contiguous digit chunks; approximate that case and remove the rest.
+          .replace(/\\G(?=\\p\{Nd\})/g, "(?<=\\p{Nd})")
+          .replace(/\\G/g, "")
+          // JS doesn't support atomic groups. These are used in AFMoE tokenizers, so keep the group without atomic backtracking behavior.
+          .replace(/\(\?>/g, "(?:")
+          // JS doesn't support stacking quantifiers, e.g. \p{Nd}{3}+. Repeat the fixed-width chunk instead.
+          .replace(/((?:\\[pP]\{[^}]+\})\{\d+\})\+/g, "(?:$1)+"),
+      ),
     ),
-  ).replace(/([?+*])\+/g, "$1");
+  );
 
-const normalize_nested_negated_char_classes = (regex: string): string =>
-  regex.replace(/\[\^\(\\s\|\[([^\]]+)\]\)\]/g, "[^\\s$1]");
+// Used to override the default invalid regex of the Bloom pretokenizer:
+// ` ?[^(\\s|[.,!?…。，、।۔،])]+`.
+// For more information, see https://github.com/huggingface/transformers.js/issues/94
+const normalize_bloom_split_char_class = (regex: string): string =>
+  regex.replace(/\[\^\(\\s\|\[([^\]]+)\]\)\]/g, "[^()|\\s$1]");
+
+const normalize_dot_wildcards = (regex: string): string => {
+  let normalized = "";
+  let in_char_class = false;
+
+  for (let i = 0; i < regex.length; ++i) {
+    const char = regex[i];
+
+    if (char === "\\" && i + 1 < regex.length) {
+      normalized += `${char}${regex[++i]}`;
+      continue;
+    }
+
+    if (char === "[" && !in_char_class) {
+      in_char_class = true;
+      normalized += char;
+      continue;
+    }
+
+    if (char === "]" && in_char_class) {
+      in_char_class = false;
+      normalized += char;
+      continue;
+    }
+
+    normalized += char === "." && !in_char_class ? "[^\\n]" : char;
+  }
+
+  return normalized;
+};
+
+// JS doesn't support possessive quantifiers. These are used in recent OpenAI tokenizers.
+// Strip only true quantifier suffixes so escaped literal `+` patterns keep their meaning.
+const strip_possessive_quantifiers = (regex: string): string => {
+  let normalized = "";
+  let in_char_class = false;
+
+  for (let i = 0; i < regex.length; ++i) {
+    const char = regex[i];
+
+    if (char === "\\" && i + 1 < regex.length) {
+      normalized += `${char}${regex[++i]}`;
+      continue;
+    }
+
+    if (char === "[" && !in_char_class) {
+      in_char_class = true;
+      normalized += char;
+      continue;
+    }
+
+    if (char === "]" && in_char_class) {
+      in_char_class = false;
+      normalized += char;
+      continue;
+    }
+
+    if (!in_char_class && regex[i + 1] === "+") {
+      if (char === "?" || char === "+" || char === "*") {
+        normalized += char;
+        ++i;
+        continue;
+      }
+
+      if (char === "}" && is_repetition_quantifier_end(regex, i)) {
+        normalized += char;
+        ++i;
+        continue;
+      }
+    }
+
+    normalized += char;
+  }
+
+  return normalized;
+};
+
+const is_repetition_quantifier_end = (
+  regex: string,
+  close_brace_index: number,
+): boolean => {
+  let open_brace_index = close_brace_index - 1;
+  while (open_brace_index >= 0 && regex[open_brace_index] !== "{") {
+    --open_brace_index;
+  }
+
+  if (
+    open_brace_index < 0 ||
+    is_escaped(regex, open_brace_index) ||
+    is_escaped(regex, close_brace_index)
+  ) {
+    return false;
+  }
+
+  return /^\d+(?:,\d*)?$/.test(
+    regex.slice(open_brace_index + 1, close_brace_index),
+  );
+};
+
+const is_escaped = (regex: string, index: number): boolean => {
+  let slash_count = 0;
+  for (let i = index - 1; i >= 0 && regex[i] === "\\"; --i) {
+    ++slash_count;
+  }
+  return slash_count % 2 === 1;
+};
 
 const escape_literal_closing_brackets = (regex: string): string => {
   let normalized = "";
@@ -153,6 +269,8 @@ const escape_literal_closing_brackets = (regex: string): string => {
   return normalized;
 };
 
+// Python/Rust tokenizer regexes use inline case-insensitive groups like `(?i:...)`.
+// JavaScript does not support this group modifier and throws "Invalid group", so expand ASCII letters locally.
 const normalize_inline_case_insensitive_groups = (regex: string): string => {
   let normalized = "";
 
@@ -251,6 +369,11 @@ const make_ascii_case_insensitive = (regex: string): string => {
 
 const is_ascii_letter = (char: string): boolean => /[A-Za-z]/.test(char);
 
+const UNICODE_WORD_CHARS = "\\p{L}\\p{M}\\p{N}_";
+const UNICODE_WORD_BOUNDARY = `(?:(?<![${UNICODE_WORD_CHARS}])(?=[${UNICODE_WORD_CHARS}])|(?<=[${UNICODE_WORD_CHARS}])(?![${UNICODE_WORD_CHARS}]))`;
+const UNICODE_NON_WORD_BOUNDARY = `(?:(?<![${UNICODE_WORD_CHARS}])(?![${UNICODE_WORD_CHARS}])|(?<=[${UNICODE_WORD_CHARS}])(?=[${UNICODE_WORD_CHARS}]))`;
+
+// Python/Rust tokenizer shorthands are Unicode-aware. JavaScript's \w, \d, and word boundaries are not.
 const normalize_unicode_shorthands = (regex: string): string => {
   let normalized = "";
   let in_char_class = false;
@@ -294,6 +417,18 @@ const normalize_unicode_shorthands = (regex: string): string => {
 
       if (next === "D") {
         normalized += "\\P{Nd}";
+        ++i;
+        continue;
+      }
+
+      if (next === "b" && !in_char_class) {
+        normalized += UNICODE_WORD_BOUNDARY;
+        ++i;
+        continue;
+      }
+
+      if (next === "B" && !in_char_class) {
+        normalized += UNICODE_NON_WORD_BOUNDARY;
         ++i;
         continue;
       }

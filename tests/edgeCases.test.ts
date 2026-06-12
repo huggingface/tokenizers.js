@@ -1,7 +1,7 @@
 import fetchConfigById from "./utils/fetchConfigById";
 import { Tokenizer } from "../src";
 import { create_pattern } from "../src/utils/core";
-import { HUB_REGEX_PATTERNS } from "./fixtures/hubRegexPatterns";
+import { splitRegexPatterns } from "./utils/splitRegexCases";
 
 describe("Edge cases", () => {
   it("should not take too long", async () => {
@@ -81,11 +81,11 @@ describe("Edge cases", () => {
   it("compiles tokenizer regexes sampled from the HF Hub", () => {
     const failures: string[] = [];
 
-    for (const regex of HUB_REGEX_PATTERNS) {
+    for (const { id, pattern } of splitRegexPatterns) {
       try {
-        expect(create_pattern({ Regex: regex })).not.toBeNull();
+        expect(create_pattern({ Regex: pattern })).not.toBeNull();
       } catch (error) {
-        failures.push(`${JSON.stringify(regex)}: ${error instanceof Error ? error.message : String(error)}`);
+        failures.push(`${id} ${JSON.stringify(pattern)}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 

@@ -35,7 +35,7 @@ class Split extends PreTokenizer {
     }
 
     if (this.config.invert) {
-      return text.match(this.pattern) || [];
+      return (text.match(this.pattern) || []).filter((x) => x);
     } else if (this.config.behavior?.toLowerCase() === "removed") {
       return text.split(this.pattern).filter((x) => x);
     } else {
