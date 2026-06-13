@@ -43,6 +43,9 @@ def resolve_case(
             "behavior", pattern.get("behavior", defaults["behavior"])
         ),
         "invert": case.get("invert", pattern.get("invert", defaults["invert"])),
+        "knownDivergence": case.get(
+            "knownDivergence", pattern.get("knownDivergence", False)
+        ),
         "inputs": case.get("inputs", pattern.get("inputs", defaults["inputs"])),
     }
 
@@ -75,6 +78,9 @@ def pre_tokenize(case: dict[str, Any], text: str) -> list[str]:
 
 def main() -> None:
     fixture = load_pattern_fixture()
+    # Cases are emitted fully resolved (pattern/behavior/invert/knownDivergence included)
+    # so the TypeScript oracle test does not need to re-implement the fixture's
+    # case/pattern/defaults resolution rules.
     oracle = {
         "tokenizersVersion": tokenizers.__version__,
         "source": PATTERNS_INPUT.name,
@@ -82,6 +88,10 @@ def main() -> None:
             {
                 "name": case["name"],
                 "patternId": case["patternId"],
+                "pattern": case["pattern"],
+                "behavior": case["behavior"],
+                "invert": case["invert"],
+                "knownDivergence": case["knownDivergence"],
                 "expected": [
                     {"input": text, "tokens": pre_tokenize(case, text)}
                     for text in case["inputs"]
