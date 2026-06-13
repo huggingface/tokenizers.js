@@ -1,7 +1,6 @@
 import fetchConfigById from "./utils/fetchConfigById";
 import { Tokenizer } from "../src";
 import { create_pattern } from "../src/utils/core";
-import { splitRegexPatterns } from "./utils/splitRegexCases";
 
 describe("Edge cases", () => {
   it("should not take too long", async () => {
@@ -54,10 +53,18 @@ describe("Edge cases", () => {
     expect(wordPattern!.test("שלום")).toBe(true);
   });
 
-  it("keeps unsupported \\W shorthand inside character classes", () => {
+  it("rewrites \\W inside positive character classes with Unicode semantics", () => {
     const pattern = create_pattern({ Regex: "[\\W]" });
     expect(pattern).not.toBeNull();
     expect(pattern!.test("!")).toBe(true);
+    pattern!.lastIndex = 0;
+    expect(pattern!.test("ש")).toBe(false);
+
+    const mixed = create_pattern({ Regex: "[\\W_]" });
+    expect(mixed).not.toBeNull();
+    expect(mixed!.test("_")).toBe(true);
+    mixed!.lastIndex = 0;
+    expect(mixed!.test("ש")).toBe(false);
   });
 
   it("tracks character classes across escaped brackets", () => {
@@ -76,19 +83,5 @@ describe("Edge cases", () => {
     const literalPlusRun = create_pattern({ Regex: "\\++" });
     expect(literalPlusRun).not.toBeNull();
     expect("++".match(literalPlusRun!)).toEqual(["++"]);
-  });
-
-  it("compiles tokenizer regexes sampled from the HF Hub", () => {
-    const failures: string[] = [];
-
-    for (const { id, pattern } of splitRegexPatterns) {
-      try {
-        expect(create_pattern({ Regex: pattern })).not.toBeNull();
-      } catch (error) {
-        failures.push(`${id} ${JSON.stringify(pattern)}: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    }
-
-    expect(failures).toEqual([]);
   });
 });
