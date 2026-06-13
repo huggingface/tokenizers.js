@@ -18,14 +18,20 @@
       "বাংলা: text অ:আ",
       "a\\\nb and \\\tword",
       "foo---bar hello!!!?? ((test))",
-      "abc.com test.com control \u001f zero \u0000 carriage\rreturn"
+      "abc.com test.com control \u001f zero \u0000 carriage\rreturn",
+      "trail \rnext  line end abc\r\n",
+      "a‿b x①y Ⅻ z² ¼cup ⓐⓑ a·b",
+      " a1 z1 ef G5 ß STRASSE İstanbul",
+      " 　﻿​ 1234 567890"
     ]
   },
   "patterns": [
     {
       "id": "hub-000",
       "pattern": "",
-      "inputs": [""]
+      "inputs": [
+        ""
+      ]
     },
     {
       "id": "hub-001",
@@ -231,7 +237,11 @@
       "id": "hub-051",
       "name": "problematic-bloom-split-regex",
       "pattern": " ?[^(\\s|[.,!?…。，、।۔،])]+",
-      "inputs": ["hello(world) ok! next", ".,!?…。，、।۔،", "שלום world"]
+      "inputs": [
+        "hello(world) ok! next",
+        ".,!?…。，、।۔،",
+        "שלום world"
+      ]
     },
     {
       "id": "hub-052",
@@ -263,7 +273,8 @@
     },
     {
       "id": "hub-059",
-      "pattern": "\\A\\p{Nd}{3}|\\G\\p{Nd}{3}"
+      "pattern": "\\A\\p{Nd}{3}|\\G\\p{Nd}{3}",
+      "knownDivergence": true
     },
     {
       "id": "hub-060",
@@ -448,22 +459,34 @@
     {
       "id": "problematic-inline-contractions",
       "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)",
-      "inputs": ["I'm testing, YOU'RE testing, he'll stay.", "no contraction"]
+      "inputs": [
+        "I'm testing, YOU'RE testing, he'll stay.",
+        "no contraction"
+      ]
     },
     {
       "id": "problematic-inline-openai-suffix",
       "pattern": "(?i:[sdmt]|ll|ve|re)",
-      "inputs": ["sdmt ll VE re x", "S D M T LL ve RE"]
+      "inputs": [
+        "sdmt ll VE re x",
+        "S D M T LL ve RE"
+      ]
     },
     {
       "id": "problematic-possessive-prefix-punctuation",
       "pattern": "[^\\r\\n\\p{L}\\p{N}]?+",
-      "inputs": ["Hello!!!\n?", "abc 123"]
+      "inputs": [
+        "Hello!!!\n?",
+        "abc 123"
+      ]
     },
     {
       "id": "problematic-possessive-punctuation-run",
       "pattern": "[^\\s\\p{L}\\p{N}]++",
-      "inputs": ["Hello!!! wait??", "abc 123"]
+      "inputs": [
+        "Hello!!! wait??",
+        "abc 123"
+      ]
     },
     {
       "id": "problematic-atomic-digit-group",
@@ -475,12 +498,236 @@
     {
       "id": "problematic-stacked-quantifier",
       "pattern": "\\p{Nd}{3}+",
-      "inputs": ["123456 १२३४५६", "12"]
+      "inputs": [
+        "123456 १२३४५६",
+        "12"
+      ]
     },
     {
       "id": "problematic-g-anchor",
       "pattern": "\\G",
-      "inputs": ["abc", "123"]
+      "inputs": [
+        "abc",
+        "123"
+      ]
+    },
+    {
+      "id": "edge-stacked-class-quantifier",
+      "pattern": "[0-9]{3}+",
+      "inputs": [
+        "123456 1234567",
+        "12"
+      ]
+    },
+    {
+      "id": "edge-stacked-literal-quantifier",
+      "pattern": "a{3}+",
+      "inputs": [
+        "aaaaaa aaaa baaa"
+      ]
+    },
+    {
+      "id": "edge-stacked-comma-quantifier",
+      "pattern": "\\p{Nd}{1,3}+",
+      "inputs": [
+        "12345 ١٢٣٤٥٦٧"
+      ]
+    },
+    {
+      "id": "edge-ci-range",
+      "pattern": "(?i:[a-f]+)",
+      "inputs": [
+        "ABC def F0e9 xyz"
+      ]
+    },
+    {
+      "id": "edge-ci-class-hyphen",
+      "pattern": "(?i:[-y]+)",
+      "inputs": [
+        "Y-y xY"
+      ]
+    },
+    {
+      "id": "edge-ci-nested-group",
+      "pattern": "(?i:a(?:b|c)d)",
+      "inputs": [
+        "ABD acd AcD abd"
+      ]
+    },
+    {
+      "id": "edge-ci-shorthand",
+      "pattern": "(?i:x\\w)",
+      "inputs": [
+        "Xa xש XB"
+      ]
+    },
+    {
+      "id": "edge-ci-full-fold",
+      "pattern": "(?i:ss|k)",
+      "inputs": [
+        "ß ss SS K K"
+      ],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-hex-digit",
+      "pattern": "\\h+",
+      "inputs": [
+        " a1 z1 ef G5 \t09 "
+      ]
+    },
+    {
+      "id": "edge-hex-nondigit",
+      "pattern": "\\H+",
+      "inputs": [
+        "af z9 \tbc"
+      ]
+    },
+    {
+      "id": "edge-Z-anchor",
+      "pattern": "abc\\Z",
+      "inputs": [
+        "abc\r\n",
+        "abc\n",
+        "abc",
+        "xabc\nabc"
+      ]
+    },
+    {
+      "id": "edge-z-anchor",
+      "pattern": "abc\\z",
+      "inputs": [
+        "abc\n",
+        "abc",
+        "xabc"
+      ]
+    },
+    {
+      "id": "edge-A-anchor",
+      "pattern": "\\Aabc",
+      "inputs": [
+        "abc xabc",
+        "\nabc"
+      ]
+    },
+    {
+      "id": "edge-escaped-backslash-newline",
+      "pattern": "\\\\\n",
+      "inputs": [
+        "x\\\ny",
+        "x\\ny z"
+      ]
+    },
+    {
+      "id": "edge-lone-close-brace",
+      "pattern": "}",
+      "inputs": [
+        "a}b {c}"
+      ]
+    },
+    {
+      "id": "edge-lone-open-brace",
+      "pattern": "{",
+      "inputs": [
+        "a{b {c}"
+      ]
+    },
+    {
+      "id": "edge-comma-only-quantifier",
+      "pattern": "a{,3}",
+      "inputs": [
+        "aaaaa b aa"
+      ]
+    },
+    {
+      "id": "edge-posix-alpha",
+      "pattern": "[[:alpha:]]+",
+      "inputs": [
+        "ab1cd ψω שלום"
+      ]
+    },
+    {
+      "id": "edge-posix-digit-space",
+      "pattern": "[[:digit:][:space:]]+",
+      "inputs": [
+        "ab 12 ٣٤x"
+      ]
+    },
+    {
+      "id": "edge-codepoint-brace",
+      "pattern": "\\x{1F600}+",
+      "inputs": [
+        "a😀😀b c😀"
+      ]
+    },
+    {
+      "id": "edge-property-word",
+      "pattern": "\\p{Word}+",
+      "inputs": [
+        "ab שלום! x‿y ① z²"
+      ]
+    },
+    {
+      "id": "edge-class-word-complement",
+      "pattern": "[\\W]+",
+      "inputs": [
+        "ש !? a ²"
+      ]
+    },
+    {
+      "id": "edge-class-word-complement-mixed",
+      "pattern": "[\\W_]+",
+      "inputs": [
+        "ש_! a²"
+      ]
+    },
+    {
+      "id": "edge-class-negated-shorthand",
+      "pattern": "[^\\Wx]+",
+      "inputs": [
+        "שab x!"
+      ],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-g-anchor-digits",
+      "pattern": "\\G\\d",
+      "inputs": [
+        "12a34"
+      ],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-atomic-group",
+      "pattern": "(?>a|ab)c",
+      "inputs": [
+        "abc ac"
+      ],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-possessive-backtrack",
+      "pattern": "a++ab",
+      "inputs": [
+        "aaab"
+      ],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-class-intersection",
+      "pattern": "[a-w&&[^c-g]]+",
+      "inputs": [
+        "abch"
+      ],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-nested-class",
+      "pattern": "[^\\s[.,]]+",
+      "inputs": [
+        "ab c.d e,f"
+      ],
+      "knownDivergence": true
     }
   ],
   "additionalCases": [
@@ -489,14 +736,51 @@
       "patternId": "hub-072",
       "behavior": "Isolated",
       "invert": false,
-      "inputs": ["hello  world", "a\n\tb", "trim "]
+      "inputs": [
+        "hello  world",
+        "a\n\tb",
+        "trim "
+      ]
     },
     {
       "name": "whitespace removed",
       "patternId": "hub-072",
       "behavior": "Removed",
       "invert": false,
-      "inputs": ["hello  world", "a\n\tb", " trim "]
+      "inputs": [
+        "hello  world",
+        "a\n\tb",
+        " trim "
+      ]
+    },
+    {
+      "name": "line end anchors with CR and LS",
+      "patternId": "hub-073",
+      "inputs": [
+        "trail \rnext ",
+        "a  b ",
+        "x \ny ",
+        "end "
+      ]
+    },
+    {
+      "name": "line start after CR",
+      "patternId": "hub-083",
+      "inputs": [
+        "a\r b",
+        "a\n b",
+        " lead"
+      ]
+    },
+    {
+      "name": "g-anchor digit chunks with gaps",
+      "patternId": "hub-059",
+      "knownDivergence": true,
+      "inputs": [
+        " 1234",
+        "123 456789",
+        "12345678"
+      ]
     }
   ]
 }
