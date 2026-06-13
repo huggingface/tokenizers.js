@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const FETCH_TIMEOUT_MS = 4_500;
+// Generous deadline: tokenizer.json files can be tens of MB, and aborting too early turns a
+// slow network into a failed test run (and, on a cold cache, repeated full re-downloads).
+const FETCH_TIMEOUT_MS = 30_000;
 
 const fetchConfigById = async (
   modelId: string,
