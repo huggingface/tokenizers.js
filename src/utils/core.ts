@@ -30,43 +30,17 @@ export const create_pattern = (
   invert: boolean = true,
 ): RegExp | null => {
   if (pattern.Regex !== undefined) {
-    // In certain cases, the pattern may contain unnecessary escape sequences (e.g., \# or \& or \~).
-    // i.e., valid in Python (where the patterns are exported from) but invalid in JavaScript (where the patterns are parsed).
-    // This isn't an issue when creating the regex w/o the 'u' flag, but it is when the 'u' flag is used.
-    // For this reason, it is necessary to remove these backslashes before creating the regex.
-    // See https://stackoverflow.com/a/63007777/13989043 for more information
-    let regex = pattern.Regex.replace(
-      /(\\+)([#&~"'`%])/g,
-      (match, slashes, char) =>
-        slashes.length % 2 === 0 ? match : `${slashes.slice(1)}${char}`,
-    ); // TODO: add more characters to this list if necessary
-
-    // Certain special sequences in the regex patterns are not supported in JavaScript, and need to be replaced with compatible alternatives.
-    // For example, \A, \Z, and \z are not supported in JavaScript:
-    // - \A matches the start of a string only. Unlike ^, this is not affected by multiline mode.
-    // - \z matches the end of a string only. Unlike $, this is not affected by multiline mode.
-    // - \Z matches the end of a string, or before a final newline. This is not affected by multiline mode.
-    //
-    // Since JavaScript does not support \A, \Z, or \z, we replace them with absolute lookarounds.
-    // This lets us keep Python/Rust-style multiline ^ behavior without changing absolute anchors.
-    // For \Z, we replace it with a lookahead for the end of the string, allowing for an optional final newline.
-    regex = regex
-      .replace(/\\A/g, "(?<![\\s\\S])")
-      .replace(/\\z/g, "(?![\\s\\S])")
-      .replace(/\\Z/g, "(?=\\r?\\n?(?![\\s\\S]))")
-      .replace(/\\\n/g, "\\n")
-      .replace(/\\\t/g, "\\t");
-
-    // JavaScript treats shorthands like \w and \d as ASCII-only, while Python/Rust tokenizers use Unicode-aware semantics.
-    // Normalize these shorthands so multilingual tokenizers keep expected behavior in JS.
-    regex = normalize_unicode_shorthands(regex);
-
+    // Tokenizer configs are authored for the Rust `tokenizers` crate, which compiles `Regex`
+    // patterns with Oniguruma. The passes below translate Oniguruma syntax and semantics into
+    // JavaScript `RegExp` (with the 'u' flag) equivalents. The character sets and anchor
+    // behaviors used by the rewrites were determined empirically against Python `tokenizers`
+    // (see tests/py/generate_split_regex_oracle.py and tests/fixtures/splitRegexPatterns.json).
+    let regex = normalize_bloom_split_char_class(pattern.Regex);
     regex = normalize_inline_case_insensitive_groups(regex);
-    regex = normalize_non_js_regex_syntax(regex);
-    regex = normalize_dot_wildcards(regex);
+    regex = rewrite_oniguruma_to_js(regex);
 
     try {
-      return new RegExp(regex, "gmu");
+      return new RegExp(regex, "gu");
     } catch (error) {
       // For JavaScript regular expressions, when you want to match a specific script using \p{...}, you must explicitly specify the property name Script (or sc).
       // For example, to match Hangul characters, you need to use \p{Script=Hangul} or \p{sc=Hangul}, instead of just \p{Hangul} (which is valid in Python).
@@ -91,7 +65,7 @@ export const create_pattern = (
 
       if (!changed) throw error;
       try {
-        return new RegExp(fixed, "gmu");
+        return new RegExp(fixed, "gu");
       } catch (e) {
         // If it still fails, re-throw the original error for clarity.
         throw error;
@@ -107,25 +81,267 @@ export const create_pattern = (
   }
 };
 
-// Normalizes tokenizer regex constructs that Python/Rust accept but JavaScript RegExp does not.
-// This replaces the old PROBLEMATIC_REGEX_MAP with structural rewrites so equivalent patterns are covered too.
-const normalize_non_js_regex_syntax = (regex: string): string =>
-  strip_possessive_quantifiers(
-    escape_literal_closing_brackets(
-      normalize_bloom_split_char_class(
-        regex
-          // JS doesn't support \h; approximate it with horizontal whitespace.
-          .replace(/\\h/g, "[^\\S\\r\\n]")
-          // \G is an invalid escape in JS. Hub patterns mostly use it for contiguous digit chunks; approximate that case and remove the rest.
-          .replace(/\\G(?=\\p\{Nd\})/g, "(?<=\\p{Nd})")
-          .replace(/\\G/g, "")
-          // JS doesn't support atomic groups. These are used in AFMoE tokenizers, so keep the group without atomic backtracking behavior.
-          .replace(/\(\?>/g, "(?:")
-          // JS doesn't support stacking quantifiers, e.g. \p{Nd}{3}+. Repeat the fixed-width chunk instead.
-          .replace(/((?:\\[pP]\{[^}]+\})\{\d+\})\+/g, "(?:$1)+"),
-      ),
-    ),
-  );
+// ---------------------------------------------------------------------------
+// Oniguruma -> JavaScript regex normalization.
+//
+// All passes share the same tokenization rules (see next_regex_token): escape
+// sequences are consumed atomically (including braced forms like \p{...}) and
+// character-class state is tracked once, so every rewrite agrees on where
+// classes and escapes begin and end.
+// ---------------------------------------------------------------------------
+
+// Oniguruma's word characters are Alphabetic | Mark | Decimal_Number | Connector_Punctuation.
+// Standalone shorthands (\w, \W, \b, \B, \p{Word}) additionally include the Latin-1
+// superscripts and fractions from its ASCII-range ctype table; shorthands written inside a
+// character class use only the pure Unicode properties.
+const UNICODE_WORD_CHARS_IN_CLASS = "\\p{Alphabetic}\\p{M}\\p{Nd}\\p{Pc}";
+const UNICODE_WORD_CHARS = `${UNICODE_WORD_CHARS_IN_CLASS}\\u00B2\\u00B3\\u00B9\\u00BC-\\u00BE`;
+const UNICODE_WORD_CLASS = `[${UNICODE_WORD_CHARS}]`;
+const UNICODE_NON_WORD_CLASS = `[^${UNICODE_WORD_CHARS}]`;
+const UNICODE_WORD_BOUNDARY = `(?:(?<!${UNICODE_WORD_CLASS})(?=${UNICODE_WORD_CLASS})|(?<=${UNICODE_WORD_CLASS})(?!${UNICODE_WORD_CLASS}))`;
+const UNICODE_NON_WORD_BOUNDARY = `(?:(?<!${UNICODE_WORD_CLASS})(?!${UNICODE_WORD_CLASS})|(?<=${UNICODE_WORD_CLASS})(?=${UNICODE_WORD_CLASS}))`;
+
+// Oniguruma line anchors only recognize \n as a line break; JavaScript's 'm' flag would also
+// anchor around \r, U+2028, and U+2029, so ^/$ are rewritten instead of using the flag.
+const LINE_START_ANCHOR = "(?:(?<![\\s\\S])|(?<=\\n))";
+const LINE_END_ANCHOR = "(?:(?=\\n)|(?![\\s\\S]))";
+
+// Oniguruma \h is a hexadecimal digit (Ruby syntax), not horizontal whitespace.
+const HEX_DIGIT_CHARS = "0-9A-Fa-f";
+
+// Escape sequences rewritten outside character classes.
+const ESCAPE_REWRITES = new Map<string, string>([
+  ["A", "(?<![\\s\\S])"],
+  ["z", "(?![\\s\\S])"],
+  ["Z", "(?=\\n?(?![\\s\\S]))"], // \Z permits a single optional final \n (not \r\n)
+  ["h", `[${HEX_DIGIT_CHARS}]`],
+  ["H", `[^${HEX_DIGIT_CHARS}]`],
+  ["w", UNICODE_WORD_CLASS],
+  ["W", UNICODE_NON_WORD_CLASS],
+  ["d", "\\p{Nd}"],
+  ["D", "\\P{Nd}"],
+  ["s", "\\p{White_Space}"], // JS \s wrongly adds U+FEFF and misses \x85
+  ["S", "\\P{White_Space}"],
+  ["b", UNICODE_WORD_BOUNDARY],
+  ["B", UNICODE_NON_WORD_BOUNDARY],
+  ["a", "\\x07"],
+  ["e", "\\x1B"],
+]);
+
+// Escape sequences rewritten inside character classes. \b stays a backspace here. \W and \H
+// are complements of unions, which JavaScript cannot express inside a class: in positive
+// classes they are lifted out as alternation branches (see rewrite_oniguruma_to_js); in
+// negated classes they are left as-is (\W silently falls back to ASCII semantics, \H fails
+// loudly at compile time).
+const CLASS_ESCAPE_REWRITES = new Map<string, string>([
+  ["h", HEX_DIGIT_CHARS],
+  ["w", UNICODE_WORD_CHARS_IN_CLASS],
+  ["d", "\\p{Nd}"],
+  ["D", "\\P{Nd}"],
+  ["s", "\\p{White_Space}"],
+  ["S", "\\P{White_Space}"],
+  ["a", "\\x07"],
+  ["e", "\\x1B"],
+]);
+
+// Complement classes for shorthands lifted out of positive character classes.
+const CLASS_COMPLEMENT_ALTERNATIVES = new Map<string, string>([
+  ["W", `[^${UNICODE_WORD_CHARS_IN_CLASS}]`],
+  ["H", `[^${HEX_DIGIT_CHARS}]`],
+]);
+
+// Escapes of literal whitespace characters (e.g. a backslash followed by a real newline),
+// which Oniguruma accepts but JavaScript's 'u' flag rejects.
+const RAW_WHITESPACE_ESCAPES = new Map<string, string>([
+  ["\n", "\\n"],
+  ["\r", "\\r"],
+  ["\t", "\\t"],
+  ["\f", "\\f"],
+  ["\v", "\\v"],
+]);
+
+// POSIX bracket expressions ([:name:]) -> JavaScript class fragments.
+const POSIX_CLASS_FRAGMENTS: Record<string, string> = {
+  alpha: "\\p{Alphabetic}",
+  alnum: "\\p{Alphabetic}\\p{Nd}",
+  digit: "\\p{Nd}",
+  lower: "\\p{Lowercase}",
+  upper: "\\p{Uppercase}",
+  space: "\\p{White_Space}",
+  blank: "\\t\\p{Zs}",
+  punct: "\\p{P}",
+  cntrl: "\\p{Cc}",
+  word: UNICODE_WORD_CHARS_IN_CLASS,
+  xdigit: HEX_DIGIT_CHARS,
+};
+
+// Punctuation that JavaScript's 'u' flag allows to be escaped. Any other escaped punctuation
+// is an Oniguruma identity escape (e.g. \# or \"), whose backslash must be dropped.
+const JS_SYNTAX_CHARS = "^$\\.*+?()[]{}|/";
+
+// Group prefixes that must be copied verbatim (their letters are syntax, not literals).
+const GROUP_PREFIX_RE = /^\(\?(?:<[=!]|<[A-Za-z_][A-Za-z0-9_]*>|[:=!>])/;
+
+// Braced escape sequences, consumed as a single token: \p{..}, \P{..}, \x{..}, \u{..}.
+const BRACED_ESCAPE_RE = /^\\([pPxu])\{([^}]*)\}/;
+
+// Quantifier braces. Oniguruma also accepts {,m} as {0,m}; bare braces that don't form a
+// quantifier are literal characters.
+const QUANTIFIER_BRACE_RE = /^\{(\d+(?:,\d*)?|,\d+)\}/;
+
+const is_ascii_letter = (char: string): boolean => /[A-Za-z]/.test(char);
+
+// Returns the raw text of the regex token starting at `i`: a (possibly braced) escape
+// sequence, or a single character.
+const next_regex_token = (regex: string, i: number): string => {
+  if (regex[i] !== "\\") return regex[i];
+  const braced = BRACED_ESCAPE_RE.exec(regex.slice(i));
+  if (braced) return braced[0];
+  return i + 1 < regex.length ? regex.slice(i, i + 2) : regex[i];
+};
+
+// Returns the index of the ")" closing the group whose contents start at `start`, or -1.
+const find_group_end = (regex: string, start: number): number => {
+  let depth = 1;
+  let in_char_class = false;
+  for (
+    let i = start;
+    i < regex.length;
+    i += next_regex_token(regex, i).length
+  ) {
+    const char = regex[i];
+    if (char === "\\") continue;
+    if (char === "[" && !in_char_class) in_char_class = true;
+    else if (char === "]" && in_char_class) in_char_class = false;
+    else if (!in_char_class && char === "(") ++depth;
+    else if (!in_char_class && char === ")" && --depth === 0) return i;
+  }
+  return -1;
+};
+
+// Python/Rust tokenizer regexes use inline case-insensitive groups like `(?i:...)`.
+// JavaScript does not support this group modifier and throws "Invalid group", so the
+// contents are expanded locally. Note: only ASCII (simple) case folding is performed;
+// full Unicode case folding (e.g. ß ~ ss, K ~ K) is a known limitation.
+const normalize_inline_case_insensitive_groups = (regex: string): string => {
+  let out = "";
+  let in_char_class = false;
+
+  for (let i = 0; i < regex.length; ) {
+    if (!in_char_class && regex.startsWith("(?i:", i)) {
+      const end = find_group_end(regex, i + 4);
+      if (end < 0) {
+        // Unterminated group: leave the remainder untouched (it will fail loudly downstream).
+        out += regex.slice(i);
+        break;
+      }
+      const contents = normalize_inline_case_insensitive_groups(
+        regex.slice(i + 4, end),
+      );
+      out += `(?:${fold_ascii_case(contents)})`;
+      i = end + 1;
+      continue;
+    }
+
+    const token = next_regex_token(regex, i);
+    if (token === "[" && !in_char_class) in_char_class = true;
+    else if (token === "]" && in_char_class) in_char_class = false;
+    out += token;
+    i += token.length;
+  }
+
+  return out;
+};
+
+const swap_case = (char: string): string =>
+  char === char.toLowerCase() ? char.toUpperCase() : char.toLowerCase();
+
+const same_case = (a: string, b: string): boolean =>
+  (a === a.toLowerCase()) === (b === b.toLowerCase());
+
+// Expands ASCII letters in `regex` so the pattern matches both cases: `a` becomes `[aA]`,
+// and class ranges like `[a-f]` become `[a-fA-F]`.
+const fold_ascii_case = (regex: string): string => {
+  let out = "";
+  let in_char_class = false;
+
+  for (let i = 0; i < regex.length; ) {
+    const char = regex[i];
+
+    if (char === "\\") {
+      const token = next_regex_token(regex, i);
+      out += token;
+      i += token.length;
+      continue;
+    }
+
+    if (!in_char_class && char === "(") {
+      // Copy group syntax (e.g. `(?<name>`) verbatim so its letters aren't folded.
+      const prefix = GROUP_PREFIX_RE.exec(regex.slice(i))?.[0] ?? "(";
+      out += prefix;
+      i += prefix.length;
+      continue;
+    }
+
+    if (char === "[" && !in_char_class) {
+      in_char_class = true;
+      out += char;
+      ++i;
+      if (regex[i] === "^") {
+        out += "^";
+        ++i;
+      }
+      continue;
+    }
+
+    if (char === "]" && in_char_class) {
+      in_char_class = false;
+      out += char;
+      ++i;
+      continue;
+    }
+
+    if (!is_ascii_letter(char)) {
+      out += char;
+      ++i;
+      continue;
+    }
+
+    if (!in_char_class) {
+      out += `[${char.toLowerCase()}${char.toUpperCase()}]`;
+      ++i;
+      continue;
+    }
+
+    // Inside a character class: fold ranges by appending the opposite-case range, and skip
+    // letters that are the *end* of a range (their range start already handled them).
+    const is_range_end = regex[i - 1] === "-" && regex[i - 2] !== "[";
+    if (is_range_end) {
+      out += char;
+      ++i;
+      continue;
+    }
+
+    if (
+      regex[i + 1] === "-" &&
+      regex[i + 2] !== undefined &&
+      regex[i + 2] !== "]"
+    ) {
+      const end = regex[i + 2];
+      out +=
+        is_ascii_letter(end) && same_case(char, end)
+          ? `${char}-${end}${swap_case(char)}-${swap_case(end)}`
+          : `${char}-${end}`;
+      i += 3;
+      continue;
+    }
+
+    out += `${char.toLowerCase()}${char.toUpperCase()}`;
+    ++i;
+  }
+
+  return out;
+};
 
 // Used to override the default invalid regex of the Bloom pretokenizer:
 // ` ?[^(\\s|[.,!?…。，、।۔،])]+`.
@@ -133,321 +349,235 @@ const normalize_non_js_regex_syntax = (regex: string): string =>
 const normalize_bloom_split_char_class = (regex: string): string =>
   regex.replace(/\[\^\(\\s\|\[([^\]]+)\]\)\]/g, "[^()|\\s$1]");
 
-const normalize_dot_wildcards = (regex: string): string => {
-  let normalized = "";
-  let in_char_class = false;
+// The main Oniguruma -> JavaScript rewrite: a single pass that translates escapes,
+// shorthands, anchors, quantifiers, and class syntax. `atom_start` tracks where the most
+// recent complete atom begins in the output so stacked quantifiers can wrap it in a group.
+const rewrite_oniguruma_to_js = (regex: string): string => {
+  let out = "";
+  let atom_start = -1; // index in `out` of the last complete atom, or -1
+  let last_was_quantifier = false;
+  const group_starts: number[] = [];
 
-  for (let i = 0; i < regex.length; ++i) {
+  // Character-class contents are buffered so that positive classes containing \W or \H
+  // (complements JavaScript cannot express inside a class) can be emitted as alternations,
+  // e.g. `[\W_]` becomes `(?:[_]|[^...word...])`.
+  let in_char_class = false;
+  let class_negated = false;
+  let class_buffer = "";
+  let class_alternatives: string[] = [];
+
+  const emit_atom = (text: string) => {
+    atom_start = out.length;
+    out += text;
+    last_was_quantifier = false;
+  };
+
+  for (let i = 0; i < regex.length; ) {
     const char = regex[i];
 
-    if (char === "\\" && i + 1 < regex.length) {
-      normalized += `${char}${regex[++i]}`;
-      continue;
-    }
-
-    if (char === "[" && !in_char_class) {
-      in_char_class = true;
-      normalized += char;
-      continue;
-    }
-
-    if (char === "]" && in_char_class) {
-      in_char_class = false;
-      normalized += char;
-      continue;
-    }
-
-    normalized += char === "." && !in_char_class ? "[^\\n]" : char;
-  }
-
-  return normalized;
-};
-
-// JS doesn't support possessive quantifiers. These are used in recent OpenAI tokenizers.
-// Strip only true quantifier suffixes so escaped literal `+` patterns keep their meaning.
-const strip_possessive_quantifiers = (regex: string): string => {
-  let normalized = "";
-  let in_char_class = false;
-
-  for (let i = 0; i < regex.length; ++i) {
-    const char = regex[i];
-
-    if (char === "\\" && i + 1 < regex.length) {
-      normalized += `${char}${regex[++i]}`;
-      continue;
-    }
-
-    if (char === "[" && !in_char_class) {
-      in_char_class = true;
-      normalized += char;
-      continue;
-    }
-
-    if (char === "]" && in_char_class) {
-      in_char_class = false;
-      normalized += char;
-      continue;
-    }
-
-    if (!in_char_class && regex[i + 1] === "+") {
-      if (char === "?" || char === "+" || char === "*") {
-        normalized += char;
-        ++i;
+    if (char === "\\") {
+      const braced = BRACED_ESCAPE_RE.exec(regex.slice(i));
+      if (braced) {
+        const [text, kind, body] = braced;
+        let replacement = text;
+        if (kind === "x") {
+          // Oniguruma writes braced code points as \x{...}; JavaScript uses \u{...}.
+          replacement = `\\u{${body}}`;
+        } else if (body === "Word") {
+          // Oniguruma's \p{Word} property is its word-character class.
+          replacement =
+            kind === "p"
+              ? in_char_class
+                ? UNICODE_WORD_CHARS_IN_CLASS
+                : UNICODE_WORD_CLASS
+              : in_char_class
+                ? text
+                : UNICODE_NON_WORD_CLASS;
+        }
+        if (in_char_class) class_buffer += replacement;
+        else emit_atom(replacement);
+        i += text.length;
         continue;
       }
 
-      if (char === "}" && is_repetition_quantifier_end(regex, i)) {
-        normalized += char;
-        ++i;
-        continue;
-      }
-    }
-
-    normalized += char;
-  }
-
-  return normalized;
-};
-
-const is_repetition_quantifier_end = (
-  regex: string,
-  close_brace_index: number,
-): boolean => {
-  let open_brace_index = close_brace_index - 1;
-  while (open_brace_index >= 0 && regex[open_brace_index] !== "{") {
-    --open_brace_index;
-  }
-
-  if (
-    open_brace_index < 0 ||
-    is_escaped(regex, open_brace_index) ||
-    is_escaped(regex, close_brace_index)
-  ) {
-    return false;
-  }
-
-  return /^\d+(?:,\d*)?$/.test(
-    regex.slice(open_brace_index + 1, close_brace_index),
-  );
-};
-
-const is_escaped = (regex: string, index: number): boolean => {
-  let slash_count = 0;
-  for (let i = index - 1; i >= 0 && regex[i] === "\\"; --i) {
-    ++slash_count;
-  }
-  return slash_count % 2 === 1;
-};
-
-const escape_literal_closing_brackets = (regex: string): string => {
-  let normalized = "";
-  let in_char_class = false;
-
-  for (let i = 0; i < regex.length; ++i) {
-    const char = regex[i];
-
-    if (char === "\\" && i + 1 < regex.length) {
-      normalized += `${char}${regex[++i]}`;
-      continue;
-    }
-
-    if (char === "[" && !in_char_class) {
-      in_char_class = true;
-      normalized += char;
-      continue;
-    }
-
-    if (char === "]" && in_char_class) {
-      in_char_class = false;
-      normalized += char;
-      continue;
-    }
-
-    normalized += char === "]" ? "\\]" : char;
-  }
-
-  return normalized;
-};
-
-// Python/Rust tokenizer regexes use inline case-insensitive groups like `(?i:...)`.
-// JavaScript does not support this group modifier and throws "Invalid group", so expand ASCII letters locally.
-const normalize_inline_case_insensitive_groups = (regex: string): string => {
-  let normalized = "";
-
-  for (let i = 0; i < regex.length; ++i) {
-    if (!regex.startsWith("(?i:", i)) {
-      normalized += regex[i];
-      continue;
-    }
-
-    const start = i + 4;
-    let depth = 1;
-    let in_char_class = false;
-    let end = start;
-
-    for (; end < regex.length; ++end) {
-      const char = regex[end];
-
-      if (char === "\\") {
-        ++end;
-        continue;
-      }
-
-      if (char === "[" && !in_char_class) {
-        in_char_class = true;
-        continue;
-      }
-
-      if (char === "]" && in_char_class) {
-        in_char_class = false;
-        continue;
-      }
-
-      if (in_char_class) continue;
-
-      if (char === "(") {
-        ++depth;
-      } else if (char === ")" && --depth === 0) {
+      if (i + 1 >= regex.length) {
+        // Trailing lone backslash: pass through (fails loudly at compile time).
+        out += char;
         break;
       }
-    }
 
-    if (depth !== 0) {
-      normalized += regex.slice(i);
-      break;
-    }
-
-    normalized += `(?:${make_ascii_case_insensitive(regex.slice(start, end))})`;
-    i = end;
-  }
-
-  return normalized;
-};
-
-const make_ascii_case_insensitive = (regex: string): string => {
-  let normalized = "";
-  let in_char_class = false;
-
-  for (let i = 0; i < regex.length; ++i) {
-    const char = regex[i];
-
-    if (char === "\\" && i + 1 < regex.length) {
-      normalized += `${char}${regex[++i]}`;
-      continue;
-    }
-
-    if (char === "[" && !in_char_class) {
-      in_char_class = true;
-      normalized += char;
-      continue;
-    }
-
-    if (char === "]" && in_char_class) {
-      in_char_class = false;
-      normalized += char;
-      continue;
-    }
-
-    if (is_ascii_letter(char)) {
-      if (in_char_class) {
-        const prev = regex[i - 1];
-        const next = regex[i + 1];
-        normalized +=
-          prev === "-" || next === "-"
-            ? char
-            : `${char.toLowerCase()}${char.toUpperCase()}`;
-      } else {
-        normalized += `[${char.toLowerCase()}${char.toUpperCase()}]`;
-      }
-    } else {
-      normalized += char;
-    }
-  }
-
-  return normalized;
-};
-
-const is_ascii_letter = (char: string): boolean => /[A-Za-z]/.test(char);
-
-const UNICODE_WORD_CHARS = "\\p{L}\\p{M}\\p{N}_";
-const UNICODE_WORD_BOUNDARY = `(?:(?<![${UNICODE_WORD_CHARS}])(?=[${UNICODE_WORD_CHARS}])|(?<=[${UNICODE_WORD_CHARS}])(?![${UNICODE_WORD_CHARS}]))`;
-const UNICODE_NON_WORD_BOUNDARY = `(?:(?<![${UNICODE_WORD_CHARS}])(?![${UNICODE_WORD_CHARS}])|(?<=[${UNICODE_WORD_CHARS}])(?=[${UNICODE_WORD_CHARS}]))`;
-
-// Python/Rust tokenizer shorthands are Unicode-aware. JavaScript's \w, \d, and word boundaries are not.
-const normalize_unicode_shorthands = (regex: string): string => {
-  let normalized = "";
-  let in_char_class = false;
-
-  for (let i = 0; i < regex.length; ++i) {
-    const char = regex[i];
-
-    if (char === "\\" && i + 1 < regex.length) {
       const next = regex[i + 1];
+      i += 2;
 
-      if (next === "\\") {
-        normalized += "\\\\";
-        ++i;
+      if (!in_char_class && next === "G") {
+        // \G (continuation anchor) has no JavaScript equivalent. Hub patterns use it as a
+        // match-chaining optimization; dropping it is a documented approximation.
         continue;
       }
 
-      if (next === "w") {
-        normalized += in_char_class
-          ? "\\p{L}\\p{M}\\p{N}_"
-          : "[\\p{L}\\p{M}\\p{N}_]";
-        ++i;
+      const raw_whitespace = RAW_WHITESPACE_ESCAPES.get(next);
+      if (raw_whitespace !== undefined) {
+        // An escaped literal whitespace character (valid in Oniguruma, invalid with 'u').
+        if (in_char_class) class_buffer += raw_whitespace;
+        else emit_atom(raw_whitespace);
         continue;
       }
 
-      if (next === "W") {
-        if (in_char_class) {
-          // Tokenizer regex contains \\W inside a character class, which is not Unicode-normalized yet.
-          normalized += "\\W";
-        } else {
-          normalized += "[^\\p{L}\\p{M}\\p{N}_]";
+      const complement = CLASS_COMPLEMENT_ALTERNATIVES.get(next);
+      if (in_char_class && !class_negated && complement !== undefined) {
+        class_alternatives.push(complement);
+        continue;
+      }
+
+      const rewrite = (
+        in_char_class ? CLASS_ESCAPE_REWRITES : ESCAPE_REWRITES
+      ).get(next);
+      let replacement: string;
+      if (rewrite !== undefined) {
+        replacement = rewrite;
+      } else if (/[A-Za-z0-9]/.test(next)) {
+        // Real escape classes, backreferences, \xNN, \uNNNN, \cX, etc.
+        replacement = `\\${next}`;
+      } else if (
+        JS_SYNTAX_CHARS.includes(next) ||
+        (in_char_class && next === "-")
+      ) {
+        replacement = `\\${next}`;
+      } else {
+        // Oniguruma identity escape of punctuation (e.g. \# or \"): drop the backslash.
+        replacement = next;
+      }
+      if (in_char_class) class_buffer += replacement;
+      else emit_atom(replacement);
+      continue;
+    }
+
+    if (in_char_class) {
+      if (char === "]") {
+        in_char_class = false;
+        const pieces: string[] = [];
+        if (class_buffer.length > 0 || class_alternatives.length === 0) {
+          pieces.push(`[${class_negated ? "^" : ""}${class_buffer}]`);
         }
+        pieces.push(...class_alternatives);
+        emit_atom(pieces.length === 1 ? pieces[0] : `(?:${pieces.join("|")})`);
         ++i;
         continue;
       }
-
-      if (next === "d") {
-        normalized += "\\p{Nd}";
-        ++i;
-        continue;
+      if (char === "[") {
+        const posix = /^\[:([a-z]+):\]/.exec(regex.slice(i));
+        if (posix && POSIX_CLASS_FRAGMENTS[posix[1]] !== undefined) {
+          class_buffer += POSIX_CLASS_FRAGMENTS[posix[1]];
+          i += posix[0].length;
+          continue;
+        }
       }
-
-      if (next === "D") {
-        normalized += "\\P{Nd}";
-        ++i;
-        continue;
-      }
-
-      if (next === "b" && !in_char_class) {
-        normalized += UNICODE_WORD_BOUNDARY;
-        ++i;
-        continue;
-      }
-
-      if (next === "B" && !in_char_class) {
-        normalized += UNICODE_NON_WORD_BOUNDARY;
-        ++i;
-        continue;
-      }
-
-      normalized += `\\${next}`;
+      class_buffer += char;
       ++i;
       continue;
     }
 
-    if (char === "[" && !in_char_class) {
-      in_char_class = true;
-    } else if (char === "]" && in_char_class) {
-      in_char_class = false;
+    switch (char) {
+      case "[": {
+        in_char_class = true;
+        class_buffer = "";
+        class_alternatives = [];
+        last_was_quantifier = false;
+        ++i;
+        class_negated = regex[i] === "^";
+        if (class_negated) ++i;
+        continue;
+      }
+      case "]":
+        // A stray "]" is a literal in Oniguruma but a syntax error with the 'u' flag.
+        emit_atom("\\]");
+        ++i;
+        continue;
+      case ".":
+        // Oniguruma's . excludes only \n; JavaScript's also excludes \r, U+2028, and U+2029.
+        emit_atom("[^\\n]");
+        ++i;
+        continue;
+      case "^":
+        emit_atom(LINE_START_ANCHOR);
+        ++i;
+        continue;
+      case "$":
+        emit_atom(LINE_END_ANCHOR);
+        ++i;
+        continue;
+      case "(": {
+        const prefix = GROUP_PREFIX_RE.exec(regex.slice(i))?.[0] ?? "(";
+        group_starts.push(out.length);
+        // JavaScript has no atomic groups; (?>...) keeps the group but allows backtracking.
+        out += prefix === "(?>" ? "(?:" : prefix;
+        last_was_quantifier = false;
+        i += prefix.length;
+        continue;
+      }
+      case ")":
+        out += char;
+        atom_start = group_starts.pop() ?? -1;
+        last_was_quantifier = false;
+        ++i;
+        continue;
+      case "|":
+        out += char;
+        atom_start = -1;
+        last_was_quantifier = false;
+        ++i;
+        continue;
+      case "{": {
+        const quant = QUANTIFIER_BRACE_RE.exec(regex.slice(i));
+        if (!quant || atom_start < 0) {
+          // Not a quantifier (or nothing to quantify): a literal "{" in Oniguruma.
+          emit_atom("\\{");
+          ++i;
+          continue;
+        }
+        const body = quant[1].startsWith(",") ? `0${quant[1]}` : quant[1];
+        i += quant[0].length;
+        const following = regex[i];
+        if (following === "+" || following === "*") {
+          // Oniguruma parses X{n}+ as the stacked quantifier (?:X{n})+, not as possessive.
+          out = `${out.slice(0, atom_start)}(?:${out.slice(atom_start)}{${body}})${following}`;
+          ++i;
+        } else {
+          out += `{${body}}`;
+        }
+        last_was_quantifier = true;
+        continue;
+      }
+      case "}":
+        // A stray "}" is a literal in Oniguruma but a syntax error with the 'u' flag.
+        emit_atom("\\}");
+        ++i;
+        continue;
+      case "+":
+        if (last_was_quantifier) {
+          // Possessive quantifier (e.g. a++): JavaScript has no equivalent; dropping the "+"
+          // keeps the match set but allows backtracking the possessive form would forbid.
+          ++i;
+          continue;
+        }
+        out += char;
+        last_was_quantifier = true;
+        ++i;
+        continue;
+      case "*":
+      case "?":
+        out += char;
+        last_was_quantifier = true;
+        ++i;
+        continue;
+      default:
+        emit_atom(char);
+        ++i;
+        continue;
     }
-
-    normalized += char;
   }
 
-  return normalized;
+  return out;
 };
 
 export const escape_reg_exp = (string: string): string =>
