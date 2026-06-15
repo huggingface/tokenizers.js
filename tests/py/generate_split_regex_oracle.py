@@ -9,6 +9,7 @@ installed:
 
 from __future__ import annotations
 
+import gzip
 import json
 from pathlib import Path
 from typing import Any, Iterable
@@ -20,7 +21,7 @@ from tokenizers.pre_tokenizers import Split
 
 ROOT = Path(__file__).resolve().parents[2]
 PATTERNS_INPUT = ROOT / "tests" / "fixtures" / "splitRegexPatterns.json"
-OUTPUT = ROOT / "tests" / "fixtures" / "splitRegexOracle.json"
+OUTPUT = ROOT / "tests" / "fixtures" / "splitRegexOracle.json.gz"
 
 
 def load_pattern_fixture() -> dict[str, Any]:
@@ -101,7 +102,9 @@ def main() -> None:
         ],
     }
 
-    OUTPUT.write_text(json.dumps(oracle, ensure_ascii=False, indent=2) + "\n")
+    payload = json.dumps(oracle, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    # mtime=0 keeps the output byte-stable so it only changes in git when the data changes.
+    OUTPUT.write_bytes(gzip.compress(payload, compresslevel=9, mtime=0))
 
 
 if __name__ == "__main__":

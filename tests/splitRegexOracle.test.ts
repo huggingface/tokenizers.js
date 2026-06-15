@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { gunzipSync } from "node:zlib";
 import Split from "../src/core/preTokenizer/Split";
 
 import type { TokenizerConfigPreTokenizerSplit } from "../src/static/tokenizer";
@@ -22,7 +23,9 @@ type OracleFixture = {
   cases: OracleCase[];
 };
 
-const fixture = JSON.parse(readFileSync(new URL("./fixtures/splitRegexOracle.json", import.meta.url), "utf8")) as OracleFixture;
+// The oracle is committed gzipped (see tests/py/generate_split_regex_oracle.py) to avoid a
+// large generated text file in git; decompress it here.
+const fixture = JSON.parse(gunzipSync(readFileSync(new URL("./fixtures/splitRegexOracle.json.gz", import.meta.url))).toString("utf8")) as OracleFixture;
 const patternsFixture = JSON.parse(readFileSync(new URL("./fixtures/splitRegexPatterns.json", import.meta.url), "utf8")) as { patterns: Array<{ id: string }> };
 
 const create_split = (oracleCase: OracleCase) =>

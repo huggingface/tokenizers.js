@@ -1,1 +1,2 @@
 tests/py/*.py
+*.gz
