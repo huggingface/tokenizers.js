@@ -30,11 +30,9 @@ export const create_pattern = (
   invert: boolean = true,
 ): RegExp | null => {
   if (pattern.Regex !== undefined) {
-    // Tokenizer configs are authored for the Rust `tokenizers` crate, which compiles `Regex`
-    // patterns with Oniguruma. The passes below translate Oniguruma syntax and semantics into
-    // JavaScript `RegExp` (with the 'u' flag) equivalents. The character sets and anchor
-    // behaviors used by the rewrites were determined empirically against Python `tokenizers`
-    // (see tests/py/generate_split_regex_oracle.py and tests/fixtures/splitRegexPatterns.json).
+    // Tokenizer `Regex` patterns are authored for the Rust `tokenizers` crate (Oniguruma).
+    // Translate their syntax and Unicode semantics into a JavaScript `RegExp` (with the 'u'
+    // flag); rewrites are verified against Python `tokenizers` (see tests/py/).
     let regex = normalize_bloom_split_char_class(pattern.Regex);
     regex = normalize_inline_case_insensitive_groups(regex);
     regex = rewrite_oniguruma_to_js(regex);
@@ -80,15 +78,6 @@ export const create_pattern = (
     return null;
   }
 };
-
-// ---------------------------------------------------------------------------
-// Oniguruma -> JavaScript regex normalization.
-//
-// All passes share the same tokenization rules (see next_regex_token): escape
-// sequences are consumed atomically (including braced forms like \p{...}) and
-// character-class state is tracked once, so every rewrite agrees on where
-// classes and escapes begin and end.
-// ---------------------------------------------------------------------------
 
 // Oniguruma's word characters are Alphabetic | Mark | Decimal_Number | Connector_Punctuation.
 // Standalone shorthands (\w, \W, \b, \B, \p{Word}) additionally include the Latin-1
@@ -253,12 +242,6 @@ const normalize_inline_case_insensitive_groups = (regex: string): string => {
   return out;
 };
 
-const swap_case = (char: string): string =>
-  char === char.toLowerCase() ? char.toUpperCase() : char.toLowerCase();
-
-const same_case = (a: string, b: string): boolean =>
-  (a === a.toLowerCase()) === (b === b.toLowerCase());
-
 // Expands ASCII letters in `regex` so the pattern matches both cases: `a` becomes `[aA]`,
 // and class ranges like `[a-f]` become `[a-fA-F]`.
 const fold_ascii_case = (regex: string): string => {
@@ -313,25 +296,27 @@ const fold_ascii_case = (regex: string): string => {
       continue;
     }
 
-    // Inside a character class: fold ranges by appending the opposite-case range, and skip
-    // letters that are the *end* of a range (their range start already handled them).
-    const is_range_end = regex[i - 1] === "-" && regex[i - 2] !== "[";
-    if (is_range_end) {
+    // Inside a character class, skip letters that are the *end* of a range (the range start
+    // already emitted them).
+    if (regex[i - 1] === "-" && regex[i - 2] !== "[") {
       out += char;
       ++i;
       continue;
     }
 
+    // Fold a range like `a-f` by appending its opposite-case form. Case-transforming the whole
+    // `x-y` string keeps the endpoints ordered (`"a-f".toUpperCase()` -> `"A-F"`).
     if (
       regex[i + 1] === "-" &&
       regex[i + 2] !== undefined &&
       regex[i + 2] !== "]"
     ) {
-      const end = regex[i + 2];
-      out +=
-        is_ascii_letter(end) && same_case(char, end)
-          ? `${char}-${end}${swap_case(char)}-${swap_case(end)}`
-          : `${char}-${end}`;
+      const range = `${char}-${regex[i + 2]}`;
+      const folded =
+        range === range.toLowerCase()
+          ? range.toUpperCase()
+          : range.toLowerCase();
+      out += `${range}${folded}`;
       i += 3;
       continue;
     }
