@@ -79,29 +79,18 @@ def pre_tokenize(case: dict[str, Any], text: str) -> list[str]:
 
 def main() -> None:
     fixture = load_pattern_fixture()
-    # Cases are emitted fully resolved (pattern/behavior/invert/knownDivergence included)
-    # so the TypeScript oracle test does not need to re-implement the fixture's
-    # case/pattern/defaults resolution rules.
-    oracle = {
-        "tokenizersVersion": tokenizers.__version__,
-        "source": PATTERNS_INPUT.name,
-        "cases": [
-            {
-                "name": case["name"],
-                "patternId": case["patternId"],
-                "pattern": case["pattern"],
-                "behavior": case["behavior"],
-                "invert": case["invert"],
-                "knownDivergence": case["knownDivergence"],
-                "expected": [
-                    {"input": text, "tokens": pre_tokenize(case, text)}
-                    for text in case["inputs"]
-                ],
-            }
-            for case in iter_cases(fixture)
-        ],
-    }
+    # The oracle stores only the expected tokens (the one thing not derivable from
+    # splitRegexPatterns.json), keyed by case name. The TypeScript test re-resolves each
+    # case's pattern/behavior/invert/inputs from the same input fixture. Token lists are
+    # ordered to match each case's resolved `inputs`.
+    tokens_by_name: dict[str, list[list[str]]] = {}
+    for case in iter_cases(fixture):
+        name = case["name"]
+        if name in tokens_by_name:
+            raise ValueError(f"Duplicate case name: {name!r}")
+        tokens_by_name[name] = [pre_tokenize(case, text) for text in case["inputs"]]
 
+    oracle = {"tokenizersVersion": tokenizers.__version__, "tokens": tokens_by_name}
     payload = json.dumps(oracle, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     # mtime=0 keeps the output byte-stable so it only changes in git when the data changes.
     OUTPUT.write_bytes(gzip.compress(payload, compresslevel=9, mtime=0))
