@@ -32,25 +32,11 @@ const fetchConfigById = async (
   const remoteUrlConfig = `https://huggingface.co/${modelId}/resolve/main/tokenizer_config.json`;
 
   const loadJson = async (url: string) => {
-    let response: Response;
-    try {
-      response = await fetch(url);
-    } catch (error) {
-      throw new Error(`Failed to fetch JSON from ${url} - ${error instanceof Error ? error.message : String(error)}`);
-    }
-
-    const text = await response.text();
-    const contentType = response.headers.get("content-type") ?? "";
-
+    const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Failed to fetch JSON from ${url} - ${response.status} ${response.statusText} (${contentType}). Body starts with: ${text.slice(0, 120)}`);
+      throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
     }
-
-    try {
-      return JSON.parse(text);
-    } catch (error) {
-      throw new Error(`Failed to parse JSON from ${url} - ${response.status} ${response.statusText} (${contentType}). ${error instanceof Error ? error.message : String(error)}. Body starts with: ${text.slice(0, 120)}`);
-    }
+    return await response.json();
   };
 
   const [tokenizerJson, tokenizerConfig] = await Promise.all([loadJson(remoteUrl), loadJson(remoteUrlConfig)]);
