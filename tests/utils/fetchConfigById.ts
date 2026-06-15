@@ -5,9 +5,6 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// Generous deadline: tokenizer.json files can be tens of MB, and aborting too early turns a
-// slow network into a failed test run (and, on a cold cache, repeated full re-downloads).
-const FETCH_TIMEOUT_MS = 30_000;
 
 const fetchConfigById = async (
   modelId: string,
@@ -35,16 +32,11 @@ const fetchConfigById = async (
   const remoteUrlConfig = `https://huggingface.co/${modelId}/resolve/main/tokenizer_config.json`;
 
   const loadJson = async (url: string) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-
     let response: Response;
     try {
-      response = await fetch(url, { signal: controller.signal });
+      response = await fetch(url);
     } catch (error) {
       throw new Error(`Failed to fetch JSON from ${url} - ${error instanceof Error ? error.message : String(error)}`);
-    } finally {
-      clearTimeout(timeout);
     }
 
     const text = await response.text();
