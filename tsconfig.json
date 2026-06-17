@@ -12,6 +12,7 @@
     "strict": true,
     "sourceMap": true,
     "strictNullChecks": false,
+    "types": ["node", "jest"],
     "baseUrl": ".",
     "paths": {
       "@utils": ["src/utils/index.ts"],
@@ -20,5 +21,5 @@
       "@static/*": ["src/static/*"]
     }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "tests/**/*"]
 }

@@ -35,39 +35,5 @@ const reverse_dictionary = (data: Object) =>
 
 export const UNICODE_TO_BYTES = reverse_dictionary(BYTES_TO_UNICODE);
 
-const BLOOM_SPLIT_CHARS = ".,!?\u2026\u3002\uff0c\u3001\u0964\u06d4\u060c";
-
-export const PROBLEMATIC_REGEX_MAP = new Map([
-  // These uses the case insensitive group modifier, which is not supported in JavaScript.
-  // When parsing the regex, an "Invalid group" error is thrown.
-  [
-    "(?i:'s|'t|'re|'ve|'m|'ll|'d)",
-    "(?:'([sS]|[tT]|[rR][eE]|[vV][eE]|[mM]|[lL][lL]|[dD]))",
-  ],
-  [
-    "(?i:[sdmt]|ll|ve|re)",
-    "(?:[sS]|[dD]|[mM]|[tT]|[lL][lL]|[vV][eE]|[rR][eE])",
-  ],
-
-  // JS doesn't support possessive quantifiers (these are used in recent OpenAI tokenizers).
-  ["[^\\r\\n\\p{L}\\p{N}]?+", "[^\\r\\n\\p{L}\\p{N}]?"],
-  ["[^\\s\\p{L}\\p{N}]++", "[^\\s\\p{L}\\p{N}]+"],
-
-  // JS doesn't support atomic groups (these are used in AFMoE tokenizers).
-  ["(?>\\p{Nd}{510})", "(?:\\p{Nd}{510})"],
-
-  // JS doesn't support stacking quantifiers.
-  // Uncaught SyntaxError: Invalid regular expression: /\p{Nd}{3}+/u: Nothing to repeat
-  ["\\p{Nd}{3}+", "(?:\\p{Nd}{3})+"],
-
-  // \G is an invalid escape in JS, and in most cases is just used as an optimization.
-  // So, we can safely remove it.
-  ["\\G", ""],
-
-  // Used to override the default (invalid) regex of the bloom pretokenizer.
-  // For more information, see https://github.com/huggingface/transformers.js/issues/94
-  [` ?[^(\\s|[${BLOOM_SPLIT_CHARS}])]+`, ` ?[^\\s${BLOOM_SPLIT_CHARS}]+`],
-]);
-
 export const PUNCTUATION_REGEX =
   "\\p{P}\\u0021-\\u002F\\u003A-\\u0040\\u005B-\\u0060\\u007B-\\u007E";
