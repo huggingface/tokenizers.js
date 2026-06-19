@@ -139,6 +139,10 @@ export default {
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},
 
+  // Default timeout of a test/hook in milliseconds (raised from Jest's 5s default to allow
+  // for network fetches of tokenizer configs on a cold cache).
+  testTimeout: 15000,
+
   // Adds a location field to test results
   // testLocationInResults: false,
 

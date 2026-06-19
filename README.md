@@ -27,7 +27,7 @@ Run today's most used tokenizers directly in your browser or Node.js application
 ## Installation
 
 ```bash
-pnpm add @huggingface/tokenizers
+npm install @huggingface/tokenizers
 ```
 
 Alternatively, you can use it via a CDN as follows:
@@ -63,6 +63,12 @@ This library expects two files from Hugging Face models:
 
 - `tokenizer.json` - Contains the tokenizer configuration
 - `tokenizer_config.json` - Contains additional metadata
+
+## Regex compatibility
+
+Tokenizer configs are authored for the Rust `tokenizers` crate, which compiles patterns with Oniguruma — a regex engine whose syntax and Unicode semantics differ from JavaScript `RegExp`. Tokenizers.js translates these patterns structurally, matching Oniguruma behavior for: line anchors (`^`/`$` recognize only `\n`, unlike JavaScript's `m` flag), absolute anchors (`\A`, `\z`, `\Z`), `.` (which excludes only `\n`), word/digit/space shorthands (including Oniguruma's exact word-character set and its Latin-1 ctype quirks), `\h`/`\H` hex digits, `\b`/`\B` boundaries, inline case-insensitive groups (including ranges like `(?i:[a-f])`), possessive and stacked quantifiers (`a++`, `X{3}+`), atomic groups, POSIX bracket expressions, `\x{...}` code points, `\p{Word}`, identity escapes, and literal braces/brackets.
+
+A few constructs can't be fully reproduced — notably `\G`, full Unicode case folding (e.g. `ß` ~ `ss`), character-class intersection (`&&`), and the `MergedWithPrevious`/`MergedWithNext`/`Contiguous` split behaviors.
 
 ## Components
 

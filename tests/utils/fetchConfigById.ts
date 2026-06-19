@@ -19,9 +19,13 @@ const fetchConfigById = async (
   const tokenizerConfigPath = path.join(cacheDir, "tokenizer_config.json");
 
   if (fs.existsSync(tokenizerJsonPath) && fs.existsSync(tokenizerConfigPath)) {
-    const tokenizerJson = JSON.parse(fs.readFileSync(tokenizerJsonPath, "utf-8"));
-    const tokenizerConfig = JSON.parse(fs.readFileSync(tokenizerConfigPath, "utf-8"));
-    return { tokenizerJson, tokenizerConfig };
+    try {
+      const tokenizerJson = JSON.parse(fs.readFileSync(tokenizerJsonPath, "utf-8"));
+      const tokenizerConfig = JSON.parse(fs.readFileSync(tokenizerConfigPath, "utf-8"));
+      return { tokenizerJson, tokenizerConfig };
+    } catch {
+      fs.rmSync(cacheDir, { force: true, recursive: true });
+    }
   }
 
   const remoteUrl = `https://huggingface.co/${modelId}/resolve/main/tokenizer.json`;

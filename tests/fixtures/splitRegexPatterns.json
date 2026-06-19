@@ -1,0 +1,675 @@
+{
+  "schemaVersion": 1,
+  "defaults": {
+    "behavior": "Removed",
+    "invert": true,
+    "inputs": [
+      "Hello, world! 123 can't stop.",
+      "WE'RE here, Aujourd’hui AUJOURD’HUI.",
+      "hello שלום café नमस्ते مرحبا_١٢٣",
+      "abc 123 १२३ room ４２ ٣ apples",
+      "中文かなカナ 한국어 ไทย Lao ລາວ မြန်မာ",
+      "https://example.com/path?x=1 www.example.com foo@example.com @usuario url",
+      "CC(=O)O ClCBr [NH4+]",
+      " leading\nline\n leading\tword  ",
+      "{[(<\"'‘’“”„‟＂»«‹›—–―…。",
+      "<br /](https://file+.vscode-resource.vscode-cdn.net/)> <tag>text</tag>",
+      "▁ [UNK] UZOB ://",
+      "বাংলা: text অ:আ",
+      "a\\\nb and \\\tword",
+      "foo---bar hello!!!?? ((test))",
+      "abc.com test.com control \u001f zero \u0000 carriage\rreturn",
+      "trail \rnext  line end abc\r\n",
+      "a‿b x①y Ⅻ z² ¼cup ⓐⓑ a·b",
+      " a1 z1 ef G5 ß STRASSE İstanbul",
+      " 　﻿​ 1234 567890"
+    ]
+  },
+  "patterns": [
+    {
+      "id": "hub-000",
+      "pattern": "",
+      "inputs": [""]
+    },
+    {
+      "id": "hub-001",
+      "pattern": "\\{(?=[ \\w])"
+    },
+    {
+      "id": "hub-002",
+      "pattern": "@[\\w\\d]+"
+    },
+    {
+      "id": "hub-003",
+      "pattern": "\\p{N}{1,3}"
+    },
+    {
+      "id": "hub-004",
+      "pattern": "(?:\\r?\\n)+(?!\\r?\\n)"
+    },
+    {
+      "id": "hub-005",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\\p{L}\\p{N}]?\\p{L}+|\\p{N}| ?[^\\s\\p{L}\\p{N}]+[\r\n]*|\\s*[\r\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-006",
+      "pattern": "[“”„‟＂]"
+    },
+    {
+      "id": "hub-007",
+      "pattern": "/(?=[ \\w])"
+    },
+    {
+      "id": "hub-008",
+      "pattern": "[\r\n]"
+    },
+    {
+      "id": "hub-009",
+      "pattern": "(\\[[^\\]]+]|Br?|Cl?|N|O|S|P|F|I|b|c|n|o|s|p|\\(|\\)|\\.|=|#|-|\\+|\\\\|\\/|:|~|@|\\?|>>?|\\*|\\$|\\%[0-9]{2}|[0-9])"
+    },
+    {
+      "id": "hub-010",
+      "pattern": "―(?=[ \\w])"
+    },
+    {
+      "id": "hub-011",
+      "pattern": "[!\"#$%&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~][A-Za-z]+|[^\r\n\\p{L}\\p{P}\\p{S}]?[\\p{L}\\p{M}]+| ?[\\p{P}\\p{S}]+[\r\n]*|\\s*[\r\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-012",
+      "pattern": "\\s?\\p{L}+"
+    },
+    {
+      "id": "hub-013",
+      "pattern": "(\\[[^\\]]+]|Br?|Cl?|N|O|S|P|F|I|b|c|n|o|s|p|\\(|\\)|\\.|=|#|-|\\+|\\\\|\\/|:|~|@|\\?|>|\\*|\\$|\\%[0-9]{2}|[0-9])"
+    },
+    {
+      "id": "hub-014",
+      "pattern": "[\\(\\)\\[\\]\\{\\}]|([!\"\\#\\$%\\&'\\*\\+,\\-\\./:;<=>\\?\\\\\\^_`\\|\\~])\\1*"
+    },
+    {
+      "id": "hub-015",
+      "pattern": "[^֐-׿\u0000-‌-‿₠-₿∀-⋿⅐-↋ﬀ-ﭏ]+"
+    },
+    {
+      "id": "hub-016",
+      "pattern": "\n"
+    },
+    {
+      "id": "hub-017",
+      "pattern": "[0-9][0-9][0-9]"
+    },
+    {
+      "id": "hub-018",
+      "pattern": "\\A\\p{Nd}{1,2}(?=\\p{Nd}{3}+\\z)"
+    },
+    {
+      "id": "hub-019",
+      "pattern": "“(?=[ \\w])"
+    },
+    {
+      "id": "hub-020",
+      "pattern": "(http(s)?:\\/\\/.)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)"
+    },
+    {
+      "id": "hub-021",
+      "pattern": "[一-龥ࠀ-一가-퟿]+"
+    },
+    {
+      "id": "hub-022",
+      "pattern": "[^\\r\\n\\p{L}\\p{N}]?[\\p{Lu}\\p{Lt}\\p{Lm}\\p{Lo}\\p{M}]*[\\p{Ll}\\p{Lm}\\p{Lo}\\p{M}]+|[^\\r\\n\\p{L}\\p{N}]?[\\p{Lu}\\p{Lt}\\p{Lm}\\p{Lo}\\p{M}]+[\\p{Ll}\\p{Lm}\\p{Lo}\\p{M}]*|\\p{N}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n/]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-023",
+      "pattern": "[\\x00-\\x08\\x0b\\x0d-\\x1f\\x7f\\ufeff]"
+    },
+    {
+      "id": "hub-024",
+      "pattern": "\\\n(?=[ \\w])"
+    },
+    {
+      "id": "hub-025",
+      "pattern": " "
+    },
+    {
+      "id": "hub-026",
+      "pattern": "\\((?=[ \\w])"
+    },
+    {
+      "id": "hub-027",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\\r\\n\\p{L}\\p{N}]?[\\p{L}\\p{M}]+|\\p{N}| ?[^\\s\\p{L}\\p{M}\\p{N}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-028",
+      "pattern": "www[a-zA-Z0-9_\\-?=%&/.~]+"
+    },
+    {
+      "id": "hub-029",
+      "pattern": "‹(?=[ \\w])"
+    },
+    {
+      "id": "hub-030",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\\r\\n\\p{L}\\p{N}]?(?:\\p{L}\\p{M}*)+|\\p{N}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-031",
+      "pattern": "@(https?|ftp)://(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?$@iS"
+    },
+    {
+      "id": "hub-032",
+      "pattern": "'(?i:[sdmt]|ll|ve|re)|[^\\r\\n\\p{L}\\p{N}]?+\\p{L}+|\\p{N}| ?[^\\s\\p{L}\\p{N}]++[\\r\\n]*|\\s*[\\r\\n]|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-033",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)| (?!\\h?\\p{N})\\h?(?:\\p{L}\\p{M}*)+|\\p{N}| ?[^\\s\\p{L}\\p{N}\\p{M}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-034",
+      "pattern": "<\\|startoftext\\|>|<\\|endoftext\\|>|'s|'t|'re|'ve|'m|'ll|'d|[\\p{L}]+|[\\p{N}]|[^\\s\\p{L}\\p{N}]+"
+    },
+    {
+      "id": "hub-035",
+      "pattern": "\\s?[A-Za-zµÀ-ÖØ-öø-ƺƼ-ƿǄ-ʓʕ-ʯͰ-ͳͶͷͻ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-ՖႠ-ჅᎠ-Ᏽᏸ-ᏽᲐ-ᲺᲽ-Ჿᴀ-ᴫᵫ-ᵷᵹ-ᶚḀ-ἕἘ-Ἕἠ-ὅὈ-Ὅὐ-ὗὙὛὝὟ-ώᾀ-ᾴᾶ-ᾼιῂ-ῄῆ-ῌῐ-ΐῖ-Ίῠ-Ῥῲ-ῴῶ-ῼℂℇℊ-ℓℕℙ-ℝℤΩℨK-ℭℯ-ℴℹℼ-ℿⅅ-ⅉⅎↃↄⰀ-ⱻⱾ-ⳤⳫ-ⳮⳲⳳꙀ-ꙭꚀ-ꚛꜢ-ꝯꝱ-ꞇꞋ-ꞎꭰ-ꮿﬀ-ﬆﬓ-ﬗＡ-Ｚａ-ｚ𐐀-𐑏𐒰-𐓓𐓘-𐓻𐲀-𐲲𐳀-𐳲𑢠-𑣟𞤀-𞥃]+"
+    },
+    {
+      "id": "hub-036",
+      "pattern": "(?<=[\\u0980-\\u09ff]):"
+    },
+    {
+      "id": "hub-037",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\\r\\n\\p{L}\\p{N}]?\\p{L}+|\\p{N}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-038",
+      "pattern": "’(?=[ \\w])"
+    },
+    {
+      "id": "hub-039",
+      "pattern": "(?i: ?(?:[jtmslndcy]['’]|qu['’]|jusqu['’]|lorsqu['’]|puisqu['’]|quoiqu['’]|aujourd['’]hui)|['’][stmd]|['’][rv]e|['’]ll)| ?\\p{L}+|\\p{N}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-040",
+      "pattern": "\\s?\\p{P}+"
+    },
+    {
+      "id": "hub-041",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\\r\\n\\p{L}\\p{N}]?\\p{L}+|\\p{N}{1,3}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-042",
+      "pattern": "[^\\r\\n\\p{L}\\p{N}]?[\\p{Lu}\\p{Lt}\\p{Lm}\\p{Lo}\\p{M}]*[\\p{Ll}\\p{Lm}\\p{Lo}\\p{M}]+(?i:'s|'t|'re|'ve|'m|'ll|'d)?|[^\\r\\n\\p{L}\\p{N}]?[\\p{Lu}\\p{Lt}\\p{Lm}\\p{Lo}\\p{M}]+[\\p{Ll}\\p{Lm}\\p{Lo}\\p{M}]*(?i:'s|'t|'re|'ve|'m|'ll|'d)?|\\p{N}{1,3}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n/]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-043",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\\r\\n\\p{L}\\p{N}]?\\p{L}+|\\p{N}+| ?[^\\s\\p{L}\\p{N}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-044",
+      "pattern": "\\p{Nd}{1,510}(?=(?>\\p{Nd}{510})*(?:\\P{Nd}|$))|\\G\\p{Nd}{510}"
+    },
+    {
+      "id": "hub-045",
+      "pattern": "http[s]?://[a-zA-Z0-9_\\-./~\\?=%&]+"
+    },
+    {
+      "id": "hub-046",
+      "pattern": "(?=http)[^\\s]+"
+    },
+    {
+      "id": "hub-047",
+      "pattern": "\n "
+    },
+    {
+      "id": "hub-048",
+      "pattern": "(?<!\\n)^ "
+    },
+    {
+      "id": "hub-049",
+      "pattern": "\\d"
+    },
+    {
+      "id": "hub-050",
+      "pattern": "[!\"\\#\\$%\\&'\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\\\\\]\\^_`\\{\\|\\}\\~]"
+    },
+    {
+      "id": "hub-051",
+      "name": "problematic-bloom-split-regex",
+      "pattern": " ?[^(\\s|[.,!?…。，、।۔،])]+",
+      "inputs": ["hello(world) ok! next", ".,!?…。，、।۔،", "שלום world"]
+    },
+    {
+      "id": "hub-052",
+      "pattern": "\\s{2,}|[\\n\\r\\t]"
+    },
+    {
+      "id": "hub-053",
+      "pattern": "(\\W)?@usuario(\\W)"
+    },
+    {
+      "id": "hub-054",
+      "pattern": "<br [/](https://file+.vscode-resource.vscode-cdn.net/)>"
+    },
+    {
+      "id": "hub-055",
+      "pattern": "«(?=[ \\w])"
+    },
+    {
+      "id": "hub-056",
+      "pattern": "[\\w-]+@([\\w-]+\\.)+[\\w-]+"
+    },
+    {
+      "id": "hub-057",
+      "pattern": "\\[(?=[ \\w])"
+    },
+    {
+      "id": "hub-058",
+      "pattern": "\"(?=[ \\w])"
+    },
+    {
+      "id": "hub-059",
+      "pattern": "\\A\\p{Nd}{3}|\\G\\p{Nd}{3}",
+      "knownDivergence": true
+    },
+    {
+      "id": "hub-060",
+      "pattern": "[^ !\"$',.:;?A-Za-z¡«»¿æçðøħŋœǀ-ǃɐ-ɨɪ-ɶɸ-ɻɽɾʀ-ʄʈ-ʒʔʕʘʙʛ-ʝʟʡʢʤʧʰ-ʲʴʷʼˈˌːˑ˞ˠˤ̩βθχᵻ—“”…↑-↓↗↘ⱱ]"
+    },
+    {
+      "id": "hub-061",
+      "pattern": "'(?:s|t|re|ve|ll|m|d)|\\b[A-Za-z](?:\\.[A-Za-z])+\\.?|\\d+\\.?\\d*[eE][+-]?\\d+|\\d+\\.\\d+|\\d+|==|!=|->|<=|>=|\\*\\*|//|[-+*/]=|[A-Za-z_][A-Za-z0-9_]*|\\w+|\\n+|[ \\t]+|[^\\s]"
+    },
+    {
+      "id": "hub-062",
+      "pattern": "://"
+    },
+    {
+      "id": "hub-063",
+      "pattern": "^"
+    },
+    {
+      "id": "hub-064",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\\r\\n\\p{L}\\p{N}]?\\p{L}+|\\p{N}{1,3}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s{512}(?!\\S)|\\s{256}(?!\\S)|\\s{128}(?!\\S)|\\s{64}(?!\\S)|\\s{32}(?!\\S)|\\s{16}(?!\\S)|\\s{8}(?!\\S)|\\s{4}(?!\\S)|\\s{1,2}(?!\\S)|\\s{1}"
+    },
+    {
+      "id": "hub-065",
+      "pattern": "<(?=[ \\w])"
+    },
+    {
+      "id": "hub-066",
+      "pattern": " {2,}"
+    },
+    {
+      "id": "hub-067",
+      "pattern": "[ \\u00A0]"
+    },
+    {
+      "id": "hub-068",
+      "pattern": "\\p{N}"
+    },
+    {
+      "id": "hub-069",
+      "pattern": "\\d{1,3}(?=(?:\\d{3})*\\b)"
+    },
+    {
+      "id": "hub-070",
+      "pattern": "‚(?=[ \\w])"
+    },
+    {
+      "id": "hub-071",
+      "pattern": "\\s?[!-/:-~！-／：-～‘-‟　-。]+"
+    },
+    {
+      "id": "hub-072",
+      "pattern": "\\s+"
+    },
+    {
+      "id": "hub-073",
+      "pattern": "\\s+$"
+    },
+    {
+      "id": "hub-074",
+      "pattern": "(?<!\\n)^"
+    },
+    {
+      "id": "hub-075",
+      "pattern": "[一-龥぀-ゟ゠-ヿ]+"
+    },
+    {
+      "id": "hub-076",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\\p{L}\\p{N}]?\\p{L}+|\\p{N}{1}| ?[^\\s\\p{L}\\p{N}\r\n]+|\\s*[\r\n]+|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "hub-077",
+      "pattern": "[a-zA-Z]+\\.com"
+    },
+    {
+      "id": "hub-078",
+      "pattern": "[\\r\\x00]"
+    },
+    {
+      "id": "hub-079",
+      "pattern": "(?=www)[^\\s]+"
+    },
+    {
+      "id": "hub-080",
+      "pattern": "\\x1F"
+    },
+    {
+      "id": "hub-081",
+      "pattern": "'s|'t|'re|'ve|'m|'ll|'d|[\\p{L}]+|[\\p{N}]|[^\\s\\p{L}\\p{N}]+"
+    },
+    {
+      "id": "hub-082",
+      "pattern": " ?[！-／：-～‘-‟　-。《》「」【】]+"
+    },
+    {
+      "id": "hub-083",
+      "pattern": "^ "
+    },
+    {
+      "id": "hub-084",
+      "pattern": "(\\[UNK\\]|[\\s\\S])"
+    },
+    {
+      "id": "hub-085",
+      "pattern": "‘(?=[ \\w])"
+    },
+    {
+      "id": "hub-086",
+      "pattern": "[UZOB]"
+    },
+    {
+      "id": "hub-087",
+      "pattern": "\\s+|\\w+|[^\\w\\s]+"
+    },
+    {
+      "id": "hub-088",
+      "pattern": "▁"
+    },
+    {
+      "id": "hub-089",
+      "pattern": "[‘’ʼ‛＇]"
+    },
+    {
+      "id": "hub-090",
+      "pattern": "'(?i:[sdmt]|ll|ve|re)|[^\\r\\n\\p{L}\\p{N}]?\\p{L}+|\\p{N}{1,3}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n]*|\\s*[\\r\\n]|\\s+(?!\\S)|\\s"
+    },
+    {
+      "id": "hub-091",
+      "pattern": "–(?=[ \\w])"
+    },
+    {
+      "id": "hub-092",
+      "pattern": "\\s"
+    },
+    {
+      "id": "hub-093",
+      "pattern": "\\S+@\\S+"
+    },
+    {
+      "id": "hub-094",
+      "pattern": "."
+    },
+    {
+      "id": "hub-095",
+      "pattern": "[^$;:,.!?—…\"()“” ̃ʣʥʦʨᵝꭧAIOQSTWYᵊabcdefhijklmnopqrstuvwxyzɑɐɒæβɔɕçɖðʤəɚɛɜɟɡɥɨɪʝɯɰŋɳɲɴøɸθœɹɾɻʁɽʂʃʈʧʊʋʌɣɤχʎʒʔˈˌːʰʲ↓→↗↘ᵻ]"
+    },
+    {
+      "id": "hub-096",
+      "pattern": "(\\W)url(\\W)"
+    },
+    {
+      "id": "hub-097",
+      "pattern": "'(?=[ \\w])"
+    },
+    {
+      "id": "hub-098",
+      "pattern": "(?:[\\u4E00-\\u9FFF\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\uf900-\\uFAFF\\uFF65-\\uFF9F\\u2F00-\\u2FDF]+|[\\u0E00-\\u0E7F]+|[\\u0E80-\\u0EFF]+|[\\u1780-\\u17FF]+|[\\u1000-\\u109F\\uAA60-\\uAA7F\\uA9E0-\\uA9FF]+|[\\uAC00-\\uD7AF\\u1100-\\u11FF]+)"
+    },
+    {
+      "id": "hub-099",
+      "pattern": "[\\n\\r\\t]"
+    },
+    {
+      "id": "hub-100",
+      "pattern": "\\\t(?=[ \\w])"
+    },
+    {
+      "id": "hub-101",
+      "pattern": "—(?=[ \\w])"
+    },
+    {
+      "id": "hub-102",
+      "pattern": "[0-9]"
+    },
+    {
+      "id": "hub-103",
+      "pattern": "</?[^>]+>"
+    },
+    {
+      "id": "hub-104",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\\r\\n\\p{L}\\p{N}]?(?:\\p{L}\\p{M}*(?: \\p{L}\\p{M}*)*)+|\\p{N}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n/]?|\\s*[\\r\\n]|\\s+(?!\\S)|\\s+"
+    },
+    {
+      "id": "problematic-inline-contractions",
+      "pattern": "(?i:'s|'t|'re|'ve|'m|'ll|'d)",
+      "inputs": ["I'm testing, YOU'RE testing, he'll stay.", "no contraction"]
+    },
+    {
+      "id": "problematic-inline-openai-suffix",
+      "pattern": "(?i:[sdmt]|ll|ve|re)",
+      "inputs": ["sdmt ll VE re x", "S D M T LL ve RE"]
+    },
+    {
+      "id": "problematic-possessive-prefix-punctuation",
+      "pattern": "[^\\r\\n\\p{L}\\p{N}]?+",
+      "inputs": ["Hello!!!\n?", "abc 123"]
+    },
+    {
+      "id": "problematic-possessive-punctuation-run",
+      "pattern": "[^\\s\\p{L}\\p{N}]++",
+      "inputs": ["Hello!!! wait??", "abc 123"]
+    },
+    {
+      "id": "problematic-atomic-digit-group",
+      "pattern": "(?>\\p{Nd}{510})",
+      "inputs": [
+        "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+      ]
+    },
+    {
+      "id": "problematic-stacked-quantifier",
+      "pattern": "\\p{Nd}{3}+",
+      "inputs": ["123456 १२३४५६", "12"]
+    },
+    {
+      "id": "problematic-g-anchor",
+      "pattern": "\\G",
+      "inputs": ["abc", "123"]
+    },
+    {
+      "id": "edge-stacked-class-quantifier",
+      "pattern": "[0-9]{3}+",
+      "inputs": ["123456 1234567", "12"]
+    },
+    {
+      "id": "edge-stacked-literal-quantifier",
+      "pattern": "a{3}+",
+      "inputs": ["aaaaaa aaaa baaa"]
+    },
+    {
+      "id": "edge-stacked-comma-quantifier",
+      "pattern": "\\p{Nd}{1,3}+",
+      "inputs": ["12345 ١٢٣٤٥٦٧"]
+    },
+    {
+      "id": "edge-ci-range",
+      "pattern": "(?i:[a-f]+)",
+      "inputs": ["ABC def F0e9 xyz"]
+    },
+    {
+      "id": "edge-ci-class-hyphen",
+      "pattern": "(?i:[-y]+)",
+      "inputs": ["Y-y xY"]
+    },
+    {
+      "id": "edge-ci-nested-group",
+      "pattern": "(?i:a(?:b|c)d)",
+      "inputs": ["ABD acd AcD abd"]
+    },
+    {
+      "id": "edge-ci-shorthand",
+      "pattern": "(?i:x\\w)",
+      "inputs": ["Xa xש XB"]
+    },
+    {
+      "id": "edge-ci-full-fold",
+      "pattern": "(?i:ss|k)",
+      "inputs": ["ß ss SS K K"],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-hex-digit",
+      "pattern": "\\h+",
+      "inputs": [" a1 z1 ef G5 \t09 "]
+    },
+    {
+      "id": "edge-hex-nondigit",
+      "pattern": "\\H+",
+      "inputs": ["af z9 \tbc"]
+    },
+    {
+      "id": "edge-Z-anchor",
+      "pattern": "abc\\Z",
+      "inputs": ["abc\r\n", "abc\n", "abc", "xabc\nabc"]
+    },
+    {
+      "id": "edge-z-anchor",
+      "pattern": "abc\\z",
+      "inputs": ["abc\n", "abc", "xabc"]
+    },
+    {
+      "id": "edge-A-anchor",
+      "pattern": "\\Aabc",
+      "inputs": ["abc xabc", "\nabc"]
+    },
+    {
+      "id": "edge-escaped-backslash-newline",
+      "pattern": "\\\\\n",
+      "inputs": ["x\\\ny", "x\\ny z"]
+    },
+    {
+      "id": "edge-lone-close-brace",
+      "pattern": "}",
+      "inputs": ["a}b {c}"]
+    },
+    {
+      "id": "edge-lone-open-brace",
+      "pattern": "{",
+      "inputs": ["a{b {c}"]
+    },
+    {
+      "id": "edge-comma-only-quantifier",
+      "pattern": "a{,3}",
+      "inputs": ["aaaaa b aa"]
+    },
+    {
+      "id": "edge-posix-alpha",
+      "pattern": "[[:alpha:]]+",
+      "inputs": ["ab1cd ψω שלום"]
+    },
+    {
+      "id": "edge-posix-digit-space",
+      "pattern": "[[:digit:][:space:]]+",
+      "inputs": ["ab 12 ٣٤x"]
+    },
+    {
+      "id": "edge-codepoint-brace",
+      "pattern": "\\x{1F600}+",
+      "inputs": ["a😀😀b c😀"]
+    },
+    {
+      "id": "edge-property-word",
+      "pattern": "\\p{Word}+",
+      "inputs": ["ab שלום! x‿y ① z²"]
+    },
+    {
+      "id": "edge-class-word-complement",
+      "pattern": "[\\W]+",
+      "inputs": ["ש !? a ²"]
+    },
+    {
+      "id": "edge-class-word-complement-mixed",
+      "pattern": "[\\W_]+",
+      "inputs": ["ש_! a²"]
+    },
+    {
+      "id": "edge-class-negated-shorthand",
+      "pattern": "[^\\Wx]+",
+      "inputs": ["שab x!"],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-g-anchor-digits",
+      "pattern": "\\G\\d",
+      "inputs": ["12a34"],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-atomic-group",
+      "pattern": "(?>a|ab)c",
+      "inputs": ["abc ac"],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-possessive-backtrack",
+      "pattern": "a++ab",
+      "inputs": ["aaab"],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-class-intersection",
+      "pattern": "[a-w&&[^c-g]]+",
+      "inputs": ["abch"],
+      "knownDivergence": true
+    },
+    {
+      "id": "edge-nested-class",
+      "pattern": "[^\\s[.,]]+",
+      "inputs": ["ab c.d e,f"],
+      "knownDivergence": true
+    }
+  ],
+  "additionalCases": [
+    {
+      "name": "whitespace isolated",
+      "patternId": "hub-072",
+      "behavior": "Isolated",
+      "invert": false,
+      "inputs": ["hello  world", "a\n\tb", "trim "]
+    },
+    {
+      "name": "whitespace removed",
+      "patternId": "hub-072",
+      "behavior": "Removed",
+      "invert": false,
+      "inputs": ["hello  world", "a\n\tb", " trim "]
+    },
+    {
+      "name": "line end anchors with CR and LS",
+      "patternId": "hub-073",
+      "inputs": ["trail \rnext ", "a  b ", "x \ny ", "end "]
+    },
+    {
+      "name": "line start after CR",
+      "patternId": "hub-083",
+      "inputs": ["a\r b", "a\n b", " lead"]
+    },
+    {
+      "name": "g-anchor digit chunks with gaps",
+      "patternId": "hub-059",
+      "knownDivergence": true,
+      "inputs": [" 1234", "123 456789", "12345678"]
+    }
+  ]
+}

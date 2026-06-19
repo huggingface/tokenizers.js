@@ -8,6 +8,16 @@ import type { TokenizerConfigNormalizerReplace } from "@static/tokenizer";
  */
 class Replace extends Normalizer {
   declare config: TokenizerConfigNormalizerReplace;
+  pattern: RegExp | null;
+
+  /**
+   * @param config The configuration object for the normalizer.
+   */
+  constructor(config: TokenizerConfigNormalizerReplace) {
+    super(config);
+    // Compile once: normalize() is called for every input text.
+    this.pattern = create_pattern(this.config.pattern ?? {});
+  }
 
   /**
    * Normalize the input text by replacing the pattern with the content.
@@ -15,10 +25,9 @@ class Replace extends Normalizer {
    * @returns The normalized text after replacing the pattern with the content.
    */
   normalize(text: string): string {
-    const pattern = create_pattern(this.config.pattern ?? {});
-    return pattern === null
+    return this.pattern === null
       ? text
-      : text.replaceAll(pattern, this.config.content ?? "");
+      : text.replaceAll(this.pattern, this.config.content ?? "");
   }
 }
 
