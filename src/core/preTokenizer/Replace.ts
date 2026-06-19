@@ -24,11 +24,12 @@ class Replace extends PreTokenizer {
    * @param text The text to be pre-tokenized.
    * @returns An array of tokens produced by replacing certain characters.
    */
-  pre_tokenize_text(text: string): string[] {
+  pre_tokenize_text(text: string): Array<[string, [number, number]]> {
+    const span: [number, number] = [0, text.length];
     if (this.pattern === null) {
-      return [text];
+      return [[text, span]];
     }
-    return [text.replaceAll(this.pattern, this.config.content ?? "")];
+    return [[text.replaceAll(this.pattern, this.config.content ?? ""), span]];
   }
 }
 

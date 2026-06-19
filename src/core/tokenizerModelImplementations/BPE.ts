@@ -249,33 +249,57 @@ class BPE extends TokenizerModel {
    * @param tokens The input sequence of tokens to encode.
    * @returns The resulting subword tokens after applying the BPE algorithm to the input sequence of tokens.
    */
-  encode(tokens: string[]): string[] {
-    const output_tokens: string[] = [];
+  encode(tokens: Array<[string, [number, number]]>): Array<[string, [number, number]]> {
+    const output_tokens: Array<[string, [number, number]]> = [];
 
-    for (const token of tokens) {
+    for (const [token, [word_start, word_end]] of tokens) {
       if (this.ignore_merges && this.tokens_to_ids.has(token)) {
-        output_tokens.push(token);
+        output_tokens.push([token, [word_start, word_end]]);
         continue;
       }
+
       const bpe_token_list = this.bpe(token);
 
-      for (const t of bpe_token_list) {
+      // Walk left-to-right through bpe_token_list to recover character positions.
+      // Each BPE entry is a contiguous slice of the original word (plus decorating
+      // suffixes that have no corresponding characters), so a cursor gives us spans.
+      let pos = 0;
+      for (let i = 0; i < bpe_token_list.length; i++) {
+        const t = bpe_token_list[i];
+        const is_last = i === bpe_token_list.length - 1;
+
+        // Strip decorating suffixes to find the characters this token actually covers.
+        let core = t;
+        if (!is_last && this.continuing_subword_suffix) {
+          core = core.slice(0, core.length - this.continuing_subword_suffix.length);
+        }
+        if (is_last && this.end_of_word_suffix) {
+          core = core.slice(0, core.length - this.end_of_word_suffix.length);
+        }
+        const chars_covered = core.length;
+        const span: [number, number] = [word_start + pos, word_start + pos + chars_covered];
+        pos += chars_covered;
+
         if (this.tokens_to_ids.has(t)) {
-          output_tokens.push(t);
+          output_tokens.push([t, span]);
         } else if (this.byte_fallback) {
-          const byte_tokens = Array.from(this.text_encoder!.encode(t)).map(
+          const byte_tokens = Array.from(this.text_encoder!.encode(core)).map(
             (x) => `<0x${x.toString(16).toUpperCase().padStart(2, "0")}>`,
           );
           if (byte_tokens.every((x) => this.tokens_to_ids.has(x))) {
             // Ensure the byte tokens are actually in the vocabulary, otherwise
             // we fall back to the unknown token. For more information, see
             // https://github.com/huggingface/transformers/issues/28096.
-            output_tokens.push(...byte_tokens);
+            // All byte tokens share the same span — they collectively represent
+            // the characters at that position; individual bytes can't be subdivided.
+            for (const bt of byte_tokens) {
+              output_tokens.push([bt, span]);
+            }
           } else if (this.unk_token != null) {
-            output_tokens.push(this.unk_token);
+            output_tokens.push([this.unk_token, span]);
           }
         } else if (this.unk_token != null) {
-          output_tokens.push(this.unk_token);
+          output_tokens.push([this.unk_token, span]);
         }
       }
     }

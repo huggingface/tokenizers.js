@@ -26,15 +26,18 @@ class Sequence extends PreTokenizer {
    * @param options Additional options for the pre-tokenization logic.
    * @returns The pre-tokenized text.
    */
-  pre_tokenize_text(text: string, options?: any): string[] {
-    // Use reduce to apply each tokenizer to the text
+  pre_tokenize_text(text: string, options?: any): Array<[string, [number, number]]> {
     return this.tokenizers.reduce(
-      (pre_tokenized_text, tokenizer) => {
-        return tokenizer
-          ? tokenizer.pre_tokenize(pre_tokenized_text, options)
-          : pre_tokenized_text;
+      (pairs, tokenizer) => {
+        if (!tokenizer) return pairs;
+        return pairs.flatMap(([word, [start]]) =>
+          tokenizer.pre_tokenize(word, options).map(([subWord, [subStart, subEnd]]) => [
+            subWord,
+            [subStart + start, subEnd + start] as [number, number],
+          ]),
+        );
       },
-      [text] as string[],
+      [[text, [0, text.length]]] as Array<[string, [number, number]]>,
     );
   }
 }

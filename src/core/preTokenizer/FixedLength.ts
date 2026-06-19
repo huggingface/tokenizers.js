@@ -22,10 +22,10 @@ class FixedLength extends PreTokenizer {
    * @param text The text to be pre-tokenized.
    * @returns An array of tokens produced by splitting the input text into fixed-length tokens.
    */
-  pre_tokenize_text(text: string): string[] {
-    const tokens = [];
+  pre_tokenize_text(text: string): Array<[string, [number, number]]> {
+    const tokens: Array<[string, [number, number]]> = [];
     for (let i = 0; i < text.length; i += this._length) {
-      tokens.push(text.slice(i, i + this._length));
+      tokens.push([text.slice(i, i + this._length), [i, i + this._length]]);
     }
     return tokens;
   }

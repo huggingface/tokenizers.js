@@ -111,11 +111,14 @@ class Unigram extends TokenizerModel {
    * @param tokens The tokens to encode.
    * @returns An array of encoded tokens.
    */
-  encode(tokens: string[]): string[] {
-    const to_return: string[] = [];
-    for (const token of tokens) {
-      const tokenized = this.tokenize(token);
-      to_return.push(...tokenized);
+  encode(tokens: Array<[string, [number, number]]>): Array<[string, [number, number]]> {
+    const to_return: Array<[string, [number, number]]> = [];
+    for (const [token, [word_start]] of tokens) {
+      const lattice = new TokenLattice(token, this.bos_token_id, this.eos_token_id);
+      this.populate_nodes(lattice);
+      for (const [subWord, [subStart, subEnd]] of lattice.token_spans()) {
+        to_return.push([subWord, [word_start + subStart, word_start + subEnd]]);
+      }
     }
     return to_return;
   }

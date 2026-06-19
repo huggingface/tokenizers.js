@@ -572,30 +572,100 @@ export const escape_reg_exp = (string: string): string =>
  * Helper function to fuse consecutive unknown tokens.
  */
 export const fuse_unk = (
-  arr: Array<string>,
+  arr: Array<[string, [number, number]]>,
   tokens_to_ids: Map<string, any>,
   unk_token_id: number,
-) => {
-  const fused = [];
+): Array<[string, [number, number]]> => {
+  const fused: Array<[string, [number, number]]> = [];
   let i = 0;
   while (i < arr.length) {
     fused.push(arr[i]);
-    const token_id = tokens_to_ids.get(arr[i]) ?? unk_token_id;
+    const token_id = tokens_to_ids.get(arr[i][0]) ?? unk_token_id;
     if (token_id !== unk_token_id) {
       ++i;
       continue;
     }
     while (
       ++i < arr.length &&
-      (tokens_to_ids.get(arr[i]) ?? unk_token_id) === unk_token_id
+      (tokens_to_ids.get(arr[i][0]) ?? unk_token_id) === unk_token_id
     ) {
-      if (tokens_to_ids.get(fused.at(-1)) !== unk_token_id) {
-        fused[fused.length - 1] += arr[i];
+      if (tokens_to_ids.get(fused.at(-1)![0]) !== unk_token_id) {
+        const last = fused[fused.length - 1];
+        fused[fused.length - 1] = [last[0] + arr[i][0], [last[1][0], arr[i][1][1]]];
       }
     }
   }
   return fused;
 };
+
+/**
+ * Builds an alignment map from normalized-string positions back to original-string positions.
+ * map[i] gives the index in `original` that normalized character i came from.
+ * Handles 1-to-1 (lowercase), 1-to-many (NFD expansion), many-to-1 (NFC compression),
+ * and many-to-0 (deletion, e.g. accent stripping) — all monotone transformations.
+ */
+export function build_alignment_map(original: string, normalized: string): number[] {
+  const map = new Array<number>(normalized.length).fill(0);
+  let orig_i = 0;
+  let norm_i = 0;
+
+  while (norm_i < normalized.length) {
+    if (orig_i >= original.length) {
+      map[norm_i++] = original.length;
+      continue;
+    }
+
+    const oc = original[orig_i];
+    const nc = normalized[norm_i];
+
+    // Case 1: direct match or lowercase match (1-to-1)
+    if (oc === nc || oc.toLowerCase() === nc) {
+      map[norm_i++] = orig_i++;
+      continue;
+    }
+
+    let matched = false;
+
+    // Case 2: expansion — oc decomposes into multiple norm chars (NFD/NFKD)
+    for (const form of ["NFD", "NFKD"] as const) {
+      for (const candidate of [oc.normalize(form), oc.toLowerCase().normalize(form)]) {
+        if (candidate.length > 1 && normalized.slice(norm_i, norm_i + candidate.length) === candidate) {
+          for (let k = 0; k < candidate.length; k++) map[norm_i + k] = orig_i;
+          norm_i += candidate.length;
+          orig_i++;
+          matched = true;
+          break;
+        }
+      }
+      if (matched) break;
+    }
+    if (matched) continue;
+
+    // Case 3: contraction — multiple orig chars compose into fewer norm chars (NFC/NFKC)
+    for (let look = 2; look <= 4 && !matched; look++) {
+      if (orig_i + look > original.length) break;
+      const slice = original.slice(orig_i, orig_i + look);
+      for (const form of ["NFC", "NFKC"] as const) {
+        for (const candidate of [slice.normalize(form), slice.normalize(form).toLowerCase()]) {
+          if (normalized.slice(norm_i, norm_i + candidate.length) === candidate) {
+            for (let k = 0; k < candidate.length; k++) map[norm_i + k] = orig_i;
+            norm_i += candidate.length;
+            orig_i += look;
+            matched = true;
+            break;
+          }
+        }
+        if (matched) break;
+      }
+    }
+    if (matched) continue;
+
+    // Case 4: deletion — oc was removed by normalization (e.g. combining mark stripped)
+    orig_i++;
+  }
+
+  return map;
+}
 
 export const is_chinese_char = (cp: number): boolean =>
   (cp >= 0x4e00 && cp <= 0x9fff) ||
@@ -647,21 +717,21 @@ export const object_to_map = (obj: Object): Map<string, any> =>
  * @param regex The regex to split on.
  * @returns The split string.
  */
-export const regex_split = (text: string, regex: RegExp): string[] => {
-  const result: string[] = [];
+export const regex_split = (text: string, regex: RegExp): Array<[string, [number, number]]> => {
+  const result: Array<[string, [number, number]]> = [];
   let prev = 0;
   for (const match of text.matchAll(regex)) {
     const full_match = match[0];
     if (prev < match.index!) {
-      result.push(text.slice(prev, match.index));
+      result.push([text.slice(prev, match.index!), [prev, match.index!]]);
     }
     if (full_match.length > 0) {
-      result.push(full_match);
+      result.push([full_match, [match.index!, match.index! + full_match.length]]);
     }
     prev = match.index! + full_match.length;
   }
   if (prev < text.length) {
-    result.push(text.slice(prev));
+    result.push([text.slice(prev), [prev, text.length]]);
   }
   return result;
 };
@@ -692,5 +762,6 @@ export const validate_object = (
  * @param {string} text The text to split.
  * @returns {string[]} The split string.
  */
-export const whitespace_split = (text: string): Array<string> =>
-  text.match(/\S+/g) || [];
+export const whitespace_split = (text: string): Array<[string, [number,number]]> =>
+  [...text.matchAll(/\S+/g)].map(m => [m[0], [m.index!, m.index! + m[0].length]]);
+

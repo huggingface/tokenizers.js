@@ -31,10 +31,14 @@ const fetchConfigById = async (
   const remoteUrl = `https://huggingface.co/${modelId}/resolve/main/tokenizer.json`;
   const remoteUrlConfig = `https://huggingface.co/${modelId}/resolve/main/tokenizer_config.json`;
 
+  const headers: Record<string, string> = { "User-Agent": "tokenizers.js-tests/1.0" };
+  if (process.env.HF_TOKEN) headers["Authorization"] = `Bearer ${process.env.HF_TOKEN}`;
+
   const loadJson = async (url: string) => {
-    const response = await fetch(url);
+    const response = await fetch(url, { headers });
     if (!response.ok) {
-      throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+      const text = await response.text();
+      throw new Error(`Failed to fetch ${url} (HTTP ${response.status}): ${text.slice(0, 300)}`);
     }
     return await response.json();
   };
