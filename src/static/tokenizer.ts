@@ -279,7 +279,7 @@ export type TokenizerConfigPreTokenizer =
 // PostProcessor
 // ----------------------------------------------------------------------------
 
-interface SpecialToken {
+export interface SpecialToken {
   id: string;
   ids: number[];
   tokens: string[];

@@ -15,7 +15,7 @@
     "types": ["node", "jest"],
     "baseUrl": ".",
     "paths": {
-      "@utils": ["src/utils/index.ts"],
+      "@utils": ["src/utils/index"],
       "@utils/*": ["src/utils/*"],
       "@core/*": ["src/core/*"],
       "@static/*": ["src/static/*"]
