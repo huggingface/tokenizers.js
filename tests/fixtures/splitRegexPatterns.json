@@ -672,6 +672,26 @@
       "inputs": ["d de def deff"]
     },
     {
+      "id": "edge-class-intersection-overlapping-union",
+      "pattern": "[a[a-z]&&[^x]]+b",
+      "inputs": ["aaab aaac xyzb"]
+    },
+    {
+      "id": "edge-class-range-fixed-hex",
+      "pattern": "[a-\\x7a-\\p{Nd}]+",
+      "inputs": ["az-5 A!"]
+    },
+    {
+      "id": "edge-class-range-fixed-unicode",
+      "pattern": "[a-\\u007a-\\p{Nd}]+",
+      "inputs": ["az-5 A!"]
+    },
+    {
+      "id": "edge-class-range-astral",
+      "pattern": "[𐐀-𐐨-\\p{Nd}]+",
+      "inputs": ["𐐀𐐨-5𐐩!"]
+    },
+    {
       "id": "edge-nested-class",
       "pattern": "[^\\s[.,]]+",
       "inputs": ["ab c.d e,f"]

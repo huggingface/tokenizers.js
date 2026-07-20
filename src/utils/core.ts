@@ -123,10 +123,8 @@ const ESCAPE_REWRITES = new Map<string, string>([
 ]);
 
 // Escape sequences rewritten inside character classes. \b stays a backspace here. \W and \H
-// are complements of unions, which JavaScript cannot express inside a class: in positive
-// classes they are lifted out as alternation branches (see rewrite_oniguruma_to_js); in
-// negated classes they are left as-is (\W silently falls back to ASCII semantics, \H fails
-// loudly at compile time).
+// are complements of unions, which JavaScript cannot express inside a class, so they are
+// represented as complete character-set atoms and composed structurally below.
 const CLASS_ESCAPE_REWRITES = new Map<string, string>([
   ["h", HEX_DIGIT_CHARS],
   ["w", UNICODE_WORD_CHARS_IN_CLASS],
@@ -189,6 +187,9 @@ const POSIX_EQUIVALENCE_RE = /^\[=[^\]]*=\]/;
 
 const is_ascii_letter = (char: string): boolean =>
   (char >= "A" && char <= "Z") || (char >= "a" && char <= "z");
+
+const character_at = (string: string, index: number): string =>
+  String.fromCodePoint(string.codePointAt(index)!);
 
 // Used to override the default invalid regex of the Bloom pretokenizer:
 // ` ?[^(\\s|[.,!?…。，、।۔،])]+`.
@@ -297,6 +298,17 @@ const rewrite_character_class_escape = (
     return index + text.length;
   }
 
+  // These escapes are one source atom even though their spelling spans several code units.
+  // Consuming them whole is important for deciding whether a following hyphen starts a range.
+  const fixed_width =
+    /^(?:\\x[0-9A-Fa-f]{2}|\\u[0-9A-Fa-f]{4}|\\c[A-Za-z])/.exec(
+      regex.slice(index),
+    );
+  if (fixed_width) {
+    append_character_class_fragment(operand, fixed_width[0]);
+    return index + fixed_width[0].length;
+  }
+
   if (index + 1 >= regex.length) {
     throw new SyntaxError(
       `Unterminated escape in character class at index ${index}`,
@@ -344,7 +356,11 @@ const compile_character_class_operand = (
     pieces.push(`[${operand.fragment}]`);
   }
   pieces.push(...operand.alternatives);
-  return pieces.length === 1 ? pieces[0] : `(?:${pieces.join("|")})`;
+  if (pieces.length === 1) return pieces[0];
+
+  // All union branches are membership predicates; exactly one shared atom consumes the code
+  // point. This avoids ambiguous consuming paths when branches overlap (e.g. `[\W!]`).
+  return `(?:(?=(?:${pieces.join("|")}))${ANY_CODE_POINT})`;
 };
 
 // Parses a balanced Oniguruma character class and returns a JavaScript atom matching exactly
@@ -364,7 +380,7 @@ const parse_character_class = (
   let literal_closing_bracket_allowed = true;
 
   while (i < regex.length) {
-    const char = regex[i];
+    const char = character_at(regex, i);
 
     if (char === "\\") {
       i = rewrite_character_class_escape(regex, i, operand);
@@ -506,14 +522,15 @@ const parse_character_class = (
       regex[i + 2] !== "[" &&
       regex[i + 2] !== "\\"
     ) {
-      const range = `${char}-${regex[i + 2]}`;
+      const range_end = character_at(regex, i + 2);
+      const range = `${char}-${range_end}`;
       const folded =
         range === range.toLowerCase()
           ? range.toUpperCase()
           : range.toLowerCase();
       append_character_class_range(operand, `${range}${folded}`);
       literal_closing_bracket_allowed = false;
-      i += 3;
+      i += 2 + range_end.length;
       continue;
     }
 
@@ -535,7 +552,7 @@ const parse_character_class = (
       i,
     );
     literal_closing_bracket_allowed = false;
-    ++i;
+    i += char.length;
   }
 
   throw new SyntaxError(

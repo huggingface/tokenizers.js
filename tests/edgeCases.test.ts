@@ -178,6 +178,14 @@ describe("Edge cases", () => {
     });
     expect(recursive).not.toBeNull();
     expect("abc def xyz".match(recursive!)).toEqual(["def", "yz"]);
+
+    const overlappingNestedUnion = create_pattern({
+      Regex: "[a[a-z]&&[^x]]+b",
+    });
+    expect(overlappingNestedUnion).not.toBeNull();
+    expect(overlappingNestedUnion!.source).toBe("(?:(?=[^x])(?:(?=(?:[a]|[a-z]))[\\s\\S]))+b");
+    expect("aaab xyzb".match(overlappingNestedUnion!)).toEqual(["aaab", "yzb"]);
+    expect("aaac".match(overlappingNestedUnion!)).toBeNull();
   });
 
   it("parses escaped literals, POSIX operands, and range tails", () => {
@@ -208,16 +216,28 @@ describe("Edge cases", () => {
     expect("-defx A-".match(terminalHyphen!)).toEqual(["-def", "-"]);
 
     const initialClosingBracket = create_pattern({
-      Regex: "[a-z&&[]a]]+",
+      Regex: "[]a-z&&[]a]]+",
     });
     expect(initialClosingBracket).not.toBeNull();
-    expect("]abc".match(initialClosingBracket!)).toEqual(["a"]);
+    expect("]abc".match(initialClosingBracket!)).toEqual(["]a"]);
 
     const rangeThenSet = create_pattern({
       Regex: "[a-f-\\w]+",
     });
     expect(rangeThenSet).not.toBeNull();
     expect("a-f z שלום!".match(rangeThenSet!)).toEqual(["a-f", "z", "שלום"]);
+
+    for (const regex of ["[a-\\x7a-\\w]+", "[a-\\u007a-\\w]+"]) {
+      const fixedWidthEscapeRange = create_pattern({ Regex: regex });
+      expect(fixedWidthEscapeRange).not.toBeNull();
+      expect("a-z Z_!".match(fixedWidthEscapeRange!)).toEqual(["a-z", "Z_"]);
+    }
+
+    const astralRange = create_pattern({
+      Regex: "[𐐀-𐐨-\\w]+",
+    });
+    expect(astralRange).not.toBeNull();
+    expect("𐐀𐐨-abc!".match(astralRange!)).toEqual(["𐐀𐐨-abc"]);
 
     const escapedRangeStart = create_pattern({
       Regex: "(?i:[\\[-a]+)",
@@ -241,19 +261,25 @@ describe("Edge cases", () => {
   });
 
   it("rejects malformed or unsupported character-class constructs", () => {
-    expect(() => create_pattern({ Regex: "[a-z&&]" })).toThrow(/intersection/i);
-    expect(() => create_pattern({ Regex: "[&&[a-z]]" })).toThrow(/intersection/i);
-    expect(() => create_pattern({ Regex: "[a-z&&&&[b]]" })).toThrow(/intersection/i);
-    expect(() => create_pattern({ Regex: "[a-z&&[def]" })).toThrow(/character class|intersection/i);
-    expect(() => create_pattern({ Regex: "[[:graph:]&&[a-z]]+" })).toThrow(/POSIX|intersection/i);
-    expect(() => create_pattern({ Regex: "[[.a.]&&[a]]" })).toThrow(/POSIX|intersection/i);
-    expect(() => create_pattern({ Regex: "[a-z&&[d-f]-x]" })).toThrow(/range|intersection/i);
-    expect(() => create_pattern({ Regex: "[a-z&&[a[def]-x]]+" })).toThrow(/range|intersection/i);
-    expect(() => create_pattern({ Regex: "[a-z&&[x-\\W]]+" })).toThrow(/range|intersection/i);
-    expect(() => create_pattern({ Regex: "[a-z&&[x-\\p{L}]]+" })).toThrow(/range|intersection/i);
-    expect(() => create_pattern({ Regex: "[a-z&&[x-[def]]]+" })).toThrow(/range|intersection/i);
-    expect(() => create_pattern({ Regex: "(?i:[_-A]+)" })).toThrow(/range/i);
-    expect(() => create_pattern({ Regex: "(?i:[[:^lower:]]+)" })).toThrow(/POSIX|case-insensitive/i);
-    expect(() => create_pattern({ Regex: "(?i:[a-z&&[[:lower:]-z]]+)" })).toThrow(/range|intersection/i);
+    const expectSyntaxError = (regex: string, message: RegExp) => {
+      const compile = () => create_pattern({ Regex: regex });
+      expect(compile).toThrow(SyntaxError);
+      expect(compile).toThrow(message);
+    };
+
+    expectSyntaxError("[a-z&&]", /intersection/i);
+    expectSyntaxError("[&&[a-z]]", /intersection/i);
+    expectSyntaxError("[a-z&&&&[b]]", /intersection/i);
+    expectSyntaxError("[a-z&&[def]", /character class|intersection/i);
+    expectSyntaxError("[[:graph:]&&[a-z]]+", /POSIX|intersection/i);
+    expectSyntaxError("[[.a.]&&[a]]", /POSIX|intersection/i);
+    expectSyntaxError("[a-z&&[d-f]-x]", /range|intersection/i);
+    expectSyntaxError("[a-z&&[a[def]-x]]+", /range|intersection/i);
+    expectSyntaxError("[a-z&&[x-\\W]]+", /range|intersection/i);
+    expectSyntaxError("[a-z&&[x-\\p{L}]]+", /range|intersection/i);
+    expectSyntaxError("[a-z&&[x-[def]]]+", /range|intersection/i);
+    expectSyntaxError("(?i:[_-A]+)", /range/i);
+    expectSyntaxError("(?i:[[:^lower:]]+)", /POSIX|case-insensitive/i);
+    expectSyntaxError("(?i:[a-z&&[[:lower:]-z]]+)", /range|intersection/i);
   });
 });
