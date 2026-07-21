@@ -1,5 +1,46 @@
 import { ReplacePattern } from "@static/tokenizer";
 
+// Rust/Oniguruma accepts short script properties such as `\p{Han}`, while JavaScript
+// requires `\p{Script=Han}`. Keep the retry in one place so the final pattern and internal
+// character-set probes use exactly the same compatibility behavior.
+const compile_unicode_regexp = (source: string, flags: string): RegExp => {
+  try {
+    return new RegExp(source, flags);
+  } catch (error) {
+    if (
+      !(error instanceof SyntaxError) ||
+      !error.message.toLowerCase().includes("invalid property name")
+    ) {
+      throw error;
+    }
+
+    let changed = false;
+    const property_names = new Map<string, string>();
+    const fixed = source.replace(/(\\[pP])\{([^}=]+)\}/g, (_, p, n) => {
+      let property_name = property_names.get(n);
+      if (property_name === undefined) {
+        try {
+          new RegExp(`\\p{${n}}`, "u");
+          property_name = n;
+        } catch {
+          property_name = `Script=${n}`;
+        }
+        property_names.set(n, property_name);
+      }
+      if (property_name !== n) changed = true;
+      return `${p}{${property_name}}`;
+    });
+
+    if (!changed) throw error;
+    try {
+      return new RegExp(fixed, flags);
+    } catch {
+      // If it still fails, re-throw the original error for clarity.
+      throw error;
+    }
+  }
+};
+
 /**
  * Clean up a list of simple English tokenization artifacts like spaces before punctuations and abbreviated forms.
  * @param text The text to clean up.
@@ -36,44 +77,7 @@ export const create_pattern = (
     let regex = normalize_bloom_split_char_class(pattern.Regex);
     regex = rewrite_oniguruma_to_js(regex);
 
-    try {
-      return new RegExp(regex, "gu");
-    } catch (error) {
-      // For JavaScript regular expressions, when you want to match a specific script using \p{...}, you must explicitly specify the property name Script (or sc).
-      // For example, to match Hangul characters, you need to use \p{Script=Hangul} or \p{sc=Hangul}, instead of just \p{Hangul} (which is valid in Python).
-      // General_Category properties, on the other hand, can be used without specifying the property name (see https://unicode.org/reports/tr18/#General_Category_Property).
-      // If we encounter a property name error, we attempt to fix it by adding 'Script=' where necessary.
-      if (
-        !(error instanceof SyntaxError) ||
-        !error.message.toLowerCase().includes("invalid property name")
-      )
-        throw error;
-
-      let changed = false;
-      const property_names = new Map<string, string>();
-      const fixed = regex.replace(/(\\[pP])\{([^}=]+)\}/g, (_, p, n) => {
-        let property_name = property_names.get(n);
-        if (property_name === undefined) {
-          try {
-            new RegExp(`\\p{${n}}`, "u");
-            property_name = n;
-          } catch {
-            property_name = `Script=${n}`;
-          }
-          property_names.set(n, property_name);
-        }
-        if (property_name !== n) changed = true;
-        return `${p}{${property_name}}`;
-      });
-
-      if (!changed) throw error;
-      try {
-        return new RegExp(fixed, "gu");
-      } catch (e) {
-        // If it still fails, re-throw the original error for clarity.
-        throw error;
-      }
-    }
+    return compile_unicode_regexp(regex, "gu");
   } else if (pattern.String !== undefined) {
     const escaped = escape_reg_exp(pattern.String);
     // NOTE: if invert is true, we wrap the pattern in a group so that it is kept when performing .split()
@@ -198,6 +202,7 @@ const normalize_bloom_split_char_class = (regex: string): string =>
   regex.replace(/\[\^\(\\s\|\[([^\]]+)\]\)\]/g, "[^()|\\s$1]");
 
 const ANY_CODE_POINT = "[\\s\\S]";
+const MAX_CHARACTER_CLASS_NESTING_DEPTH = 256;
 
 // `range` awaits its right endpoint; after `complete_range`, a following hyphen is literal.
 type CharacterClassTail = "scalar" | "set" | "range" | "complete_range" | null;
@@ -206,17 +211,24 @@ type CharacterClassOperand = {
   fragment: string;
   alternatives: string[];
   tail: CharacterClassTail;
+  contains_complex_set: boolean;
+  contains_complemented_complex_set: boolean;
 };
 
 type ParsedCharacterClass = {
   atom: string;
   end: number;
+  negated: boolean;
+  contains_complex_set: boolean;
+  contains_complemented_complex_set: boolean;
 };
 
 const create_character_class_operand = (): CharacterClassOperand => ({
   fragment: "",
   alternatives: [],
   tail: null,
+  contains_complex_set: false,
+  contains_complemented_complex_set: false,
 });
 
 const throw_character_class_range_error = (index: number): never => {
@@ -229,10 +241,17 @@ const add_character_class_atom = (
   operand: CharacterClassOperand,
   atom: string,
   index: number,
+  contains_complex_set = true,
+  contains_complemented_complex_set = false,
 ): void => {
   if (operand.tail === "range") throw_character_class_range_error(index);
   operand.alternatives.push(atom);
   operand.tail = "set";
+  operand.contains_complex_set =
+    operand.contains_complex_set || contains_complex_set;
+  operand.contains_complemented_complex_set =
+    operand.contains_complemented_complex_set ||
+    contains_complemented_complex_set;
 };
 
 const append_character_class_range = (
@@ -258,6 +277,7 @@ const append_character_class_fragment = (
   }
   operand.fragment += fragment;
   operand.tail = set_valued ? "set" : "scalar";
+  operand.contains_complex_set = operand.contains_complex_set || set_valued;
 };
 
 const rewrite_character_class_escape = (
@@ -348,6 +368,14 @@ const rewrite_character_class_escape = (
   return index + 2;
 };
 
+const compile_character_set_union = (pieces: string[]): string => {
+  if (pieces.length === 1) return pieces[0];
+
+  // All union branches are membership predicates; exactly one shared atom consumes the code
+  // point. This avoids ambiguous consuming paths when branches overlap (e.g. `[\W!]`).
+  return `(?:(?=(?:${pieces.join("|")}))${ANY_CODE_POINT})`;
+};
+
 const compile_character_class_operand = (
   operand: CharacterClassOperand,
 ): string => {
@@ -356,11 +384,26 @@ const compile_character_class_operand = (
     pieces.push(`[${operand.fragment}]`);
   }
   pieces.push(...operand.alternatives);
-  if (pieces.length === 1) return pieces[0];
+  return compile_character_set_union(pieces);
+};
 
-  // All union branches are membership predicates; exactly one shared atom consumes the code
-  // point. This avoids ambiguous consuming paths when branches overlap (e.g. `[\W!]`).
-  return `(?:(?=(?:${pieces.join("|")}))${ANY_CODE_POINT})`;
+// Oniguruma resolves character-class set operations before applying inline case folding.
+// Compute the missing ASCII counterparts from the completed positive expression so nested
+// operands are not folded independently. Full Unicode folding remains intentionally out of
+// scope for the existing compatibility strategy.
+const get_ascii_fold_additions = (positive_atom: string): string => {
+  const membership = compile_unicode_regexp(`^(?:${positive_atom})$`, "u");
+  let additions = "";
+
+  for (let offset = 0; offset < 26; ++offset) {
+    const upper = String.fromCharCode(0x41 + offset);
+    const lower = String.fromCharCode(0x61 + offset);
+    const has_upper = membership.test(upper);
+    const has_lower = membership.test(lower);
+
+    if (has_upper !== has_lower) additions += has_upper ? lower : upper;
+  }
+  return additions;
 };
 
 // Parses a balanced Oniguruma character class and returns a JavaScript atom matching exactly
@@ -370,7 +413,15 @@ const parse_character_class = (
   regex: string,
   start: number,
   ascii_fold: boolean,
+  apply_ascii_fold = true,
+  nesting_depth = 1,
 ): ParsedCharacterClass => {
+  if (nesting_depth > MAX_CHARACTER_CLASS_NESTING_DEPTH) {
+    throw new SyntaxError(
+      `Maximum character-class nesting depth of ${MAX_CHARACTER_CLASS_NESTING_DEPTH} exceeded at index ${start}`,
+    );
+  }
+
   let i = start + 1;
   const negated = regex[i] === "^";
   if (negated) ++i;
@@ -405,6 +456,18 @@ const parse_character_class = (
         throw new SyntaxError(`Empty character class at index ${start}`);
       }
 
+      const contains_complex_set = operands.some(
+        (candidate) => candidate.contains_complex_set,
+      );
+      const contains_complemented_complex_set = operands.some(
+        (candidate) => candidate.contains_complemented_complex_set,
+      );
+      if (negated && operands.length > 1 && contains_complemented_complex_set) {
+        throw new SyntaxError(
+          `Unsupported outer-negated character-class intersection with a nested complemented Unicode-property, POSIX, or shorthand set at index ${start}`,
+        );
+      }
+
       const first_atom = compile_character_class_operand(operands[0]);
       let positive_atom = first_atom;
       if (operands.length > 1) {
@@ -417,12 +480,34 @@ const parse_character_class = (
 
       const is_direct_class =
         operands.length === 1 && operand.alternatives.length === 0;
+      let direct_fragment = operand.fragment;
+      if (ascii_fold && apply_ascii_fold) {
+        const additions = get_ascii_fold_additions(positive_atom);
+        if (additions.length > 0) {
+          if (is_direct_class) {
+            direct_fragment += additions;
+            positive_atom = `[${direct_fragment}]`;
+          } else {
+            positive_atom = compile_character_set_union([
+              positive_atom,
+              `[${additions}]`,
+            ]);
+          }
+        }
+      }
+
       const atom = negated
         ? is_direct_class
-          ? `[^${operand.fragment}]`
+          ? `[^${direct_fragment}]`
           : `(?:(?!${positive_atom})${ANY_CODE_POINT})`
         : positive_atom;
-      return { atom, end: i + 1 };
+      return {
+        atom,
+        end: i + 1,
+        negated,
+        contains_complex_set,
+        contains_complemented_complex_set,
+      };
     }
 
     if (regex.startsWith("&&", i)) {
@@ -449,18 +534,15 @@ const parse_character_class = (
             `Unsupported POSIX character class "${name}" at index ${i}`,
           );
         }
-        const opposite_ascii_range =
-          ascii_fold && name === "lower"
-            ? "A-Z"
-            : ascii_fold && name === "upper"
-              ? "a-z"
-              : null;
-        if (opposite_ascii_range !== null && posix_negated) {
+        if (
+          ascii_fold &&
+          posix_negated &&
+          (name === "lower" || name === "upper")
+        ) {
           throw new SyntaxError(
             `Unsupported negated POSIX ${name} class inside an inline case-insensitive group`,
           );
         }
-        if (opposite_ascii_range !== null) fragment += opposite_ascii_range;
 
         if (posix_negated) {
           add_character_class_atom(operand, `[^${fragment}]`, i);
@@ -481,8 +563,21 @@ const parse_character_class = (
         );
       }
 
-      const nested = parse_character_class(regex, i, ascii_fold);
-      add_character_class_atom(operand, nested.atom, i);
+      const nested = parse_character_class(
+        regex,
+        i,
+        ascii_fold,
+        false,
+        nesting_depth + 1,
+      );
+      add_character_class_atom(
+        operand,
+        nested.atom,
+        i,
+        nested.contains_complex_set,
+        nested.contains_complemented_complex_set ||
+          (nested.negated && nested.contains_complex_set),
+      );
       i = nested.end;
       literal_closing_bracket_allowed = false;
       continue;
@@ -511,45 +606,9 @@ const parse_character_class = (
       continue;
     }
 
-    if (
-      ascii_fold &&
-      is_ascii_letter(char) &&
-      operand.tail !== "range" &&
-      regex[i + 1] === "-" &&
-      regex[i + 2] !== undefined &&
-      regex[i + 2] !== "]" &&
-      !regex.startsWith("&&", i + 2) &&
-      regex[i + 2] !== "[" &&
-      regex[i + 2] !== "\\"
-    ) {
-      const range_end = character_at(regex, i + 2);
-      const range = `${char}-${range_end}`;
-      const folded =
-        range === range.toLowerCase()
-          ? range.toUpperCase()
-          : range.toLowerCase();
-      append_character_class_range(operand, `${range}${folded}`);
-      literal_closing_bracket_allowed = false;
-      i += 2 + range_end.length;
-      continue;
-    }
-
-    const should_fold = ascii_fold && is_ascii_letter(char);
-    let folded_char = char;
-    if (should_fold) {
-      const lower = char.toLowerCase();
-      const upper = char.toUpperCase();
-      // A range endpoint stays first so folding cannot make a descending range valid.
-      folded_char =
-        operand.tail === "range"
-          ? `${char}${char === lower ? upper : lower}`
-          : `${lower}${upper}`;
-    }
     append_character_class_fragment(
       operand,
-      char === "^" && operand.fragment.length === 0 ? "\\^" : folded_char,
-      should_fold && operand.tail !== "range",
-      i,
+      char === "^" && operand.fragment.length === 0 ? "\\^" : char,
     );
     literal_closing_bracket_allowed = false;
     i += char.length;
