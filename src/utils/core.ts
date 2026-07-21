@@ -7,29 +7,40 @@ const compile_unicode_regexp = (source: string, flags: string): RegExp => {
   try {
     return new RegExp(source, flags);
   } catch (error) {
-    if (
-      !(error instanceof SyntaxError) ||
-      !error.message.toLowerCase().includes("invalid property name")
-    ) {
-      throw error;
-    }
+    // RegExp SyntaxError messages are engine-specific (V8 says "invalid property name",
+    // while JavaScriptCore says "invalid property expression"). Attempt the narrow bare-
+    // property rewrite for any SyntaxError, then preserve the original error if it does not
+    // produce a valid expression.
+    if (!(error instanceof SyntaxError)) throw error;
 
     let changed = false;
     const property_names = new Map<string, string>();
-    const fixed = source.replace(/(\\[pP])\{([^}=]+)\}/g, (_, p, n) => {
-      let property_name = property_names.get(n);
-      if (property_name === undefined) {
-        try {
-          new RegExp(`\\p{${n}}`, "u");
-          property_name = n;
-        } catch {
-          property_name = `Script=${n}`;
+    const fixed = source.replace(
+      /(\\[pP])\{([^}=]+)\}/g,
+      (text, p, n, offset) => {
+        // Only rewrite an active property escape. With an odd number of immediately
+        // preceding backslashes, this match's backslash is itself escaped (e.g. `\\p{Han}`
+        // in the RegExp source) and the property-looking text is literal.
+        let preceding_backslashes = 0;
+        for (let i = offset - 1; i >= 0 && source[i] === "\\"; --i) {
+          ++preceding_backslashes;
         }
-        property_names.set(n, property_name);
-      }
-      if (property_name !== n) changed = true;
-      return `${p}{${property_name}}`;
-    });
+        if (preceding_backslashes % 2 === 1) return text;
+
+        let property_name = property_names.get(n);
+        if (property_name === undefined) {
+          try {
+            new RegExp(`\\p{${n}}`, "u");
+            property_name = n;
+          } catch {
+            property_name = `Script=${n}`;
+          }
+          property_names.set(n, property_name);
+        }
+        if (property_name !== n) changed = true;
+        return `${p}{${property_name}}`;
+      },
+    );
 
     if (!changed) throw error;
     try {
@@ -464,7 +475,7 @@ const parse_character_class = (
       );
       if (negated && operands.length > 1 && contains_complemented_complex_set) {
         throw new SyntaxError(
-          `Unsupported outer-negated character-class intersection with a nested complemented Unicode-property, POSIX, or shorthand set at index ${start}`,
+          `Unsupported outer-negated character-class intersection with a nested negated class containing a Unicode property, POSIX class, or shorthand at index ${start}`,
         );
       }
 

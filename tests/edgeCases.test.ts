@@ -53,6 +53,69 @@ describe("Edge cases", () => {
     expect(wordPattern!.test("שלום")).toBe(true);
   });
 
+  it("retries short Unicode script properties independently of engine error wording", () => {
+    const NativeRegExp = globalThis.RegExp;
+    class AlternatePropertyErrorRegExp extends NativeRegExp {
+      constructor(pattern?: string | RegExp, flags?: string) {
+        try {
+          super(pattern, flags);
+        } catch (error) {
+          if (error instanceof SyntaxError && /invalid property name/i.test(error.message)) {
+            throw new SyntaxError("Invalid regular expression: invalid property expression");
+          }
+          throw error;
+        }
+      }
+    }
+
+    let kimi: RegExp | null = null;
+    let inlineCaseFold: RegExp | null = null;
+    let malformedError: unknown;
+    globalThis.RegExp = AlternatePropertyErrorRegExp as RegExpConstructor;
+    try {
+      kimi = create_pattern({
+        Regex: "[\\p{L}\\p{M}&&[^\\p{Han}]]+",
+      });
+      inlineCaseFold = create_pattern({
+        Regex: "(?i:[A-Z&&[^\\p{Han}]])+",
+      });
+      try {
+        create_pattern({ Regex: "\\p{Han}(" });
+      } catch (error) {
+        malformedError = error;
+      }
+    } finally {
+      globalThis.RegExp = NativeRegExp;
+    }
+
+    expect("Aé\u0301汉B字 שלום".match(kimi!)).toEqual(["Aé\u0301", "B", "שלום"]);
+    expect("abc ABC 汉𠀀".match(inlineCaseFold!)).toEqual(["abc", "ABC"]);
+    expect(malformedError).toBeInstanceOf(SyntaxError);
+    expect((malformedError as SyntaxError).message).toContain("invalid property expression");
+  });
+
+  it("does not rewrite escaped property-like literals during script fallback", () => {
+    const pattern = create_pattern({
+      Regex: String.raw`\p{Han}[\\p{Han}]`,
+    });
+    const propertyAfterLiteralBackslash = create_pattern({
+      Regex: String.raw`\\\p{Han}`,
+    });
+    expect(pattern).not.toBeNull();
+    expect(propertyAfterLiteralBackslash).not.toBeNull();
+
+    const matches = (input: string) => {
+      pattern!.lastIndex = 0;
+      return pattern!.test(input);
+    };
+    expect(matches("汉p")).toBe(true);
+    expect(matches("汉\\")).toBe(true);
+    expect(matches("汉S")).toBe(false);
+    expect(matches("汉字")).toBe(false);
+    expect("\\汉".match(propertyAfterLiteralBackslash!)).toEqual(["\\汉"]);
+    expect("汉".match(propertyAfterLiteralBackslash!)).toBeNull();
+  });
+
   it("rewrites \\W inside positive character classes with Unicode semantics", () => {
     const pattern = create_pattern({ Regex: "[\\W]" });
     expect(pattern).not.toBeNull();
@@ -326,8 +389,8 @@ describe("Edge cases", () => {
     expectSyntaxError("(?i:[_-A]+)", /range/i);
     expectSyntaxError("(?i:[[:^lower:]]+)", /POSIX|case-insensitive/i);
     expectSyntaxError("(?i:[a-z&&[[:lower:]-z]]+)", /range|intersection/i);
-    // Oniguruma's outer negation of nested complemented Unicode/POSIX/shorthand sets is not
-    // Boolean set complement, so reject these forms instead of approximating them.
+    // Oniguruma's outer negation is not Boolean set complement when an operand contains a
+    // nested negated class over Unicode/POSIX/shorthand sets, so reject instead of approximating.
     expectSyntaxError("[^[^\\p{Alphabetic}]&&[^\\P{Alphabetic}]]", /outer-negated/i);
     expectSyntaxError("[^[^[:alpha:]]&&[^[:^alpha:]]]", /outer-negated/i);
     expectSyntaxError("[^[^a]a&&[^\\H]]", /outer-negated/i);
