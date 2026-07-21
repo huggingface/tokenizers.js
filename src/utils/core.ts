@@ -627,7 +627,7 @@ const rewrite_oniguruma_to_js = (regex: string): string => {
   };
 
   for (let i = 0; i < regex.length; ) {
-    const char = regex[i];
+    const char = character_at(regex, i);
 
     if (char === "\\") {
       const braced = BRACED_ESCAPE_RE.exec(regex.slice(i));
@@ -653,8 +653,8 @@ const rewrite_oniguruma_to_js = (regex: string): string => {
         break;
       }
 
-      const next = regex[i + 1];
-      i += 2;
+      const next = character_at(regex, i + 1);
+      i += 1 + next.length;
 
       if (next === "G") {
         // \G (continuation anchor) has no JavaScript equivalent. Hub patterns use it as a
@@ -792,7 +792,7 @@ const rewrite_oniguruma_to_js = (regex: string): string => {
             ? `[${char.toLowerCase()}${char.toUpperCase()}]`
             : char,
         );
-        ++i;
+        i += char.length;
         continue;
     }
   }

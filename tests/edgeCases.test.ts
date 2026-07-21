@@ -135,6 +135,20 @@ describe("Edge cases", () => {
     expect("++".match(compile_regex("\\++"))).toEqual(["++"]);
   });
 
+  it("treats astral literals as single regex atoms", () => {
+    for (const source of ["😀{2}+", "\\😀{2}+"]) {
+      const pattern = compile_regex(source);
+      for (const input of ["😀😀", "😀😀😀😀"]) {
+        pattern.lastIndex = 0;
+        expect(input.match(pattern)).toEqual([input]);
+      }
+      for (const input of ["😀", "😀😀😀"]) {
+        pattern.lastIndex = 0;
+        expect(input.match(pattern)).not.toEqual([input]);
+      }
+    }
+  });
+
   it("translates Kimi-shaped character-class intersections", () => {
     const pattern = compile_regex("[\\p{L}\\p{M}&&[^\\p{Han}]]+");
     expect("Aé\u0301汉B字 שלום".match(pattern)).toEqual(["Aé\u0301", "B", "שלום"]);
