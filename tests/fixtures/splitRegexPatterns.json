@@ -657,6 +657,41 @@
       "inputs": ["abc DEF fed"]
     },
     {
+      "id": "edge-class-intersection-case-fold-disjoint",
+      "pattern": "(?i:[a-z&&[A-Z]])+",
+      "inputs": ["abc ABC aA"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-negated",
+      "pattern": "(?i:[a-z&&[^A-Z]])+",
+      "inputs": ["abc ABC aA 123"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-posix",
+      "pattern": "(?i:[a&&[[:upper:]]])+",
+      "inputs": ["aA bB"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-outer-negated",
+      "pattern": "(?i:[^a&&[A]])+",
+      "inputs": ["aA bB 123"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-outer-negated-nonempty",
+      "pattern": "(?i:[^A-Z&&[D-F]])+",
+      "inputs": ["abc DEF fed XYZ 123"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-escaped-range",
+      "pattern": "(?i:[\\x61-\\x7a&&[^\\u0078]])+",
+      "inputs": ["abc XYZ xyz"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-short-script",
+      "pattern": "(?i:[A-Z&&[^\\p{Han}]])+",
+      "inputs": ["abc ABC 汉𠀀"]
+    },
+    {
       "id": "edge-class-intersection-star",
       "pattern": "[a-z&&[def]]*",
       "inputs": ["deff x"]

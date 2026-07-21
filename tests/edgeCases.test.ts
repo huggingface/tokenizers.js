@@ -153,6 +153,14 @@ describe("Edge cases", () => {
     expect(outerNegated).not.toBeNull();
     expect("ABC abc mnop 123".match(outerNegated!)).toEqual(["ABC ", " mnop 123"]);
 
+    // Direct complements remain safe membership operands; only an additional nested `^`
+    // around a complex set enters Oniguruma's non-Boolean outer-negation corner.
+    for (const regex of ["[^\\P{Alphabetic}&&[a]]+", "[^a&&[\\W]]+"]) {
+      const safeOuterNegated = create_pattern({ Regex: regex });
+      expect(safeOuterNegated).not.toBeNull();
+      expect("aA1 !ש".match(safeOuterNegated!)).toEqual(["aA1 !ש"]);
+    }
+
     const caseInsensitive = create_pattern({
       Regex: "(?i:[a-z&&[def]]+)",
     });
@@ -187,6 +195,42 @@ describe("Edge cases", () => {
     expect(overlappingNestedUnion!.source).toMatch(/\+b$/);
     expect("aaab xyzb".match(overlappingNestedUnion!)).toEqual(["aaab", "yzb"]);
     expect("aaac".match(overlappingNestedUnion!)).toBeNull();
+  });
+
+  it("applies inline case folding after character-class intersection", () => {
+    const disjoint = create_pattern({ Regex: "(?i:[a-z&&[A-Z]])+" });
+    expect(disjoint).not.toBeNull();
+    expect("abc ABC".match(disjoint!)).toBeNull();
+
+    const negatedOperand = create_pattern({
+      Regex: "(?i:[a-z&&[^A-Z]])+",
+    });
+    expect(negatedOperand).not.toBeNull();
+    expect("abc ABC aA 123".match(negatedOperand!)).toEqual(["abc", "ABC", "aA"]);
+
+    const outerNegated = create_pattern({ Regex: "(?i:[^a&&[A]])+" });
+    expect(outerNegated).not.toBeNull();
+    expect("aA bB 123".match(outerNegated!)).toEqual(["aA bB 123"]);
+
+    const nonemptyOuterNegated = create_pattern({
+      Regex: "(?i:[^A-Z&&[D-F]])+",
+    });
+    expect(nonemptyOuterNegated).not.toBeNull();
+    expect("abc DEF fed XYZ 123".match(nonemptyOuterNegated!)).toEqual(["abc ", " ", " XYZ 123"]);
+
+    const escapedRange = create_pattern({
+      Regex: "(?i:[\\x61-\\x7a&&[^\\u0078]])+",
+    });
+    expect(escapedRange).not.toBeNull();
+    expect("abc XYZ xyz".match(escapedRange!)).toEqual(["abc", "YZ", "yz"]);
+
+    // The internal set-membership probe must use the same short-script fallback as the
+    // final expression, including for astral Han.
+    const shortScript = create_pattern({
+      Regex: "(?i:[A-Z&&[^\\p{Han}]])+",
+    });
+    expect(shortScript).not.toBeNull();
+    expect("abc ABC 汉𠀀".match(shortScript!)).toEqual(["abc", "ABC"]);
   });
 
   it("parses escaped literals, POSIX operands, and range tails", () => {
@@ -282,5 +326,19 @@ describe("Edge cases", () => {
     expectSyntaxError("(?i:[_-A]+)", /range/i);
     expectSyntaxError("(?i:[[:^lower:]]+)", /POSIX|case-insensitive/i);
     expectSyntaxError("(?i:[a-z&&[[:lower:]-z]]+)", /range|intersection/i);
+    // Oniguruma's outer negation of nested complemented Unicode/POSIX/shorthand sets is not
+    // Boolean set complement, so reject these forms instead of approximating them.
+    expectSyntaxError("[^[^\\p{Alphabetic}]&&[^\\P{Alphabetic}]]", /outer-negated/i);
+    expectSyntaxError("[^[^[:alpha:]]&&[^[:^alpha:]]]", /outer-negated/i);
+    expectSyntaxError("[^[^a]a&&[^\\H]]", /outer-negated/i);
+
+    const supportedNesting = `${"[".repeat(256)}a${"]".repeat(256)}`;
+    const supportedPattern = create_pattern({ Regex: supportedNesting });
+    expect(supportedPattern).not.toBeNull();
+    expect(supportedPattern!.test("a")).toBe(true);
+
+    const excessiveNesting = `${"[".repeat(257)}a${"]".repeat(257)}`;
+    expectSyntaxError(excessiveNesting, /maximum character-class nesting depth of 256/i);
+    expectSyntaxError(`${"[".repeat(257)}a`, /maximum character-class nesting depth of 256/i);
   });
 });
