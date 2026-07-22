@@ -237,6 +237,20 @@ describe("Edge cases", () => {
     expect("abc DEF fed XYZ 123".match(nonemptyOuterNegated)).toEqual(["abc ", " ", " XYZ 123"]);
   });
 
+  it.each([String.raw`\x61`, String.raw`\u0061`, String.raw`\x{61}`])("applies inline case folding to encoded ASCII literals: %s", (encodedA) => {
+    const pattern = compile_regex(`^(?i:${encodedA})$`);
+    for (const input of ["a", "A"]) {
+      pattern.lastIndex = 0;
+      expect(pattern.test(input)).toBe(true);
+    }
+    pattern.lastIndex = 0;
+    expect(pattern.test("b")).toBe(false);
+  });
+
+  it("uses Oniguruma semantics for the POSIX punctuation class", () => {
+    expect("a!+$|§©™😀b".match(compile_regex("[[:punct:]]+"))).toEqual(["!+$|§©™😀"]);
+  });
+
   it.each([
     {
       name: "escaped brackets",

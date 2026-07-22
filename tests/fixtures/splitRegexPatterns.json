@@ -584,6 +584,26 @@
       "inputs": ["ab 12 ٣٤x"]
     },
     {
+      "id": "edge-posix-punct",
+      "pattern": "[[:punct:]]+",
+      "inputs": ["a!+$|§©™😀b"]
+    },
+    {
+      "id": "edge-inline-case-fold-fixed-hex",
+      "pattern": "(?i:\\x61)+",
+      "inputs": ["a A aa AA b"]
+    },
+    {
+      "id": "edge-inline-case-fold-fixed-unicode",
+      "pattern": "(?i:\\u0061)+",
+      "inputs": ["a A aa AA b"]
+    },
+    {
+      "id": "edge-inline-case-fold-braced-hex",
+      "pattern": "(?i:\\x{61})+",
+      "inputs": ["a A aa AA b"]
+    },
+    {
       "id": "edge-codepoint-brace",
       "pattern": "\\x{1F600}+",
       "inputs": ["a😀😀b c😀"]

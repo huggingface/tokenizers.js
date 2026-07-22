@@ -167,7 +167,7 @@ const POSIX_CLASS_FRAGMENTS: Record<string, string> = {
   upper: "\\p{Uppercase}",
   space: "\\p{White_Space}",
   blank: "\\t\\p{Zs}",
-  punct: "\\p{P}",
+  punct: "\\p{P}\\p{S}",
   cntrl: "\\p{Cc}",
   word: UNICODE_WORD_CHARS_IN_CLASS,
   xdigit: HEX_DIGIT_CHARS,
@@ -198,6 +198,20 @@ const is_ascii_letter = (char: string): boolean =>
 
 const character_at = (string: string, index: number): string =>
   String.fromCodePoint(string.codePointAt(index)!);
+
+const get_ascii_folded_hex_atom = (hex: string): string | null => {
+  // Oniguruma permits at most eight digits for a single braced code point.
+  if (!/^[0-9A-Fa-f]{1,8}$/.test(hex)) return null;
+
+  const code_point = Number.parseInt(hex, 16);
+  if (code_point >= 0x41 && code_point <= 0x5a) {
+    return `[${String.fromCharCode(code_point + 0x20)}${String.fromCharCode(code_point)}]`;
+  }
+  if (code_point >= 0x61 && code_point <= 0x7a) {
+    return `[${String.fromCharCode(code_point)}${String.fromCharCode(code_point - 0x20)}]`;
+  }
+  return null;
+};
 
 // Used to override the default invalid regex of the Bloom pretokenizer:
 // ` ?[^(\\s|[.,!?…。，、।۔،])]+`.
@@ -637,12 +651,27 @@ const rewrite_oniguruma_to_js = (regex: string): string => {
         let replacement = text;
         if (kind === "x") {
           // Oniguruma writes braced code points as \x{...}; JavaScript uses \u{...}.
-          replacement = `\\u{${body}}`;
+          const code_point_escape = `\\u{${body}}`;
+          replacement = ascii_fold
+            ? (get_ascii_folded_hex_atom(body) ?? code_point_escape)
+            : code_point_escape;
         } else if (body === "Word") {
           // Oniguruma's \p{Word} property is its word-character class.
           replacement =
             kind === "p" ? UNICODE_WORD_CLASS : UNICODE_NON_WORD_CLASS;
         }
+        emit_atom(replacement);
+        i += text.length;
+        continue;
+      }
+
+      const fixed_width = FIXED_WIDTH_ESCAPE_RE.exec(regex.slice(i));
+      if (fixed_width) {
+        const text = fixed_width[0];
+        const replacement =
+          ascii_fold && text[1] !== "c"
+            ? (get_ascii_folded_hex_atom(text.slice(2)) ?? text)
+            : text;
         emit_atom(replacement);
         i += text.length;
         continue;
