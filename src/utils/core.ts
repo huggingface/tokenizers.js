@@ -329,17 +329,18 @@ const rewrite_character_class_escape = (
     );
   }
 
-  const next = regex[index + 1];
+  const next = character_at(regex, index + 1);
+  const next_end = index + 1 + next.length;
   const raw_whitespace = RAW_WHITESPACE_ESCAPES.get(next);
   if (raw_whitespace !== undefined) {
     append_character_class_fragment(operand, raw_whitespace);
-    return index + 2;
+    return next_end;
   }
 
   const complement = CLASS_COMPLEMENT_ALTERNATIVES.get(next);
   if (complement !== undefined) {
     add_character_class_atom(operand, complement, index);
-    return index + 2;
+    return next_end;
   }
 
   const rewrite = CLASS_ESCAPE_REWRITES.get(next);
@@ -359,7 +360,7 @@ const rewrite_character_class_escape = (
     replacement = next;
   }
   append_character_class_fragment(operand, replacement, set_valued, index);
-  return index + 2;
+  return next_end;
 };
 
 const compile_character_set_union = (pieces: string[]): string => {

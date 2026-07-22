@@ -286,6 +286,12 @@ describe("Edge cases", () => {
       input: "A!",
       expected: ["A"],
     },
+    {
+      name: "escaped astral range endpoints",
+      regex: "[😀-\\😁-\\p{Nd}]+",
+      input: "😀😁-5😂!",
+      expected: ["😀😁-5"],
+    },
   ])("parses $name in character classes", ({ regex, input, expected }) => {
     expect(input.match(compile_regex(regex))).toEqual(expected);
   });
