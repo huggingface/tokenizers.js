@@ -159,19 +159,19 @@ const RAW_WHITESPACE_ESCAPES = new Map<string, string>([
 ]);
 
 // POSIX bracket expressions ([:name:]) -> JavaScript class fragments.
-const POSIX_CLASS_FRAGMENTS: Record<string, string> = {
-  alpha: "\\p{Alphabetic}",
-  alnum: "\\p{Alphabetic}\\p{Nd}",
-  digit: "\\p{Nd}",
-  lower: "\\p{Lowercase}",
-  upper: "\\p{Uppercase}",
-  space: "\\p{White_Space}",
-  blank: "\\t\\p{Zs}",
-  punct: "\\p{P}\\p{S}",
-  cntrl: "\\p{Cc}",
-  word: UNICODE_WORD_CHARS_IN_CLASS,
-  xdigit: HEX_DIGIT_CHARS,
-};
+const POSIX_CLASS_FRAGMENTS = new Map<string, string>([
+  ["alpha", "\\p{Alphabetic}"],
+  ["alnum", "\\p{Alphabetic}\\p{Nd}"],
+  ["digit", "\\p{Nd}"],
+  ["lower", "\\p{Lowercase}"],
+  ["upper", "\\p{Uppercase}"],
+  ["space", "\\p{White_Space}"],
+  ["blank", "\\t\\p{Zs}"],
+  ["punct", "\\p{P}\\p{S}"],
+  ["cntrl", "\\p{Cc}"],
+  ["word", UNICODE_WORD_CHARS_IN_CLASS],
+  ["xdigit", HEX_DIGIT_CHARS],
+]);
 
 // Punctuation that JavaScript's 'u' flag allows to be escaped. Any other escaped punctuation
 // is an Oniguruma identity escape (e.g. \# or \"), whose backslash must be dropped.
@@ -187,9 +187,9 @@ const BRACED_ESCAPE_RE = /^\\([pPxu])\{([^}]*)\}/;
 // quantifier are literal characters.
 const QUANTIFIER_BRACE_RE = /^\{(\d+(?:,\d*)?|,\d+)\}/;
 
-const POSIX_BRACKET_RE = /^\[:(\^?)([a-z]+):\]/;
-const POSIX_COLLATING_RE = /^\[\.[^\]]*\.\]/;
-const POSIX_EQUIVALENCE_RE = /^\[=[^\]]*=\]/;
+const POSIX_BRACKET_RE = /^\[:(\^?)(\p{Alphabetic}+):\]/u;
+const EMPTY_NEGATED_POSIX_BRACKET_RE = /^\[:\^:\]/;
+const UNSUPPORTED_POSIX_BRACKET_RE = /^\[(?:\.[^\]]*\.\]|=[^\]]*=\])/;
 const FIXED_WIDTH_ESCAPE_RE =
   /^(?:\\x[0-9A-Fa-f]{2}|\\u[0-9A-Fa-f]{4}|\\c[A-Za-z])/;
 
@@ -204,13 +204,11 @@ const get_ascii_folded_hex_atom = (hex: string): string | null => {
   if (!/^[0-9A-Fa-f]{1,8}$/.test(hex)) return null;
 
   const code_point = Number.parseInt(hex, 16);
-  if (code_point >= 0x41 && code_point <= 0x5a) {
-    return `[${String.fromCharCode(code_point + 0x20)}${String.fromCharCode(code_point)}]`;
-  }
-  if (code_point >= 0x61 && code_point <= 0x7a) {
-    return `[${String.fromCharCode(code_point)}${String.fromCharCode(code_point - 0x20)}]`;
-  }
-  return null;
+  if (code_point > 0x7f) return null;
+  const letter = String.fromCharCode(code_point);
+  return is_ascii_letter(letter)
+    ? `[${letter.toLowerCase()}${letter.toUpperCase()}]`
+    : null;
 };
 
 // Used to override the default invalid regex of the Bloom pretokenizer:
@@ -230,7 +228,6 @@ type CharacterClassOperand = {
   alternatives: string[];
   tail: CharacterClassTail;
   contains_complex_set: boolean;
-  contains_nested_negated_complex_set: boolean;
 };
 
 type ParsedCharacterClass = {
@@ -246,7 +243,6 @@ const create_character_class_operand = (): CharacterClassOperand => ({
   alternatives: [],
   tail: null,
   contains_complex_set: false,
-  contains_nested_negated_complex_set: false,
 });
 
 const throw_character_class_range_error = (index: number): never => {
@@ -260,16 +256,12 @@ const add_character_class_atom = (
   atom: string,
   index: number,
   contains_complex_set = true,
-  contains_nested_negated_complex_set = false,
 ): void => {
   if (operand.tail === "range") throw_character_class_range_error(index);
   operand.alternatives.push(atom);
   operand.tail = "set";
   operand.contains_complex_set =
     operand.contains_complex_set || contains_complex_set;
-  operand.contains_nested_negated_complex_set =
-    operand.contains_nested_negated_complex_set ||
-    contains_nested_negated_complex_set;
 };
 
 const append_character_class_fragment = (
@@ -299,29 +291,22 @@ const rewrite_character_class_escape = (
   const braced = BRACED_ESCAPE_RE.exec(regex.slice(index));
   if (braced) {
     const [text, kind, body] = braced;
-    if (kind === "x") {
-      append_character_class_fragment(operand, `\\u{${body}}`);
-    } else if (body === "Word") {
-      if (kind === "p") {
-        append_character_class_fragment(
-          operand,
-          UNICODE_WORD_CHARS_IN_CLASS,
-          true,
-          index,
-        );
-      } else if (kind === "P") {
-        add_character_class_atom(
-          operand,
-          `[^${UNICODE_WORD_CHARS_IN_CLASS}]`,
-          index,
-        );
-      } else {
-        append_character_class_fragment(operand, text);
-      }
+    if (kind === "P" && body === "Word") {
+      add_character_class_atom(
+        operand,
+        `[^${UNICODE_WORD_CHARS_IN_CLASS}]`,
+        index,
+      );
     } else {
+      const replacement =
+        kind === "x"
+          ? `\\u{${body}}`
+          : kind === "p" && body === "Word"
+            ? UNICODE_WORD_CHARS_IN_CLASS
+            : text;
       append_character_class_fragment(
         operand,
-        text,
+        replacement,
         kind === "p" || kind === "P",
         index,
       );
@@ -388,14 +373,11 @@ const compile_character_set_union = (pieces: string[]): string => {
 const compile_character_class_operand = (
   operand: CharacterClassOperand,
 ): string => {
-  if (operand.alternatives.length === 0) return `[${operand.fragment}]`;
-  if (operand.fragment.length === 0) {
-    return compile_character_set_union(operand.alternatives);
-  }
-  return compile_character_set_union([
-    `[${operand.fragment}]`,
-    ...operand.alternatives,
-  ]);
+  const pieces =
+    operand.fragment.length === 0
+      ? operand.alternatives
+      : [`[${operand.fragment}]`, ...operand.alternatives];
+  return compile_character_set_union(pieces);
 };
 
 // Oniguruma resolves character-class set operations before applying inline case folding.
@@ -440,6 +422,7 @@ const parse_character_class = (
 
   const operands: CharacterClassOperand[] = [create_character_class_operand()];
   let operand = operands[0];
+  let contains_nested_negated_complex_set = false;
 
   while (i < regex.length) {
     const char = character_at(regex, i);
@@ -467,9 +450,6 @@ const parse_character_class = (
 
       const contains_complex_set = operands.some(
         (candidate) => candidate.contains_complex_set,
-      );
-      const contains_nested_negated_complex_set = operands.some(
-        (candidate) => candidate.contains_nested_negated_complex_set,
       );
       if (
         negated &&
@@ -537,10 +517,15 @@ const parse_character_class = (
 
     if (char === "[") {
       const suffix = regex.slice(i);
+      if (EMPTY_NEGATED_POSIX_BRACKET_RE.test(suffix)) {
+        throw new SyntaxError(
+          `Malformed empty negated POSIX character class at index ${i}`,
+        );
+      }
       const posix = POSIX_BRACKET_RE.exec(suffix);
       if (posix) {
         const [, posix_negated, name] = posix;
-        const fragment = POSIX_CLASS_FRAGMENTS[name];
+        const fragment = POSIX_CLASS_FRAGMENTS.get(name);
         if (fragment === undefined) {
           throw new SyntaxError(
             `Unsupported POSIX character class "${name}" at index ${i}`,
@@ -565,10 +550,7 @@ const parse_character_class = (
         continue;
       }
 
-      if (
-        POSIX_COLLATING_RE.test(suffix) ||
-        POSIX_EQUIVALENCE_RE.test(suffix)
-      ) {
+      if (UNSUPPORTED_POSIX_BRACKET_RE.test(suffix)) {
         throw new SyntaxError(
           `Unsupported POSIX collating or equivalence bracket expression at index ${i}`,
         );
@@ -586,9 +568,10 @@ const parse_character_class = (
         nested.atom,
         i,
         nested.contains_complex_set,
-        nested.contains_nested_negated_complex_set ||
-          (nested.negated && nested.contains_complex_set),
       );
+      contains_nested_negated_complex_set ||=
+        nested.contains_nested_negated_complex_set ||
+        (nested.negated && nested.contains_complex_set);
       i = nested.end;
       continue;
     }
@@ -632,8 +615,7 @@ const rewrite_oniguruma_to_js = (regex: string): string => {
   let atom_start = -1; // index in `out` of the last complete atom, or -1
   let last_was_quantifier = false;
   let ascii_fold = false;
-  const group_starts: number[] = [];
-  const group_ascii_folds: boolean[] = [];
+  const group_states: Array<[number, boolean]> = [];
 
   const emit_atom = (text: string) => {
     atom_start = out.length;
@@ -752,8 +734,7 @@ const rewrite_oniguruma_to_js = (regex: string): string => {
             ? "(?:"
             : source_prefix;
 
-        group_starts.push(out.length);
-        group_ascii_folds.push(ascii_fold);
+        group_states.push([out.length, ascii_fold]);
         if (inline_case_insensitive) ascii_fold = true;
         // JavaScript has no atomic groups; (?>...) keeps the group but allows backtracking.
         out += output_prefix;
@@ -763,8 +744,7 @@ const rewrite_oniguruma_to_js = (regex: string): string => {
       }
       case ")":
         out += char;
-        atom_start = group_starts.pop() ?? -1;
-        ascii_fold = group_ascii_folds.pop() ?? false;
+        [atom_start, ascii_fold] = group_states.pop() ?? [-1, false];
         last_was_quantifier = false;
         ++i;
         continue;

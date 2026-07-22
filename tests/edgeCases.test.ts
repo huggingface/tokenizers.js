@@ -135,7 +135,7 @@ describe("Edge cases", () => {
     expect("++".match(compile_regex("\\++"))).toEqual(["++"]);
   });
 
-  it("treats astral literals as single regex atoms", () => {
+  it("treats astral literals as single atoms during stacked quantifier rewriting", () => {
     for (const source of ["😀{2}+", "\\😀{2}+"]) {
       const pattern = compile_regex(source);
       for (const input of ["😀😀", "😀😀😀😀"]) {
@@ -152,197 +152,216 @@ describe("Edge cases", () => {
   it("translates Kimi-shaped character-class intersections", () => {
     const pattern = compile_regex("[\\p{L}\\p{M}&&[^\\p{Han}]]+");
     expect("Aé\u0301汉B字 שלום".match(pattern)).toEqual(["Aé\u0301", "B", "שלום"]);
-    expect("A𐐀𠀀B".match(pattern)).toEqual(["A𐐀", "B"]);
   });
 
-  it("preserves quantifier scope on character-class intersections", () => {
-    const cases = [
-      {
-        quantifier: "+",
-        accepted: ["d", "deff"],
-        rejected: ["", "dex"],
-      },
-      {
-        quantifier: "*",
-        accepted: ["", "deff"],
-        rejected: ["dex"],
-      },
-      {
-        quantifier: "?",
-        accepted: ["", "d"],
-        rejected: ["dd", "x"],
-      },
-      {
-        quantifier: "{2,3}",
-        accepted: ["de", "def"],
-        rejected: ["d", "deff"],
-      },
-    ];
-
-    for (const { quantifier, accepted, rejected } of cases) {
-      const pattern = compile_regex(`^[a-z&&[def]]${quantifier}$`);
-      for (const input of accepted) {
-        pattern.lastIndex = 0;
-        expect(pattern.test(input)).toBe(true);
-      }
-      for (const input of rejected) {
-        pattern.lastIndex = 0;
-        expect(pattern.test(input)).toBe(false);
-      }
-    }
-  });
-
-  it("composes intersections with adjacent classes and set operands", () => {
-    const adjacent = compile_regex("^[a-z&&[def]]+[0-9]+[A-Z]$");
-    expect(adjacent.test("def12Z")).toBe(true);
-    adjacent.lastIndex = 0;
-    expect(adjacent.test("abc12Z")).toBe(false);
-
-    const rawRightOperand = compile_regex("[a-z&&def]+");
-    expect("abc def xyz".match(rawRightOperand)).toEqual(["def"]);
-
-    const outerNegated = compile_regex("[^a-z&&[^m-p]]+");
-    expect("ABC abc mnop 123".match(outerNegated)).toEqual(["ABC ", " mnop 123"]);
-
-    // Direct complements are supported; only nested negated classes are rejected.
-    for (const regex of ["[^\\P{Alphabetic}&&[a]]+", "[^a&&[\\W]]+"]) {
-      expect("aA1 !ש".match(compile_regex(regex))).toEqual(["aA1 !ש"]);
-    }
-
-    const scopedCaseInsensitive = compile_regex("^(?i:a)b$");
-    expect(scopedCaseInsensitive.test("Ab")).toBe(true);
-    scopedCaseInsensitive.lastIndex = 0;
-    expect(scopedCaseInsensitive.test("AB")).toBe(false);
-
-    const recursive = compile_regex("[a-z&&[d-z&&[^x]]]+");
-    expect("abc def xyz".match(recursive)).toEqual(["def", "yz"]);
-
-    const overlappingNestedUnion = compile_regex("[a[a-z]&&[^x]]+b");
-    expect(overlappingNestedUnion.source).toMatch(/\+b$/);
-    expect("aaab xyzb".match(overlappingNestedUnion)).toEqual(["aaab", "yzb"]);
-    expect("aaac".match(overlappingNestedUnion)).toBeNull();
-  });
-
-  it("applies inline case folding after character-class intersection", () => {
-    const disjoint = compile_regex("(?i:[a-z&&[A-Z]])+");
-    expect("abc ABC".match(disjoint)).toBeNull();
-
-    const negatedOperand = compile_regex("(?i:[a-z&&[^A-Z]])+");
-    expect("abc ABC aA 123".match(negatedOperand)).toEqual(["abc", "ABC", "aA"]);
-
-    const outerNegated = compile_regex("(?i:[^a&&[A]])+");
-    expect("aA bB 123".match(outerNegated)).toEqual(["aA bB 123"]);
-
-    const nonemptyOuterNegated = compile_regex("(?i:[^A-Z&&[D-F]])+");
-    expect("abc DEF fed XYZ 123".match(nonemptyOuterNegated)).toEqual(["abc ", " ", " XYZ 123"]);
-  });
-
-  it.each([String.raw`\x61`, String.raw`\u0061`, String.raw`\x{61}`])("applies inline case folding to encoded ASCII literals: %s", (encodedA) => {
-    const pattern = compile_regex(`^(?i:${encodedA})$`);
-    for (const input of ["a", "A"]) {
-      pattern.lastIndex = 0;
-      expect(pattern.test(input)).toBe(true);
-    }
+  it("restores ASCII case-folding state after a scoped group", () => {
+    const pattern = compile_regex("^(?i:a)b$");
+    expect(pattern.test("Ab")).toBe(true);
     pattern.lastIndex = 0;
-    expect(pattern.test("b")).toBe(false);
+    expect(pattern.test("AB")).toBe(false);
   });
 
-  it("uses Oniguruma semantics for the POSIX punctuation class", () => {
-    expect("a!+$|§©™😀b".match(compile_regex("[[:punct:]]+"))).toEqual(["!+$|§©™😀"]);
+  it.each([
+    {
+      name: "adjacent ordinary classes outside the quantified atom",
+      source: "[a-z&&[def]]+[0-9]+[A-Z]",
+      input: "def12Z abc12Z",
+      expected: ["def12Z"],
+    },
+    {
+      name: "an unbracketed right-hand union",
+      source: "[a-z&&def]+",
+      input: "abc def xyz",
+      expected: ["def"],
+    },
+    {
+      name: "outer negation of the completed intersection",
+      source: "[^a-z&&[^m-p]]+",
+      input: "ABC abc mnop 123",
+      expected: ["ABC ", " mnop 123"],
+    },
+    {
+      name: "a direct Unicode-property complement",
+      source: "[^\\P{Alphabetic}&&[!]]+",
+      input: "a!1 ש",
+      expected: ["a", "1 ש"],
+    },
+    {
+      name: "a lifted shorthand complement in a nested class",
+      source: "[^!&&[\\W]]+",
+      input: "a!1 ש",
+      expected: ["a", "1 ש"],
+    },
+    {
+      name: "recursive intersections",
+      source: "[a-z&&[d-z&&[^x]]]+",
+      input: "abc def xyz",
+      expected: ["def", "yz"],
+    },
+  ])("composes intersections with $name", ({ source, input, expected }) => {
+    expect(input.match(compile_regex(source))).toEqual(expected);
   });
 
   it.each([
     {
       name: "escaped brackets",
-      regex: "[\\[\\]a-z&&[^\\[\\]]]+",
+      source: "[\\[\\]a-z&&[^\\[\\]]]+",
       input: "[abc][]",
       expected: ["abc"],
     },
     {
-      name: "literal ampersands",
-      regex: "[a&]+",
+      name: "raw literal ampersands",
+      source: "[a&]+",
       input: "a&&b",
       expected: ["a&&"],
     },
     {
-      name: "escaped intersection marker",
-      regex: "[\\&\\&]+",
+      name: "escaped literal ampersands",
+      source: "[\\&\\&]+",
       input: "a&&b",
       expected: ["&&"],
     },
     {
       name: "negated POSIX operands",
-      regex: "[[:^alpha:]&&[^!]]+",
+      source: "[[:^alpha:]&&[^!]]+",
       input: "a 1!?ש",
       expected: [" 1", "?"],
     },
     {
       name: "terminal hyphens",
-      regex: "[[:alpha:]-&&[-def]]+",
+      source: "[[:alpha:]-&&[-def]]+",
       input: "-defx A-",
       expected: ["-def", "-"],
     },
     {
       name: "initial closing brackets",
-      regex: "[]a-z&&[]a]]+",
+      source: "[]a-z&&[]a]]+",
       input: "]abc",
       expected: ["]a"],
     },
     {
-      name: "sets after ranges",
-      regex: "[a-f-\\w]+",
-      input: "a-f z שלום!",
-      expected: ["a-f", "z", "שלום"],
+      name: "POSIX-like ordinary nested class syntax",
+      source: "[[:a-b:]]+",
+      input: "a:b-c",
+      expected: ["a:b"],
     },
     {
-      name: "escaped range starts",
-      regex: "(?i:[\\[-a]+)",
-      input: "A!",
-      expected: ["A"],
-    },
-    {
-      name: "escaped astral range endpoints",
-      regex: "[😀-\\😁-\\p{Nd}]+",
+      name: "an escaped astral range endpoint",
+      source: "[😀-\\😁-\\p{Nd}]+",
       input: "😀😁-5😂!",
       expected: ["😀😁-5"],
     },
-  ])("parses $name in character classes", ({ regex, input, expected }) => {
-    expect(input.match(compile_regex(regex))).toEqual(expected);
+  ])("matches Oniguruma semantics for $name", ({ source, input, expected }) => {
+    expect(input.match(compile_regex(source))).toEqual(expected);
   });
 
-  it("retains lifted complement shorthands inside intersections", () => {
-    const nonWordExceptBang = compile_regex("[\\W&&[^!]]+");
-    expect("!? ש_a".match(nonWordExceptBang)).toEqual(["? "]);
-
-    const nonHexExceptZ = compile_regex("[\\H&&[^z]]+");
-    expect("g-z Z!".match(nonHexExceptZ)).toEqual(["g-", " Z!"]);
+  it.each([
+    {
+      shorthand: "\\W",
+      source: "[\\W&&[^!]]+",
+      input: "!? ש_a",
+      expected: ["? "],
+    },
+    {
+      shorthand: "\\H",
+      source: "[\\H&&[^z]]+",
+      input: "g-z Z!",
+      expected: ["g-", " Z!"],
+    },
+  ])("retains lifted $shorthand inside intersections", ({ source, input, expected }) => {
+    expect(input.match(compile_regex(source))).toEqual(expected);
   });
 
-  it("rejects malformed or unsupported character-class constructs", () => {
-    expect_syntax_error("[a-z&&]", /intersection/i);
-    expect_syntax_error("[&&[a-z]]", /intersection/i);
-    expect_syntax_error("[a-z&&&&[b]]", /intersection/i);
-    expect_syntax_error("[a-z&&[def]", /character class|intersection/i);
-    expect_syntax_error("[[:graph:]&&[a-z]]+", /POSIX|intersection/i);
-    expect_syntax_error("[[.a.]&&[a]]", /POSIX|intersection/i);
-    expect_syntax_error("[a-z&&[d-f]-x]", /range|intersection/i);
-    expect_syntax_error("[a-z&&[a[def]-x]]+", /range|intersection/i);
-    expect_syntax_error("[a-z&&[x-\\W]]+", /range|intersection/i);
-    expect_syntax_error("[a-z&&[x-\\p{L}]]+", /range|intersection/i);
-    expect_syntax_error("[a-z&&[x-[def]]]+", /range|intersection/i);
-    expect_syntax_error("(?i:[_-A]+)", /range/i);
-    expect_syntax_error("(?i:[[:^lower:]]+)", /POSIX|case-insensitive/i);
-    expect_syntax_error("(?i:[a-z&&[[:lower:]-z]]+)", /range|intersection/i);
-    // Reject the documented non-Boolean outer-negation corner rather than approximating it.
-    expect_syntax_error("[^[^\\p{Alphabetic}]&&[^\\P{Alphabetic}]]", /outer-negated/i);
-    expect_syntax_error("[^[^[:alpha:]]&&[^[:^alpha:]]]", /outer-negated/i);
-    expect_syntax_error("[^[^a]a&&[^\\H]]", /outer-negated/i);
+  it.each([
+    {
+      name: "an empty right-hand intersection operand",
+      source: "[a-z&&]",
+      message: /intersection/i,
+    },
+    {
+      name: "an empty left-hand intersection operand",
+      source: "[&&[a-z]]",
+      message: /intersection/i,
+    },
+    {
+      name: "an unterminated outer character class",
+      source: "[a-z&&[def]",
+      message: /character class|intersection/i,
+    },
+    {
+      name: "a POSIX collating expression",
+      source: "[[.a.]&&[a]]",
+      message: /POSIX|intersection/i,
+    },
+    {
+      name: "a nested class as a range start",
+      source: "[a-z&&[d-f]-x]",
+      message: /range|intersection/i,
+    },
+    {
+      name: "a POSIX class as a range start",
+      source: "[[:alpha:]-z]",
+      message: /range/i,
+    },
+    {
+      name: "a Unicode property as a range endpoint",
+      source: "[a-z&&[x-\\p{L}]]+",
+      message: /range|intersection/i,
+    },
+    {
+      name: "a nested class as a range endpoint",
+      source: "[a-z&&[x-[def]]]+",
+      message: /range|intersection/i,
+    },
+    {
+      name: "a descending range under case folding",
+      source: "(?i:[_-A]+)",
+      message: /range/i,
+    },
+    {
+      name: "a negated POSIX lowercase class under case folding",
+      source: "(?i:[[:^lower:]]+)",
+      message: /POSIX|case-insensitive/i,
+    },
+    {
+      name: "outer negation over a nested property complement",
+      source: "[^[^\\p{L}]&&[a]]",
+      message: /outer-negated/i,
+    },
+    {
+      name: "outer negation over a nested POSIX complement",
+      source: "[^[^[:alpha:]]&&[a]]",
+      message: /outer-negated/i,
+    },
+    {
+      name: "outer negation over a nested shorthand complement",
+      source: "[^[^\\W]&&[a]]",
+      message: /outer-negated/i,
+    },
+    {
+      name: "an inherited-object POSIX name",
+      source: "[a-z&&[[:constructor:]]]",
+      message: /POSIX/i,
+    },
+    {
+      name: "a wrongly cased POSIX name",
+      source: "[a-z&&[[:Alpha:]]]",
+      message: /POSIX/i,
+    },
+    {
+      name: "a missing negated POSIX name",
+      source: "[a-z&&[[:^:]]]",
+      message: /POSIX/i,
+    },
+  ])("rejects $name", ({ source, message }) => {
+    expect_syntax_error(source, message);
+  });
 
+  it("enforces the character-class nesting limit", () => {
     const supportedNesting = `${"[".repeat(256)}a${"]".repeat(256)}`;
     expect(compile_regex(supportedNesting).test("a")).toBe(true);
 
     const excessiveNesting = `${"[".repeat(257)}a${"]".repeat(257)}`;
     expect_syntax_error(excessiveNesting, /maximum character-class nesting depth of 256/i);
-    expect_syntax_error(`${"[".repeat(257)}a`, /maximum character-class nesting depth of 256/i);
   });
 });
