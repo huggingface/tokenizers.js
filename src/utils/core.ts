@@ -196,8 +196,8 @@ const FIXED_WIDTH_ESCAPE_RE =
 const is_ascii_letter = (char: string): boolean =>
   (char >= "A" && char <= "Z") || (char >= "a" && char <= "z");
 
-const character_at = (string: string, index: number): string =>
-  String.fromCodePoint(string.codePointAt(index)!);
+const character_at = (text: string, index: number): string =>
+  String.fromCodePoint(text.codePointAt(index)!);
 
 const get_ascii_folded_hex_atom = (hex: string): string | null => {
   // Oniguruma permits at most eight digits for a single braced code point.
