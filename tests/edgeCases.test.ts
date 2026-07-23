@@ -210,6 +210,12 @@ describe("Edge cases", () => {
       expected: ["abc"],
     },
     {
+      name: "an escaped syntax character as a range start",
+      source: "[\\[-a]+",
+      input: "Z[\\]^_`ab",
+      expected: ["[\\]^_`a"],
+    },
+    {
       name: "raw literal ampersands",
       source: "[a&]+",
       input: "a&&b",
