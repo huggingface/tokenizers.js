@@ -584,6 +584,26 @@
       "inputs": ["ab 12 ٣٤x"]
     },
     {
+      "id": "edge-posix-punct",
+      "pattern": "[[:punct:]]+",
+      "inputs": ["a!+$|§©™😀b"]
+    },
+    {
+      "id": "edge-inline-case-fold-fixed-hex",
+      "pattern": "(?i:\\x61)+",
+      "inputs": ["a A aa AA b"]
+    },
+    {
+      "id": "edge-inline-case-fold-fixed-unicode",
+      "pattern": "(?i:\\u0061)+",
+      "inputs": ["a A aa AA b"]
+    },
+    {
+      "id": "edge-inline-case-fold-braced-hex",
+      "pattern": "(?i:\\x{61})+",
+      "inputs": ["a A aa AA b"]
+    },
+    {
       "id": "edge-codepoint-brace",
       "pattern": "\\x{1F600}+",
       "inputs": ["a😀😀b c😀"]
@@ -606,8 +626,7 @@
     {
       "id": "edge-class-negated-shorthand",
       "pattern": "[^\\Wx]+",
-      "inputs": ["שab x!"],
-      "knownDivergence": true
+      "inputs": ["שab x!"]
     },
     {
       "id": "edge-g-anchor-digits",
@@ -630,14 +649,87 @@
     {
       "id": "edge-class-intersection",
       "pattern": "[a-w&&[^c-g]]+",
-      "inputs": ["abch"],
-      "knownDivergence": true
+      "inputs": ["abch"]
+    },
+    {
+      "id": "edge-class-intersection-kimi",
+      "pattern": "[\\p{L}\\p{M}&&[^\\p{Han}]]+",
+      "inputs": ["Aé\u0301汉B字 שלום", "A𐐀𠀀B"]
+    },
+    {
+      "id": "edge-class-intersection-positive",
+      "pattern": "[a-z&&[def]]+",
+      "inputs": ["abc def dex xyz fed"]
+    },
+    {
+      "id": "edge-class-intersection-chained",
+      "pattern": "[a-z&&[^m-p]&&[^x]]+",
+      "inputs": ["abc mnop qrst xyz"]
+    },
+    {
+      "id": "edge-class-intersection-posix",
+      "pattern": "[[:alpha:]&&[^c-g]]+",
+      "inputs": ["abc dh ψω שלום"]
+    },
+    {
+      "id": "edge-class-intersection-posix-case-insensitive",
+      "pattern": "(?i:[a-z&&[[:lower:]]]+)",
+      "inputs": ["abc DEF fed"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-disjoint",
+      "pattern": "(?i:[a-z&&[A-Z]])+",
+      "inputs": ["abc ABC aA"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-negated",
+      "pattern": "(?i:[a-z&&[^A-Z]])+",
+      "inputs": ["abc ABC aA 123"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-posix",
+      "pattern": "(?i:[a&&[[:upper:]]])+",
+      "inputs": ["aA bB"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-outer-negated",
+      "pattern": "(?i:[^a&&[A]])+",
+      "inputs": ["aA bB 123"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-outer-negated-nonempty",
+      "pattern": "(?i:[^A-Z&&[D-F]])+",
+      "inputs": ["abc DEF fed XYZ 123"]
+    },
+    {
+      "id": "edge-class-intersection-case-fold-escaped-range",
+      "pattern": "(?i:[\\x61-\\x7a&&[^\\u0078]])+",
+      "inputs": ["abc XYZ xyz"]
+    },
+    {
+      "id": "edge-class-intersection-star",
+      "pattern": "[a-z&&[def]]*b",
+      "inputs": ["b defb xb"]
+    },
+    {
+      "id": "edge-class-intersection-optional",
+      "pattern": "[a-z&&[def]]?b",
+      "inputs": ["b db xb"]
+    },
+    {
+      "id": "edge-class-intersection-brace",
+      "pattern": "[a-z&&[def]]{2,3}",
+      "inputs": ["d de def deff dex"]
+    },
+    {
+      "id": "edge-class-range-astral",
+      "pattern": "[𐐀-𐐨-\\p{Nd}]+",
+      "inputs": ["𐐀𐐨-5𐐩!"]
     },
     {
       "id": "edge-nested-class",
       "pattern": "[^\\s[.,]]+",
-      "inputs": ["ab c.d e,f"],
-      "knownDivergence": true
+      "inputs": ["ab c.d e,f"]
     }
   ],
   "additionalCases": [
