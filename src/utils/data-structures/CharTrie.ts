@@ -62,16 +62,18 @@ class CharTrie {
   }
 
   /**
-   * Searches the trie for all strings with a common prefix of `text`.
-   * @param text The common prefix to search for.
-   * @yields Each string in the trie that has `text` as a prefix.
+   * Searches the trie for stored strings that match `chars` starting at `start`.
+   * @param chars The input characters to search.
+   * @param start The index to start searching from.
+   * @yields Each stored string that is a prefix of `chars` starting at `start`.
    */
-  *common_prefix_search(text: string): Generator<string> {
+  *common_prefix_search(chars: string[], start = 0): Generator<string> {
     let node: CharTrieNode | undefined = this.root;
     if (node === undefined) return;
 
     let prefix = "";
-    for (const ch of text) {
+    for (let i = start; i < chars.length; ++i) {
+      const ch = chars[i];
       prefix += ch;
       node = node.children.get(ch);
       if (node === undefined) return;

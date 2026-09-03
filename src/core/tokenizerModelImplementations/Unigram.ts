@@ -70,11 +70,8 @@ class Unigram extends TokenizerModel {
     while (begin_pos < chars.length) {
       let has_single_node = false;
 
-      const tokens: string[] = [];
-      const sliced = chars.slice(begin_pos).join("");
-      const prefixed_tokens = this.trie.common_prefix_search(sliced);
+      const prefixed_tokens = this.trie.common_prefix_search(chars, begin_pos);
       for (const token of prefixed_tokens) {
-        tokens.push(token);
         const token_id = this.tokens_to_ids.get(token)!;
         const token_score = this.scores[token_id];
         const n = len(token);
