@@ -6,7 +6,7 @@ import type { TokenizerModelConfig } from "@static/tokenizer";
 /**
  * Abstract base class for tokenizer models.
  */
-abstract class TokenizerModel extends Callable<[string[]], string[]> {
+abstract class TokenizerModel extends Callable<[Array<[string, [number, number]]>], Array<[string, [number, number]]>> {
   config: TokenizerModelConfig;
   vocab: string[];
   /** A mapping of tokens to ids. */
@@ -37,7 +37,7 @@ abstract class TokenizerModel extends Callable<[string[]], string[]> {
    * @param tokens The tokens to encode.
    * @returns The encoded tokens.
    */
-  _call(tokens: string[]): string[] {
+  _call(tokens: Array<[string, [number,number]]>): Array<[string, [number,number]]> {
     let result = this.encode(tokens);
     if (this.fuse_unk) {
       result = fuse_unk(result, this.tokens_to_ids, this.unk_token_id);
@@ -50,7 +50,7 @@ abstract class TokenizerModel extends Callable<[string[]], string[]> {
    * @param tokens The tokens to encode.
    * @returns The encoded tokens.
    */
-  abstract encode(tokens: string[]): string[];
+  abstract encode(tokens: Array<[string, [number,number]]>): Array<[string, [number, number]]>;
 }
 
 export default TokenizerModel;

@@ -44,8 +44,8 @@ class DictionarySplitter {
    * @param text The input text to split.
    * @returns An array of tokens.
    */
-  split(text: string): string[] {
-    const result: string[] = [];
+  split(text: string): Array<[string, number]> {
+    const result: Array<[string, number]> = [];
     const n = text.length;
     let start = 0;
     let i = 0;
@@ -65,9 +65,9 @@ class DictionarySplitter {
 
       if (match) {
         if (i > start) {
-          result.push(text.slice(start, i));
+          result.push([text.slice(start, i),start]);
         }
-        result.push(match);
+        result.push([match,i]);
         i += match.length;
         start = i;
       } else {
@@ -75,7 +75,7 @@ class DictionarySplitter {
       }
     }
     if (start < n) {
-      result.push(text.slice(start));
+      result.push([text.slice(start),start]);
     }
     return result;
   }

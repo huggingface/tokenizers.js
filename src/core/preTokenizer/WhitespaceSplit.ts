@@ -10,7 +10,7 @@ class WhitespaceSplit extends PreTokenizer {
    * @param text The text to be pre-tokenized.
    * @returns An array of tokens produced by splitting the input text on whitespace.
    */
-  pre_tokenize_text(text: string): string[] {
+  pre_tokenize_text(text: string): Array<[string, [number, number]]> {
     return whitespace_split(text);
   }
 }

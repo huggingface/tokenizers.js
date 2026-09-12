@@ -26,8 +26,8 @@ class Digits extends PreTokenizer {
    * @param text The text to tokenize.
    * @returns An array of tokens.
    */
-  pre_tokenize_text(text: string): string[] {
-    return text.match(this.pattern) || [];
+  pre_tokenize_text(text: string): Array<[string, [number, number]]> {
+    return [...text.matchAll(this.pattern)].map(m => [m[0], [m.index!, m.index! + m[0].length]]);
   }
 }
 

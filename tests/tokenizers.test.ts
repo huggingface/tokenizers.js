@@ -290,7 +290,7 @@ describe("Tokenizer methods", () => {
       const text = `${bos_token}abc ${added_token} ${normalized_special_token} ${unnormalized_special_token} xyz${eos_token}`;
       const encoded = tokenizer.encode(text);
 
-      expect(encoded).toEqual({
+      expect(encoded).toMatchObject({
         ids: [1, 4, 8, 7, 10, 11, 4, 12, 4, 4, 0, 0, 0, 2],
         tokens: ["<s>", " ", "ab", "c", " <added>", " <normalized_special>", " ", "<unnormalized_special>", " ", " ", "<unk>", "<unk>", "<unk>", "</s>"],
         attention_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],

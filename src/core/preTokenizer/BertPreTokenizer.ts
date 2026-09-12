@@ -30,8 +30,10 @@ class BertPreTokenizer extends PreTokenizer {
    * @param options Additional options for the pre-tokenization logic.
    * @returns An array of tokens.
    */
-  pre_tokenize_text(text: string, options?: any): string[] {
-    return text.trim().match(this.pattern) || [];
+  
+  pre_tokenize_text(text: string, options?: any): Array<[string, [number, number]]> {
+    const trimOffset = text.length - text.trimStart().length;
+    return [...text.trim().matchAll(this.pattern)].map(m => [m[0],[trimOffset + m.index!, trimOffset + m.index! + m[0].length]]);
   }
 }
 
