@@ -62,7 +62,9 @@ jobs:
         run: pnpm test
 
       - name: Bump version
-        run: pnpm version ${{ inputs.version }} -m "🔖 @huggingface/tokenizers@%s"
+        run: pnpm version ${INPUTS_VERSION} -m "🔖 @huggingface/tokenizers@%s"
+        env:
+          INPUTS_VERSION: ${{ inputs.version }}
 
       - name: Get new version
         id: package-version
