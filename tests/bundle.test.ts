@@ -25,7 +25,8 @@ const TARGET_OUTPUT = `[ '▁Hello', '▁World' ]
 {
   ids: [ 1, 15043, 2787 ],
   tokens: [ '<s>', '▁Hello', '▁World' ],
-  attention_mask: [ 1, 1, 1 ]
+  attention_mask: [ 1, 1, 1 ],
+  offsets: [ [ 0, 0 ], [ 11, 11 ], [ 11, 11 ] ]
 }
 <s> Hello World
 `;

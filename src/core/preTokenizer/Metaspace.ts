@@ -36,7 +36,7 @@ class Metaspace extends PreTokenizer {
    * @param options The options for the pre-tokenization.
    * @returns A new list of pre-tokenized tokens.
    */
-  pre_tokenize_text(text: string, options?: PreTokenizeTextOptions): string[] {
+  pre_tokenize_text(text: string, options?: PreTokenizeTextOptions): Array<[string, [number,number]]> {
     const { section_index = undefined } = options ?? {};
     let normalized = text.replaceAll(" ", this.str_rep);
 
@@ -52,7 +52,7 @@ class Metaspace extends PreTokenizer {
     ) {
       normalized = this.str_rep + normalized;
     }
-    return [normalized];
+    return [[normalized,[0,text.length]]];
   }
 }
 

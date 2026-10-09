@@ -1,6 +1,7 @@
 import DictionarySplitter from "@utils/data-structures/DictionarySplitter";
 import AddedToken from "./AddedToken";
 import {
+  build_alignment_map,
   clean_up_tokenization,
   is_integral_number,
   lowercase_and_remove_accents,
@@ -164,7 +165,7 @@ class Tokenizer {
       return_token_type_ids = null,
     }: EncodeOptions = {},
   ): Encoding {
-    const { tokens, token_type_ids } = this.tokenize_helper(text, {
+    const { tokens, token_type_ids, offsets } = this.tokenize_helper(text, {
       text_pair,
       add_special_tokens,
     });
@@ -179,6 +180,7 @@ class Tokenizer {
       ids: input_ids,
       tokens,
       attention_mask: new Array(input_ids.length).fill(1),
+      offsets,
     };
 
     if (return_token_type_ids && token_type_ids) {
@@ -244,7 +246,7 @@ class Tokenizer {
     return this.tokenize_helper(text, { text_pair, add_special_tokens }).tokens;
   }
 
-  private encode_text(text: string | null): string[] | null {
+  private encode_text(text: string | null): Array<[string, [number, number]]> | null {
     if (text === null) {
       return null;
     }
@@ -257,25 +259,31 @@ class Tokenizer {
     // 2. Normalize, then split by normalized added tokens (normalized: true)
     const sections = this.splitter_unnormalized.split(text);
 
-    sections.forEach((section, i) => {
-      const added_token = this.added_tokens_map.get(section);
+    sections.forEach(([section_text], i) => {
+      const added_token = this.added_tokens_map.get(section_text);
       if (added_token) {
         if (added_token.lstrip && i > 0) {
-          sections[i - 1] = sections[i - 1].trimEnd();
+          const [s, start] = sections[i - 1];
+          sections[i - 1] = [s.trimEnd(), start];
         }
         if (added_token.rstrip && i < sections.length - 1) {
-          sections[i + 1] = sections[i + 1].trimStart();
+          const [s, start] = sections[i + 1];
+          const trimmed = s.trimStart();
+          sections[i + 1] = [trimmed, start + s.length - trimmed.length];
         }
       }
     });
 
-    return sections.flatMap((processed_text, section_index) => {
-      if (processed_text.length === 0) {
+    return sections.flatMap(([section_text, section_offset], section_index) => {
+      if (section_text.length === 0) {
         return [];
       }
-      if (this.added_tokens_map.has(processed_text)) {
-        return [processed_text];
+      if (this.added_tokens_map.has(section_text)) {
+        return [[section_text, [section_offset, section_offset + section_text.length]]];
       }
+
+      const original_section = section_text;
+      let processed_text = section_text;
 
       if (this.remove_space === true) {
         processed_text = processed_text.trim().split(/\s+/).join(" ");
@@ -292,36 +300,56 @@ class Tokenizer {
         return [];
       }
 
+      // Build alignment: alignment[i] = position in original_section of processed_text[i]
+      const alignment = build_alignment_map(original_section, processed_text);
+
       // Phase 2: Split by normalized tokens on the normalized text
       const subsections = this.splitter_normalized.split(processed_text);
 
-      subsections.forEach((subsection, j) => {
-        const added_token = this.added_tokens_map.get(subsection);
+      subsections.forEach(([sub_text], j) => {
+        const added_token = this.added_tokens_map.get(sub_text);
         if (added_token) {
           if (added_token.lstrip && j > 0) {
-            subsections[j - 1] = subsections[j - 1].trimEnd();
+            const [s, start] = subsections[j - 1];
+            subsections[j - 1] = [s.trimEnd(), start];
           }
           if (added_token.rstrip && j < subsections.length - 1) {
-            subsections[j + 1] = subsections[j + 1].trimStart();
+            const [s, start] = subsections[j + 1];
+            const trimmed = s.trimStart();
+            subsections[j + 1] = [trimmed, start + s.length - trimmed.length];
           }
         }
       });
 
-      return subsections.flatMap((subsection) => {
+      // Converts a processed_text span [pt_s, pt_e) to an absolute original-text span.
+      const to_orig = (pt_s: number, pt_e: number): [number, number] => {
+        const sec_start = pt_s < alignment.length ? alignment[pt_s] : original_section.length;
+        const sec_end = pt_e < alignment.length ? alignment[pt_e] : original_section.length;
+        return [section_offset + sec_start, section_offset + sec_end];
+      };
+
+      return subsections.flatMap(([subsection, sub_offset]) => {
         if (subsection.length === 0) {
           return [];
         }
         if (this.added_tokens_map.has(subsection)) {
-          return [subsection];
+          return [[subsection, to_orig(sub_offset, sub_offset + subsection.length)]];
         }
 
-        const section_tokens =
+        // Pre-tokenizer returns spans relative to subsection; shift to processed_text coords.
+        const word_pairs: Array<[string, [number, number]]> =
           this.pre_tokenizer !== null
-            ? this.pre_tokenizer(subsection, {
-                section_index,
-              })
-            : [subsection];
-        return this.model(section_tokens);
+            ? this.pre_tokenizer(subsection, { section_index })
+            : [[subsection, [0, subsection.length]]];
+
+        const pt_word_pairs: Array<[string, [number, number]]> = word_pairs.map(
+          ([w, [ws, we]]) => [w, [sub_offset + ws, sub_offset + we]],
+        );
+
+        // Model produces processed_text-relative subword spans; map to original-text coords.
+        return this.model(pt_word_pairs).map(
+          ([t, [pt_s, pt_e]]) => [t, to_orig(pt_s, pt_e)] as [string, [number, number]],
+        );
       });
     });
   }
@@ -329,13 +357,29 @@ class Tokenizer {
   private tokenize_helper(
     text: string,
     { text_pair = null, add_special_tokens = true }: TokenizeOptions,
-  ): { tokens: Array<string>; token_type_ids?: Array<number> } {
-    const tokens1 = this.encode_text(text);
-    const tokens2 = this.encode_text(text_pair || null);
+  ): { tokens: string[]; token_type_ids?: number[]; offsets: Array<[number, number]> } {
+    const pairs1 = this.encode_text(text);
+    const pairs2 = this.encode_text(text_pair || null);
 
-    return this.post_processor
-      ? this.post_processor(tokens1, tokens2, add_special_tokens)
-      : { tokens: merge_arrays(tokens1 ?? [], tokens2 ?? []) };
+    const strings1 = pairs1?.map(([t]) => t) ?? null;
+    const strings2 = pairs2?.map(([t]) => t) ?? null;
+
+    const { tokens, token_type_ids } = this.post_processor
+      ? this.post_processor(strings1, strings2, add_special_tokens)
+      : { tokens: merge_arrays(strings1 ?? [], strings2 ?? []) };
+
+    // Align output tokens with their spans. Special tokens added by the post-processor
+    // (not present in the original pairs) receive a [0, 0] placeholder span.
+    const all_pairs = [...(pairs1 ?? []), ...(pairs2 ?? [])];
+    let pair_i = 0;
+    const offsets: Array<[number, number]> = tokens.map((t) => {
+      if (pair_i < all_pairs.length && all_pairs[pair_i][0] === t) {
+        return all_pairs[pair_i++][1];
+      }
+      return [0, 0];
+    });
+
+    return { tokens, token_type_ids, offsets };
   }
 
   /**

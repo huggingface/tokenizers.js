@@ -58,7 +58,7 @@ class Legacy extends TokenizerModel {
     }
   }
 
-  encode(tokens: string[]): string[] {
+  encode(tokens: Array<[string, [number, number]]>): Array<[string, [number, number]]> {
     return tokens;
   }
 }

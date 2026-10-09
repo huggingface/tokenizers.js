@@ -8,7 +8,7 @@ import type { PreTokenizeTextOptions } from "@static/tokenizer";
  */
 abstract class PreTokenizer extends Callable<
   [string | string[], any?],
-  string[]
+  Array<[string, [number, number]]>
 > {
   /**
    * Method that should be implemented by subclasses to define the specific pre-tokenization logic.
@@ -20,7 +20,7 @@ abstract class PreTokenizer extends Callable<
   abstract pre_tokenize_text(
     text: string,
     options?: PreTokenizeTextOptions,
-  ): string[];
+  ): Array<[string, [number,number]]>;
 
   /**
    * Tokenizes the given text into pre-tokens.
@@ -31,11 +31,11 @@ abstract class PreTokenizer extends Callable<
   pre_tokenize(
     text: string | string[],
     options?: PreTokenizeTextOptions,
-  ): string[] {
+  ): Array<[string, [number,number]]> {
     return (
       Array.isArray(text)
         ? text.map((x) => this.pre_tokenize_text(x, options))
-        : this.pre_tokenize_text(text, options)
+        : [this.pre_tokenize_text(text, options)]
     ).flat();
   }
 
@@ -45,7 +45,7 @@ abstract class PreTokenizer extends Callable<
    * @param options Additional options for the pre-tokenization logic.
    * @returns An array of pre-tokens.
    */
-  _call(text: string | string[], options?: any): string[] {
+  _call(text: string | string[], options?: any): Array<[string, [number,number]]> {
     return this.pre_tokenize(text, options);
   }
 }
