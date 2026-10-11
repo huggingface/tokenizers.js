@@ -331,7 +331,7 @@ class Tokenizer {
     { text_pair = null, add_special_tokens = true }: TokenizeOptions,
   ): { tokens: Array<string>; token_type_ids?: Array<number> } {
     const tokens1 = this.encode_text(text);
-    const tokens2 = this.encode_text(text_pair || null);
+    const tokens2 = this.encode_text(text_pair ?? null);
 
     return this.post_processor
       ? this.post_processor(tokens1, tokens2, add_special_tokens)
