@@ -16,8 +16,10 @@ class Digits extends PreTokenizer {
     super();
     this.config = config;
 
-    // Construct a pattern which matches the rust implementation:
-    const digit_pattern = `[^\\d]+|\\d${this.config.individual_digits ? "" : "+"}`;
+    // Construct a pattern which matches the rust implementation, which splits on
+    // `char::is_numeric` (Unicode categories Nd, Nl and No). JavaScript's `\d` only matches
+    // the ASCII digits 0-9, so use the `\p{N}` property instead:
+    const digit_pattern = `[^\\p{N}]+|\\p{N}${this.config.individual_digits ? "" : "+"}`;
     this.pattern = new RegExp(digit_pattern, "gu");
   }
 
