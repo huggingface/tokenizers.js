@@ -933,9 +933,10 @@ export const validate_object = (
 };
 
 /**
- * Split a string on whitespace.
+ * Split a string on Unicode whitespace (the White_Space property, as in Rust's `char::is_whitespace`).
+ * JS `\s` differs: it also matches U+FEFF and misses U+0085.
  * @param {string} text The text to split.
  * @returns {string[]} The split string.
  */
 export const whitespace_split = (text: string): Array<string> =>
-  text.match(/\S+/g) || [];
+  text.match(/\P{White_Space}+/gu) || [];

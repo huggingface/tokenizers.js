@@ -41,8 +41,9 @@ class ByteLevel extends PreTokenizer {
      * Set it to False if you want to use your own splitting. Defaults to true.
      */
     this.use_regex = this.config.use_regex ?? true;
+    // \p{White_Space} instead of \s: Oniguruma's \s excludes U+FEFF and includes U+0085.
     this.pattern =
-      /'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+/gu;
+      /'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\p{White_Space}\p{L}\p{N}]+|\p{White_Space}+(?!\P{White_Space})|\p{White_Space}+/gu;
 
     this.byte_encoder = BYTES_TO_UNICODE;
     this.text_encoder = new TextEncoder();
