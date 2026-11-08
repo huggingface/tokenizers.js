@@ -1,6 +1,9 @@
 import fetchConfigById from "./utils/fetchConfigById";
 import { Tokenizer } from "../src";
 import { create_pattern } from "../src/utils/core";
+import BertPreTokenizer from "../src/core/preTokenizer/BertPreTokenizer";
+import ByteLevel from "../src/core/preTokenizer/ByteLevel";
+import WhitespaceSplit from "../src/core/preTokenizer/WhitespaceSplit";
 
 const compile_regex = (source: string): RegExp => {
   const pattern = create_pattern({ Regex: source });
@@ -369,5 +372,26 @@ describe("Edge cases", () => {
 
     const excessiveNesting = `${"[".repeat(257)}a${"]".repeat(257)}`;
     expect_syntax_error(excessiveNesting, /maximum character-class nesting depth of 256/i);
+  });
+
+  // JS \s matches U+FEFF and misses U+0085; Rust uses Unicode White_Space.
+  // Expected values come from Python tokenizers 0.23.3.
+  describe("pre-tokenizers split on Unicode White_Space (U+FEFF, U+0085)", () => {
+    const inputs = ["a\uFEFFb\u0085c d", "x \u0085y", "\uFEFFab"];
+    it.each([
+      ["WhitespaceSplit", new WhitespaceSplit(), [["a\uFEFFb", "c", "d"], ["x", "y"], ["\uFEFFab"]]],
+      ["BertPreTokenizer", new BertPreTokenizer(), [["a\uFEFFb", "c", "d"], ["x", "y"], ["\uFEFFab"]]],
+      [
+        "ByteLevel",
+        new ByteLevel({ type: "ByteLevel", add_prefix_space: false }),
+        [
+          ["a", "\u00EF\u00BB\u00BF", "b", "\u00C2\u0127", "c", "\u0120d"],
+          ["x", "\u0120", "\u00C2\u0127", "y"],
+          ["\u00EF\u00BB\u00BF", "ab"],
+        ],
+      ],
+    ] as const)("%s matches the Rust reference", (_name, preTokenizer, expected) => {
+      expect(inputs.map((input) => preTokenizer.pre_tokenize_text(input))).toEqual(expected);
+    });
   });
 });

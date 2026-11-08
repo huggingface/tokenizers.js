@@ -16,9 +16,10 @@ class BertPreTokenizer extends PreTokenizer {
     super();
     // Construct a pattern which matches the rust implementation:
     // https://github.com/huggingface/tokenizers/blob/b4fcc9ce6e4ad5806e82826f816acfdfdc4fcc67/tokenizers/src/pre_tokenizers/bert.rs#L11
-    // Equivalent to removing whitespace and splitting on punctuation (both \p{P} and other ascii characters)
+    // Equivalent to removing whitespace and splitting on punctuation (both \p{P} and other ascii characters).
+    // \p{White_Space} instead of \s, which also matches U+FEFF and misses U+0085.
     this.pattern = new RegExp(
-      `[^\\s${PUNCTUATION_REGEX}]+|[${PUNCTUATION_REGEX}]`,
+      `[^\\p{White_Space}${PUNCTUATION_REGEX}]+|[${PUNCTUATION_REGEX}]`,
       "gu",
     );
   }
@@ -31,7 +32,8 @@ class BertPreTokenizer extends PreTokenizer {
    * @returns An array of tokens.
    */
   pre_tokenize_text(text: string, options?: any): string[] {
-    return text.trim().match(this.pattern) || [];
+    // No trim(): the pattern never matches whitespace, and trim() would also drop U+FEFF.
+    return text.match(this.pattern) || [];
   }
 }
 
