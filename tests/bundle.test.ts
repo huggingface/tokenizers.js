@@ -53,4 +53,11 @@ describe("Testing the bundle", () => {
   it("CommonJS (CJS) with dynamic import", () => {
     check(`${wrap_async_iife(`const ${IMPORT} = await import("${MODULE_NAME}");${CODE_BODY}`)}`);
   });
+
+  it("resolves TypeScript declarations in NodeNext", () => {
+    const { status, stdout, stderr, error } = spawnSync(process.execPath, ["node_modules/typescript/bin/tsc", "--module", "nodenext", "--target", "es2022", "--strict", "--noEmit", "tests/fixtures/package-types.mts"], { encoding: "utf8" });
+    expect(error).toBeUndefined();
+    expect(stdout + stderr).toBe("");
+    expect(status).toBe(0);
+  });
 });
