@@ -42,7 +42,6 @@ interface TokenizeOptions {
 }
 
 class Tokenizer {
-  private tokenizer: TokenizerJSON;
   private config: TokenizerConfig;
 
   public normalizer: Normalizer | null;
@@ -78,14 +77,16 @@ class Tokenizer {
       throw new Error(config_error);
     }
 
-    this.tokenizer = tokenizer as TokenizerJSON;
+    // NOTE: The tokenizer JSON is only read here. We don't keep a reference to it,
+    // so that its vocabulary can be garbage collected once the caller lets go of it.
+    const tokenizer_json = tokenizer as TokenizerJSON;
     this.config = config as TokenizerConfig;
 
-    this.normalizer = create_normalizer(this.tokenizer.normalizer);
-    this.pre_tokenizer = create_pre_tokenizer(this.tokenizer.pre_tokenizer);
-    this.model = create_tokenizer_model(this.tokenizer.model, this.config);
-    this.post_processor = create_post_processor(this.tokenizer.post_processor);
-    this.decoder = create_decoder(this.tokenizer.decoder);
+    this.normalizer = create_normalizer(tokenizer_json.normalizer);
+    this.pre_tokenizer = create_pre_tokenizer(tokenizer_json.pre_tokenizer);
+    this.model = create_tokenizer_model(tokenizer_json.model, this.config);
+    this.post_processor = create_post_processor(tokenizer_json.post_processor);
+    this.decoder = create_decoder(tokenizer_json.decoder);
 
     // Add added_tokens to model
     this.special_tokens = [];
@@ -94,7 +95,7 @@ class Tokenizer {
     const unnormalized_contents: string[] = [];
     const normalized_contents: string[] = [];
     this.added_tokens_map = new Map();
-    for (const added_token of this.tokenizer.added_tokens) {
+    for (const added_token of tokenizer_json.added_tokens) {
       const token = new AddedToken(added_token);
       this.added_tokens.push(token);
       this.model.tokens_to_ids.set(token.content, token.id);

@@ -4,10 +4,19 @@ import { fuse_unk } from "@utils/core";
 import type { TokenizerModelConfig } from "@static/tokenizer";
 
 /**
+ * The settings of a tokenizer model: its configuration without the raw `vocab`
+ * and `merges`, which a model turns into its own lookup structures.
+ */
+export type TokenizerModelSettings<
+  T extends TokenizerModelConfig = TokenizerModelConfig,
+> = T extends unknown ? Omit<T, "vocab" | "merges"> : never;
+
+/**
  * Abstract base class for tokenizer models.
  */
 abstract class TokenizerModel extends Callable<[string[]], string[]> {
-  config: TokenizerModelConfig;
+  /** The model's configuration, without the raw `vocab` and `merges`. */
+  config: TokenizerModelSettings;
   vocab: string[];
   /** A mapping of tokens to ids. */
   tokens_to_ids: Map<string, number>;
@@ -23,7 +32,13 @@ abstract class TokenizerModel extends Callable<[string[]], string[]> {
    */
   constructor(config: TokenizerModelConfig) {
     super();
-    this.config = config;
+    // Models build their own lookup structures (`vocab`, `tokens_to_ids`, ...) from the raw
+    // `vocab` and `merges`. Keeping those here too would hold a second copy of the largest
+    // parts of `tokenizer.json` in memory for as long as the model lives.
+    const { vocab, merges, ...settings } = config as TokenizerModelConfig & {
+      merges?: unknown;
+    };
+    this.config = settings as TokenizerModelSettings;
     this.vocab = [];
     this.tokens_to_ids = new Map();
     this.unk_token_id = undefined;
