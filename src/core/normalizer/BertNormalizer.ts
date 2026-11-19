@@ -1,4 +1,4 @@
-import { is_chinese_char } from "@utils/core";
+import { is_chinese_char, lowercase } from "@utils/core";
 import Normalizer from "../Normalizer";
 
 import type { TokenizerConfigNormalizerBert } from "@static/tokenizer";
@@ -101,7 +101,7 @@ class BertNormalizer extends Normalizer {
     }
 
     if (this.config.lowercase) {
-      text = text.toLowerCase();
+      text = lowercase(text);
 
       if (this.config.strip_accents !== false) {
         text = this.strip_accents(text);
