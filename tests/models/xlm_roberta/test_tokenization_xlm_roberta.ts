@@ -1,4 +1,4 @@
-import { BASE_TEST_STRINGS } from "../../static/constants";
+import { BASE_TEST_STRINGS, PRECOMPILED_CHARSMAP_TEST_STRINGS } from "../../static/constants";
 
 export default {
   "Xenova/bge-reranker-base": {
@@ -151,6 +151,42 @@ export default {
       tokens: ["\u2581", "\u2728", "\u2581", "\ud83e\udd17", "\u2581", "\ud83d\udc41", "\ufe0f", "\u2581", "\ud83d\udc71", "\ud83c\udffb", "\u2581", "\ud83d\udd75", "\u2581", "\u2642", "\ufe0f", "\u2581", "\ud83e\uddd9", "\ud83c\udffb", "\u2581", "\u2642", "\u2581", "\ud83d\udc68", "\ud83c\udffb", "\u2581", "\ud83c\udf3e", "\u2581", "\ud83e\uddd1", "\u2581", "\ud83e\udd1d", "\u2581", "\ud83e\uddd1", "\u2581", "\ud83d\udc69", "\u2581\u2764", "\u2581", "\ud83d\udc8b", "\u2581", "\ud83d\udc68", "\u2581", "\ud83d\udc69", "\u2581", "\ud83d\udc69", "\u2581", "\ud83d\udc67", "\u2581", "\ud83d\udc66", "\u2581", "\ud83e\uddd1", "\ud83c\udffb", "\u2581", "\ud83e\udd1d", "\u2581", "\ud83e\uddd1", "\ud83c\udffb", "\u2581", "\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f", "\u2581", "\ud83d\udc68", "\ud83c\udffb", "\u2581\u2764", "\ufe0f", "\u2581", "\ud83d\udc8b", "\u2581", "\ud83d\udc68", "\ud83c\udffc"],
       ids: [0, 6, 167474, 6, 243544, 6, 246984, 15755, 6, 247201, 79500, 6, 248325, 6, 228250, 15755, 6, 3, 79500, 6, 228250, 6, 244314, 79500, 6, 246529, 6, 3, 6, 247443, 6, 3, 6, 244785, 49933, 6, 244960, 6, 244314, 6, 244785, 6, 244785, 6, 245719, 6, 246167, 6, 3, 79500, 6, 247443, 6, 3, 79500, 6, 3, 6, 244314, 79500, 49933, 15755, 6, 244960, 6, 244314, 239719, 2],
       decoded: "<s> \u2728 \ud83e\udd17 \ud83d\udc41\ufe0f \ud83d\udc71\ud83c\udffb \ud83d\udd75 \u2642\ufe0f <unk>\ud83c\udffb \u2642 \ud83d\udc68\ud83c\udffb \ud83c\udf3e <unk> \ud83e\udd1d <unk> \ud83d\udc69 \u2764 \ud83d\udc8b \ud83d\udc68 \ud83d\udc69 \ud83d\udc69 \ud83d\udc67 \ud83d\udc66 <unk>\ud83c\udffb \ud83e\udd1d <unk>\ud83c\udffb <unk> \ud83d\udc68\ud83c\udffb \u2764\ufe0f \ud83d\udc8b \ud83d\udc68\ud83c\udffc</s>",
+    },
+    MALAYALAM_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.MALAYALAM_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0d0e\u0d28\u0d4d\u0d31\u0d46", "\u2581\u0d2a\u0d46", "\u0d3e\u0d28\u0d4d", "\u0d28\u0d41"],
+      ids: [0, 13795, 35286, 4287, 16483, 2],
+      decoded: "<s> \u0d0e\u0d28\u0d4d\u0d31\u0d46 \u0d2a\u0d46\u0d3e\u0d28\u0d4d\u0d28\u0d41</s>",
+    },
+    MALAYALAM_DECOMPOSED_VOWEL_SIGN_OO: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.MALAYALAM_DECOMPOSED_VOWEL_SIGN_OO,
+      tokens: ["\u2581\u0d15\u0d3e\u0d23\u0d41\u0d28\u0d4d\u0d28", "\u0d41\u0d23\u0d4d\u0d1f", "\u0d32\u0d4d\u0d32\u0d47", "\u0d3e", "?"],
+      ids: [0, 73201, 82374, 57556, 2381, 32, 2],
+      decoded: "<s> \u0d15\u0d3e\u0d23\u0d41\u0d28\u0d4d\u0d28\u0d41\u0d23\u0d4d\u0d1f\u0d32\u0d4d\u0d32\u0d47\u0d3e?</s>",
+    },
+    TAMIL_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.TAMIL_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0b95\u0bc6", "\u0bbe", "\u0b9f\u0bc1"],
+      ids: [0, 116741, 7667, 9000, 2],
+      decoded: "<s> \u0b95\u0bc6\u0bbe\u0b9f\u0bc1</s>",
+    },
+    BENGALI_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.BENGALI_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0995\u09c7", "\u09be", "\u09a5\u09be", "\u09af\u09bc"],
+      ids: [0, 31527, 4691, 56324, 2801, 2],
+      decoded: "<s> \u0995\u09c7\u09be\u09a5\u09be\u09af\u09bc</s>",
+    },
+    ORIYA_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.ORIYA_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0b15\u0b47", "\u0b3e", "\u0b23"],
+      ids: [0, 96885, 4835, 8693, 2],
+      decoded: "<s> \u0b15\u0b47\u0b3e\u0b23</s>",
+    },
+    SEGMENTED_DIGITS: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.SEGMENTED_DIGITS,
+      tokens: ["\u2581", "\ud83e\udff0\ud83e\udff1\ud83e\udff9"],
+      ids: [0, 6, 3, 2],
+      decoded: "<s> <unk></s>",
     },
   },
   "Xenova/paraphrase-multilingual-mpnet-base-v2": {

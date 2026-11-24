@@ -168,3 +168,14 @@ export const AFMOE_TEST_STRINGS = {
   TRAILING_WHITESPACE: "ends with spaces   ",
   GENERAL_WHITESPACE: "a\tb  c",
 };
+
+// SentencePiece's `precompiled_charsmap` (nmt_nfkc) leaves two-part vowel signs typed as their components
+// decomposed, while plain NFKC composes them (e.g. U+0D46 U+0D3E -> U+0D4A)
+export const PRECOMPILED_CHARSMAP_TEST_STRINGS = {
+  MALAYALAM_DECOMPOSED_VOWEL_SIGN_O: "\u0d0e\u0d28\u0d4d\u0d31\u0d46 \u0d2a\u0d46\u0d3e\u0d28\u0d4d\u0d28\u0d41",
+  MALAYALAM_DECOMPOSED_VOWEL_SIGN_OO: "\u0d15\u0d3e\u0d23\u0d41\u0d28\u0d4d\u0d28\u0d41\u0d23\u0d4d\u0d1f\u0d32\u0d4d\u0d32\u0d47\u0d3e?",
+  TAMIL_DECOMPOSED_VOWEL_SIGN_O: "\u0b95\u0bc6\u0bbe\u0b9f\u0bc1",
+  BENGALI_DECOMPOSED_VOWEL_SIGN_O: "\u0995\u09c7\u09be\u09a5\u09be\u09df",
+  ORIYA_DECOMPOSED_VOWEL_SIGN_O: "\u0b15\u0b47\u0b3e\u0b23",
+  SEGMENTED_DIGITS: "\ud83e\udff0\ud83e\udff1\ud83e\udff9",
+};
