@@ -1,4 +1,4 @@
-import { BASE_TEST_STRINGS } from "../../static/constants";
+import { BASE_TEST_STRINGS, PRECOMPILED_CHARSMAP_TEST_STRINGS } from "../../static/constants";
 
 export default {
   "Xenova/nllb-200-distilled-600M": {
@@ -151,6 +151,42 @@ export default {
       tokens: ["\u2581", "\u2728", "\u2581", "\ud83e\udd17", "\u2581", "\ud83d\udc41", "\ufe0f", "\u2581", "<unk>", "\ud83c\udffb", "\u2581", "<unk>", "\u2581", "\u2642", "\ufe0f", "\u2581", "<unk>", "\ud83c\udffb", "\u2581", "\u2642", "\u2581", "<unk>", "\ud83c\udffb", "\u2581", "<unk>", "\u2581", "<unk>", "\u2581", "<unk>", "\u2581", "<unk>", "\u2581", "<unk>", "\u2581\u2764", "\u2581", "<unk>", "\u2581", "<unk>", "\u2581", "<unk>", "\u2581", "<unk>", "\u2581", "<unk>", "\u2581", "<unk>", "\u2581", "<unk>", "\ud83c\udffb", "\u2581", "<unk>", "\u2581", "<unk>", "\ud83c\udffb", "\u2581", "<unk>", "\u2581", "<unk>", "\ud83c\udffb", "\u2581\u2764", "\ufe0f", "\u2581", "<unk>", "\u2581", "<unk>", "\ud83c\udffc"],
       ids: [256047, 248059, 254957, 248059, 255232, 248059, 255123, 251759, 248059, 3, 254422, 248059, 3, 248059, 255331, 251759, 248059, 3, 254422, 248059, 255331, 248059, 3, 254422, 248059, 3, 248059, 3, 248059, 3, 248059, 3, 248059, 3, 82495, 248059, 3, 248059, 3, 248059, 3, 248059, 3, 248059, 3, 248059, 3, 248059, 3, 254422, 248059, 3, 248059, 3, 254422, 248059, 3, 248059, 3, 254422, 82495, 251759, 248059, 3, 248059, 3, 255832, 2],
       decoded: "eng_Latn \u2728 \ud83e\udd17 \ud83d\udc41\ufe0f <unk>\ud83c\udffb <unk> \u2642\ufe0f <unk>\ud83c\udffb \u2642 <unk>\ud83c\udffb <unk> <unk> <unk> <unk> <unk> \u2764 <unk> <unk> <unk> <unk> <unk> <unk> <unk>\ud83c\udffb <unk> <unk>\ud83c\udffb <unk> <unk>\ud83c\udffb \u2764\ufe0f <unk> <unk>\ud83c\udffc</s>",
+    },
+    MALAYALAM_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.MALAYALAM_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0d0e\u0d28\u0d4d\u0d31\u0d46", "\u2581\u0d2a\u0d46", "\u0d3e", "\u0d28\u0d4d\u0d28\u0d41"],
+      ids: [256047, 22788, 37386, 248400, 12308, 2],
+      decoded: "eng_Latn \u0d0e\u0d28\u0d4d\u0d31\u0d46 \u0d2a\u0d46\u0d3e\u0d28\u0d4d\u0d28\u0d41</s>",
+    },
+    MALAYALAM_DECOMPOSED_VOWEL_SIGN_OO: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.MALAYALAM_DECOMPOSED_VOWEL_SIGN_OO,
+      tokens: ["\u2581\u0d15\u0d3e\u0d23", "\u0d41\u0d28\u0d4d\u0d28\u0d41", "\u0d23\u0d4d\u0d1f", "\u0d32\u0d4d\u0d32\u0d47", "\u0d3e", "?"],
+      ids: [256047, 20238, 4253, 2745, 74741, 248400, 248130, 2],
+      decoded: "eng_Latn \u0d15\u0d3e\u0d23\u0d41\u0d28\u0d4d\u0d28\u0d41\u0d23\u0d4d\u0d1f\u0d32\u0d4d\u0d32\u0d47\u0d3e?</s>",
+    },
+    TAMIL_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.TAMIL_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0b95\u0bc6", "\u0bbe\u0b9f\u0bc1"],
+      ids: [256047, 130436, 154314, 2],
+      decoded: "eng_Latn \u0b95\u0bc6\u0bbe\u0b9f\u0bc1</s>",
+    },
+    BENGALI_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.BENGALI_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0995\u09c7", "\u09be", "\u09a5\u09be\u09af\u09bc"],
+      ids: [256047, 6868, 248174, 73022, 2],
+      decoded: "eng_Latn \u0995\u09c7\u09be\u09a5\u09be\u09af\u09bc</s>",
+    },
+    ORIYA_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.ORIYA_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0b15\u0b47", "\u0b3e\u0b23"],
+      ids: [256047, 15480, 10692, 2],
+      decoded: "eng_Latn \u0b15\u0b47\u0b3e\u0b23</s>",
+    },
+    SEGMENTED_DIGITS: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.SEGMENTED_DIGITS,
+      tokens: ["\u2581", "<unk>"],
+      ids: [256047, 248059, 3, 2],
+      decoded: "eng_Latn <unk></s>",
     },
   },
 };

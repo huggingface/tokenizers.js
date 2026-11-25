@@ -168,3 +168,22 @@ export const AFMOE_TEST_STRINGS = {
   TRAILING_WHITESPACE: "ends with spaces   ",
   GENERAL_WHITESPACE: "a\tb  c",
 };
+
+// SentencePiece's `precompiled_charsmap` (nmt_nfkc) leaves two-part vowel signs typed as their components
+// decomposed, while plain NFKC composes them (e.g. U+0D46 U+0D3E -> U+0D4A)
+export const PRECOMPILED_CHARSMAP_TEST_STRINGS = {
+  MALAYALAM_DECOMPOSED_VOWEL_SIGN_O: "\u0d0e\u0d28\u0d4d\u0d31\u0d46 \u0d2a\u0d46\u0d3e\u0d28\u0d4d\u0d28\u0d41",
+  MALAYALAM_DECOMPOSED_VOWEL_SIGN_OO: "\u0d15\u0d3e\u0d23\u0d41\u0d28\u0d4d\u0d28\u0d41\u0d23\u0d4d\u0d1f\u0d32\u0d4d\u0d32\u0d47\u0d3e?",
+  TAMIL_DECOMPOSED_VOWEL_SIGN_O: "\u0b95\u0bc6\u0bbe\u0b9f\u0bc1",
+  BENGALI_DECOMPOSED_VOWEL_SIGN_O: "\u0995\u09c7\u09be\u09a5\u09be\u09df",
+  ORIYA_DECOMPOSED_VOWEL_SIGN_O: "\u0b15\u0b47\u0b3e\u0b23",
+  SEGMENTED_DIGITS: "\ud83e\udff0\ud83e\udff1\ud83e\udff9",
+  MALAYALAM_CHILLU_WITH_ZERO_WIDTH_JOINER: "\u0d05\u0d35\u0d28\u0d4d\u200d \u0d35\u0d28\u0d4d\u0d28\u0d41.",
+  EMOJI_ZWJ_SEQUENCE: "family \ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67 ok",
+  CYRILLIC_SUBSCRIPT_LETTERS: "x\ud838\udc51\ud838\udc52 y",
+  SPACING_DIACRITICS: "caf\u00b4e na\u00a8ive 5\u00b0 \u00af\\_(\u30c4)_/\u00af",
+  KATAKANA_VOICED_SOUND_MARKS: "\u30ab\u309b\u30ad\u309c \u30c6\u30b9\u30c8",
+  GREEK_TONOS: "\u0384\u03b1 \u0385\u03b9 \u1fed\u1fee",
+  ARABIC_PRESENTATION_FORMS: "\ufe70\ufe72 \ufef5",
+  HALFWIDTH_KATAKANA: "\uff76\uff9e\uff9d\uff80\uff9e\uff91",
+};
