@@ -1,4 +1,4 @@
-import { BASE_TEST_STRINGS, BERT_TEST_STRINGS } from "../../static/constants";
+import { BASE_TEST_STRINGS, BERT_TEST_STRINGS, WHITESPACE_PRETOKENIZER_TEST_STRINGS } from "../../static/constants";
 
 export default {
   "jinaai/jina-embeddings-v2-base-de": {
@@ -469,6 +469,31 @@ export default {
       tokens: ["h", "\u00e4", "llo", "!", "how", "are", "you", "?"],
       ids: [0, 76, 168, 48932, 31, 21431, 21182, 21166, 61, 2],
       decoded: "<s> h \u00e4 llo! how are you? </s>",
+    },
+    ACCENTED_WORDS_WITH_PUNCTUATION: {
+      text: WHITESPACE_PRETOKENIZER_TEST_STRINGS.ACCENTED_WORDS_WITH_PUNCTUATION,
+      tokens: ["na", "\u00ef", "ve", "caf\u00e9", "!"],
+      ids: [0, 22416, 179, 21165, 35061, 31, 2],
+    },
+    CYRILLIC_WITH_PUNCTUATION: {
+      text: WHITESPACE_PRETOKENIZER_TEST_STRINGS.CYRILLIC_WITH_PUNCTUATION,
+      tokens: ["\u043f", "\u0440\u0438", "\u0432\u0435", "\u0442", ",", "\u043c\u0438", "\u0440", "!"],
+      ids: [0, 503, 45525, 49801, 506, 42, 58955, 504, 31, 2],
+    },
+    DEVANAGARI_WITH_PUNCTUATION: {
+      text: WHITESPACE_PRETOKENIZER_TEST_STRINGS.DEVANAGARI_WITH_PUNCTUATION,
+      tokens: ["\u0905", "\u0930", "\u0947", ",", "\u0917", "\u0930", "\u0940", "\u092c"],
+      ids: [0, 799, 838, 855, 42, 814, 838, 850, 834, 2],
+    },
+    MALAYALAM_WITH_ZERO_WIDTH_JOINER: {
+      text: WHITESPACE_PRETOKENIZER_TEST_STRINGS.MALAYALAM_WITH_ZERO_WIDTH_JOINER,
+      tokens: ["\u0d05", "\u0d35", "\u0d28", "\u0d4d", "\u200d", "\u0d35", "\u0d28", "\u0d4d", "\u0d28", "\u0d41", "."],
+      ids: [0, 1193, 1222, 1211, 1238, 2067, 1222, 1211, 1238, 1211, 1230, 44, 2],
+    },
+    BYTE_ORDER_MARK: {
+      text: WHITESPACE_PRETOKENIZER_TEST_STRINGS.BYTE_ORDER_MARK,
+      tokens: ["a", "\ufeff", "b"],
+      ids: [0, 69, 20181, 70, 2],
     },
   },
   "jinaai/jina-embeddings-v2-base-zh": {

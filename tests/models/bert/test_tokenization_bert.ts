@@ -1,4 +1,4 @@
-import { BASE_TEST_STRINGS, BERT_TEST_STRINGS, NORMALIZATION_TEST_STRINGS } from "../../static/constants";
+import { BASE_TEST_STRINGS, BERT_TEST_STRINGS, NORMALIZATION_TEST_STRINGS, WHITESPACE_PRETOKENIZER_TEST_STRINGS } from "../../static/constants";
 
 export default {
   "Xenova/bert-base-uncased": {
@@ -1376,6 +1376,34 @@ export default {
       tokens: ["ſ", "|", "ſ", "|", "ſ", "|", "s", "|", "s"],
       ids: [1, 121, 70, 121, 70, 121, 70, 61, 70, 61, 2],
       decoded: "[CLS] ſ | ſ | ſ | s | s [SEP]",
+    },
+  },
+  // WordPiece with the Whitespace pre-tokenizer and no normalizer
+  "ai4bharat/IndicBERTv2-MLM-only": {
+    ACCENTED_WORDS_WITH_PUNCTUATION: {
+      text: WHITESPACE_PRETOKENIZER_TEST_STRINGS.ACCENTED_WORDS_WITH_PUNCTUATION,
+      tokens: ["na", "##\u00ef", "##ve", "caf", "##\u00e9", "!"],
+      ids: [1, 30263, 9870, 17792, 129412, 9657, 48, 2],
+    },
+    CYRILLIC_WITH_PUNCTUATION: {
+      text: WHITESPACE_PRETOKENIZER_TEST_STRINGS.CYRILLIC_WITH_PUNCTUATION,
+      tokens: ["\u041f", "##\u0440", "##\u0438", "##\u0432", "##\u0435", "##\u0442", ",", "\u043c", "##\u0438", "##\u0440", "!"],
+      ids: [1, 730, 10292, 9913, 10049, 10055, 10050, 59, 759, 9913, 10292, 48, 2],
+    },
+    DEVANAGARI_WITH_PUNCTUATION: {
+      text: WHITESPACE_PRETOKENIZER_TEST_STRINGS.DEVANAGARI_WITH_PUNCTUATION,
+      tokens: ["\u0905\u0930\u0947", ",", "\u0917\u0930\u0940\u092c"],
+      ids: [1, 51204, 59, 37470, 2],
+    },
+    MALAYALAM_WITH_ZERO_WIDTH_JOINER: {
+      text: WHITESPACE_PRETOKENIZER_TEST_STRINGS.MALAYALAM_WITH_ZERO_WIDTH_JOINER,
+      tokens: ["\u0d05\u0d35\u0d28\u0d4d\u200d", "\u0d35\u0d28\u0d4d\u0d28\u0d41", "."],
+      ids: [1, 31828, 46807, 61, 2],
+    },
+    BYTE_ORDER_MARK: {
+      text: WHITESPACE_PRETOKENIZER_TEST_STRINGS.BYTE_ORDER_MARK,
+      tokens: ["a", "\ufeff", "b"],
+      ids: [1, 112, 8037, 113, 2],
     },
   },
 };

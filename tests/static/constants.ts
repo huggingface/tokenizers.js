@@ -168,3 +168,12 @@ export const AFMOE_TEST_STRINGS = {
   TRAILING_WHITESPACE: "ends with spaces   ",
   GENERAL_WHITESPACE: "a\tb  c",
 };
+
+// Rust's Unicode-aware `\w` and `\s` decide where the Whitespace pre-tokenizer (`\w+|[^\w\s]+`) splits
+export const WHITESPACE_PRETOKENIZER_TEST_STRINGS = {
+  ACCENTED_WORDS_WITH_PUNCTUATION: "naïve café!",
+  CYRILLIC_WITH_PUNCTUATION: "Привет, мир!",
+  DEVANAGARI_WITH_PUNCTUATION: "अरे, गरीब",
+  MALAYALAM_WITH_ZERO_WIDTH_JOINER: "അവന്‍ വന്നു.",
+  BYTE_ORDER_MARK: "a﻿b",
+};
