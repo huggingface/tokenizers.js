@@ -1,4 +1,5 @@
 import TokenizerModel from "../TokenizerModel";
+import type { TokenizerModelSettings } from "../TokenizerModel";
 import { object_to_map } from "@utils/core";
 import PriorityQueue from "@utils/data-structures/PriorityQueue";
 import LRUCache from "@utils/data-structures/LRUCache";
@@ -15,9 +16,8 @@ interface BPENode {
 }
 
 class BPE extends TokenizerModel {
-  declare config: TokenizerConfigBPEModel;
-  /** An array of BPE merges as strings. */
-  merges: [string, string][];
+  declare config: TokenizerModelSettings<TokenizerConfigBPEModel>;
+  /** The rank of each BPE merge, keyed by the JSON-serialized pair of tokens. */
   bpe_ranks: Map<string, number>;
   /** The suffix to insert between words. */
   continuing_subword_suffix: string | null;
@@ -57,13 +57,15 @@ class BPE extends TokenizerModel {
     // which resolves the ambiguity for merges containing spaces.
     const use_new_merge_format = Array.isArray(config.merges[0]);
 
-    this.merges = use_new_merge_format
+    const merges = use_new_merge_format
       ? (config.merges as [string, string][])
       : (config.merges as string[]).map(
           (x) => x.split(" ", 2) as [string, string],
         );
 
-    this.bpe_ranks = new Map(this.merges.map((x, i) => [JSON.stringify(x), i]));
+    // NOTE: Only the ranks are stored, since they are all that encoding needs. The pairs
+    // themselves stay available through the `merges` getter.
+    this.bpe_ranks = new Map(merges.map((x, i) => [JSON.stringify(x), i]));
 
     this.end_of_word_suffix = config.end_of_word_suffix;
 
@@ -82,6 +84,17 @@ class BPE extends TokenizerModel {
 
     this.cache_capacity = 10000;
     this.cache = new LRUCache(this.cache_capacity);
+  }
+
+  /**
+   * An array of BPE merges as pairs of tokens, in order of rank.
+   * It is derived from `bpe_ranks` on every access.
+   */
+  get merges(): [string, string][] {
+    return Array.from(
+      this.bpe_ranks.keys(),
+      (x) => JSON.parse(x) as [string, string],
+    );
   }
 
   /**

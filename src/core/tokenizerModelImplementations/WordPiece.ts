@@ -1,4 +1,5 @@
 import TokenizerModel from "../TokenizerModel";
+import type { TokenizerModelSettings } from "../TokenizerModel";
 import { object_to_map } from "@utils/core";
 import { TokenizerConfigWordPieceModel } from "@static/tokenizer";
 
@@ -6,7 +7,7 @@ import { TokenizerConfigWordPieceModel } from "@static/tokenizer";
  * A subclass of TokenizerModel that uses WordPiece encoding to encode tokens.
  */
 class WordPieceTokenizer extends TokenizerModel {
-  declare config: TokenizerConfigWordPieceModel;
+  declare config: TokenizerModelSettings<TokenizerConfigWordPieceModel>;
   /** The maximum number of characters per word. */
   max_input_chars_per_word: number = 100;
 
