@@ -1,4 +1,4 @@
-import { BASE_TEST_STRINGS, SENTENCEPIECE_TEST_STRINGS } from "../../static/constants";
+import { BASE_TEST_STRINGS, SENTENCEPIECE_TEST_STRINGS, DIGITS_PRETOKENIZER_TEST_STRINGS } from "../../static/constants";
 import { TestConfig } from "../../static/types";
 
 const testConfig: TestConfig = {
@@ -374,6 +374,31 @@ const testConfig: TestConfig = {
       tokens: ["\u00e2\u0138", "\u0123", "This", "\u0120", "\u00e2\u0138", "\u0123", "is", "\u0120", "\u00e2\u0138", "\u0123", "a", "\u0120", "\u00e2\u0138", "\u0123", "test", "\u0120", "\u00e2\u0138", "\u0123", "."],
       ids: [3718, 210, 3456, 207, 3718, 210, 280, 207, 3718, 210, 64, 207, 3718, 210, 706, 207, 3718, 210, 13],
       decoded: "\u2581This \u2581is \u2581a \u2581test \u2581.",
+    },
+    ARABIC_INDIC_DIGITS: {
+      text: DIGITS_PRETOKENIZER_TEST_STRINGS.ARABIC_INDIC_DIGITS,
+      tokens: ["\u00d9", "\u00a1", "\u00d9", "\u00a2", "\u00d9", "\u00a3"],
+      ids: [147, 94, 147, 95, 147, 96],
+    },
+    SUPERSCRIPT_AND_CIRCLED_DIGITS: {
+      text: DIGITS_PRETOKENIZER_TEST_STRINGS.SUPERSCRIPT_AND_CIRCLED_DIGITS,
+      tokens: ["a", "\u00c2\u00b2", "b", "\u00e2", "\u0133", "\u0142"],
+      ids: [64, 47276, 65, 156, 226, 241],
+    },
+    VULGAR_FRACTIONS: {
+      text: DIGITS_PRETOKENIZER_TEST_STRINGS.VULGAR_FRACTIONS,
+      tokens: ["\u00c2", "\u00bd", "\u00c2", "\u00bc"],
+      ids: [124, 121, 124, 120],
+    },
+    ROMAN_NUMERAL: {
+      text: DIGITS_PRETOKENIZER_TEST_STRINGS.ROMAN_NUMERAL,
+      tokens: ["\u00e2", "\u0127", "\u00a7", "\u0120V", "III"],
+      ids: [156, 214, 100, 970, 34195],
+    },
+    MIXED_SCRIPT_DIGITS: {
+      text: DIGITS_PRETOKENIZER_TEST_STRINGS.MIXED_SCRIPT_DIGITS,
+      tokens: ["\u00d9", "\u00a1", "\u00d9", "\u00a2", "\u0120", "1", "2"],
+      ids: [147, 94, 147, 95, 207, 16, 17],
     },
   },
   "Xenova/CodeGPT-tokenizer": {

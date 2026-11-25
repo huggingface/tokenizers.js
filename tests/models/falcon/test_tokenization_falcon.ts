@@ -1,4 +1,4 @@
-import { BASE_TEST_STRINGS, FALCON_TEST_STRINGS } from "../../static/constants";
+import { BASE_TEST_STRINGS, FALCON_TEST_STRINGS, DIGITS_PRETOKENIZER_TEST_STRINGS } from "../../static/constants";
 
 export default {
   "tiiuae/falcon-7b": {
@@ -145,6 +145,31 @@ export default {
       tokens: ["12", "\u0120and", "\u0120", "123", "\u0120and", "\u0120", "123", "4"],
       ids: [928, 273, 204, 10963, 273, 204, 10963, 31],
       decoded: "12 and 123 and 1234",
+    },
+    ARABIC_INDIC_DIGITS: {
+      text: DIGITS_PRETOKENIZER_TEST_STRINGS.ARABIC_INDIC_DIGITS,
+      tokens: ["\u00d9", "\u00a1", "\u00d9", "\u00a2", "\u00d9", "\u00a3"],
+      ids: [159, 106, 159, 107, 159, 108],
+    },
+    SUPERSCRIPT_AND_CIRCLED_DIGITS: {
+      text: DIGITS_PRETOKENIZER_TEST_STRINGS.SUPERSCRIPT_AND_CIRCLED_DIGITS,
+      tokens: ["a", "\u00c2", "\u00b2", "b", "\u00e2\u0133", "\u0142"],
+      ids: [76, 136, 122, 77, 50511, 238],
+    },
+    VULGAR_FRACTIONS: {
+      text: DIGITS_PRETOKENIZER_TEST_STRINGS.VULGAR_FRACTIONS,
+      tokens: ["\u00c2", "\u00bd", "\u00c2", "\u00bc"],
+      ids: [136, 133, 136, 132],
+    },
+    ROMAN_NUMERAL: {
+      text: DIGITS_PRETOKENIZER_TEST_STRINGS.ROMAN_NUMERAL,
+      tokens: ["\u00e2\u0127", "\u00a7", "\u0120VIII"],
+      ids: [63488, 112, 39503],
+    },
+    MIXED_SCRIPT_DIGITS: {
+      text: DIGITS_PRETOKENIZER_TEST_STRINGS.MIXED_SCRIPT_DIGITS,
+      tokens: ["\u00d9", "\u00a1", "\u00d9", "\u00a2", "\u0120", "12"],
+      ids: [159, 106, 159, 107, 204, 928],
     },
   },
   "tiiuae/falcon-rw-1b": {
