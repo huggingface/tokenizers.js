@@ -1,4 +1,4 @@
-import { BASE_TEST_STRINGS, BERT_TEST_STRINGS } from "../../static/constants";
+import { BASE_TEST_STRINGS, BERT_TEST_STRINGS, PRECOMPILED_CHARSMAP_TEST_STRINGS } from "../../static/constants";
 
 export default {
   "Xenova/nli-deberta-v3-small": {
@@ -297,6 +297,56 @@ export default {
       tokens: ["\u2581", "\u2728", "\u2581", "\ud83e\udd17", "\u2581", "\ud83d\udc41", "\ufe0f", "\u2581", "\ud83d\udc71", "\ud83c\udffb", "\u2581", "\ud83d\udd75", "\u2581", "\u2642", "\ufe0f", "\u2581", "\ud83e\uddd9", "\ud83c\udffb", "\u2581", "\u2642", "\u2581", "\ud83d\udc68", "\ud83c\udffb", "\u2581", "\ud83c\udf3e", "\u2581", "\ud83e\uddd1", "\u2581", "\ud83e\udd1d", "\u2581", "\ud83e\uddd1", "\u2581", "\ud83d\udc69", "\u2581\u2764", "\u2581", "\ud83d\udc8b", "\u2581", "\ud83d\udc68", "\u2581", "\ud83d\udc69", "\u2581", "\ud83d\udc69", "\u2581", "\ud83d\udc67", "\u2581", "\ud83d\udc66", "\u2581", "\ud83e\uddd1", "\ud83c\udffb", "\u2581", "\ud83e\udd1d", "\u2581", "\ud83e\uddd1", "\ud83c\udffb", "\u2581", "\ud83c\udff4", "\udb40\udc67", "\udb40\udc62", "\udb40\udc65", "\udb40\udc6e", "\udb40\udc67", "\udb40\udc7f", "\u2581", "\ud83d\udc68", "\ud83c\udffb", "\u2581\u2764", "\ufe0f", "\u2581", "\ud83d\udc8b", "\u2581", "\ud83d\udc68", "\ud83c\udffc"],
       ids: [1, 260, 65271, 260, 182033, 260, 16307, 4668, 260, 244774, 75846, 260, 247133, 260, 50622, 4668, 260, 3, 75846, 260, 50622, 260, 239432, 75846, 260, 243052, 260, 244250, 260, 243394, 260, 244250, 260, 239098, 56787, 260, 223802, 260, 239432, 260, 239098, 260, 239098, 260, 241727, 260, 242446, 260, 244250, 75846, 260, 243394, 260, 244250, 75846, 260, 244177, 245994, 247023, 248837, 248531, 245994, 245953, 260, 239432, 75846, 56787, 4668, 260, 223802, 260, 239432, 159667, 2],
       decoded: "[CLS] \u2728 \ud83e\udd17 \ud83d\udc41\ufe0f \ud83d\udc71\ud83c\udffb \ud83d\udd75 \u2642\ufe0f [UNK]\ud83c\udffb \u2642 \ud83d\udc68\ud83c\udffb \ud83c\udf3e \ud83e\uddd1 \ud83e\udd1d \ud83e\uddd1 \ud83d\udc69 \u2764 \ud83d\udc8b \ud83d\udc68 \ud83d\udc69 \ud83d\udc69 \ud83d\udc67 \ud83d\udc66 \ud83e\uddd1\ud83c\udffb \ud83e\udd1d \ud83e\uddd1\ud83c\udffb \ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f \ud83d\udc68\ud83c\udffb \u2764\ufe0f \ud83d\udc8b \ud83d\udc68\ud83c\udffc[SEP]",
+    },
+  },
+  "ku-nlp/deberta-v2-base-japanese": {
+    MALAYALAM_CHILLU_WITH_ZERO_WIDTH_JOINER: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.MALAYALAM_CHILLU_WITH_ZERO_WIDTH_JOINER,
+      tokens: ["\u2581", "\u0d05\u0d35\u0d28\u0d4d", "\u200d", "\u2581", "\u0d35\u0d28\u0d4d\u0d28\u0d41", "."],
+      ids: [1, 270, 3, 31562, 270, 3, 2011, 2],
+      decoded: "[CLS] [UNK]\u200d [UNK].[SEP]",
+    },
+    EMOJI_ZWJ_SEQUENCE: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.EMOJI_ZWJ_SEQUENCE,
+      tokens: ["\u2581f", "ami", "ly", "\u2581", "\ud83d\udc68", "\u200d", "\ud83d\udc69", "\u200d", "\ud83d\udc67", "\u2581", "ok"],
+      ids: [1, 1513, 12793, 3252, 270, 3, 31562, 3, 31562, 3, 270, 8177, 2],
+      decoded: "[CLS] family [UNK]\u200d[UNK]\u200d[UNK] ok[SEP]",
+    },
+    CYRILLIC_SUBSCRIPT_LETTERS: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.CYRILLIC_SUBSCRIPT_LETTERS,
+      tokens: ["\u2581x", "\ud838\udc51\ud838\udc52", "\u2581y"],
+      ids: [1, 1826, 3, 2589, 2],
+      decoded: "[CLS] x[UNK] y[SEP]",
+    },
+    SPACING_DIACRITICS: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.SPACING_DIACRITICS,
+      tokens: ["\u2581c", "af", "\u00b4", "e", "\u2581na", "\u00a8", "ive", "\u25815", "\u00b0", "\u2581", "\u00af", "\\", "_", "(", "\u30c4", ")", "_", "/", "\u00af"],
+      ids: [1, 1295, 12442, 15404, 1275, 14715, 28043, 5703, 331, 31828, 270, 30190, 11266, 8061, 536, 838, 1270, 8061, 7370, 30190, 2],
+      decoded: "[CLS] caf\u00b4e na\u00a8ive 5\u00b0 \u00af\\_(\u30c4)_/\u00af[SEP]",
+    },
+    KATAKANA_VOICED_SOUND_MARKS: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.KATAKANA_VOICED_SOUND_MARKS,
+      tokens: ["\u2581\u30ab", "\u309b", "\u30ad", "\u309c", "\u2581\u30c6\u30b9\u30c8"],
+      ids: [1, 1103, 3, 791, 23361, 2142, 2],
+      decoded: "[CLS] \u30ab[UNK]\u30ad\u309c \u30c6\u30b9\u30c8[SEP]",
+    },
+    GREEK_TONOS: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.GREEK_TONOS,
+      tokens: ["\u2581", "\u0384", "\u03b1", "\u2581", "\u0385", "\u03b9", "\u2581", "\u1fed\u1fee"],
+      ids: [1, 270, 3, 26281, 270, 3, 31451, 270, 3, 2],
+      decoded: "[CLS] [UNK]\u03b1 [UNK]\u03b9 [UNK][SEP]",
+    },
+    ARABIC_PRESENTATION_FORMS: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.ARABIC_PRESENTATION_FORMS,
+      tokens: ["\u2581", "\ufe70\ufe72", "\u2581", "\u0644", "\u0622"],
+      ids: [1, 270, 3, 270, 26562, 3, 2],
+      decoded: "[CLS] [UNK] \u0644[UNK][SEP]",
+    },
+    HALFWIDTH_KATAKANA: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.HALFWIDTH_KATAKANA,
+      tokens: ["\u2581\u30ab", "\u3099", "\u30f3", "\u30bf", "\u3099", "\u30e0"],
+      ids: [1, 1103, 31963, 513, 640, 31963, 665, 2],
+      decoded: "[CLS] \u30ab\u3099\u30f3\u30bf\u3099\u30e0[SEP]",
     },
   },
 };

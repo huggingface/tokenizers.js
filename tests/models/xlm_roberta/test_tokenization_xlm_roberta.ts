@@ -363,4 +363,54 @@ export default {
       decoded: "<s> \u2728 \ud83e\udd17 <unk>\ufe0f <unk>\ud83c\udffb <unk> \u2642\ufe0f <unk>\ud83c\udffb \u2642 <unk>\ud83c\udffb <unk> <unk> <unk> <unk> <unk> \u2764 \ud83d\udc8b <unk> <unk> <unk> <unk> <unk> <unk>\ud83c\udffb <unk> <unk>\ud83c\udffb <unk>\udb40\udc67<unk>\udb40\udc67<unk> <unk>\ud83c\udffb \u2764\ufe0f \ud83d\udc8b <unk>\ud83c\udffc</s>",
     },
   },
+  "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2": {
+    MALAYALAM_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.MALAYALAM_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0d0e\u0d28\u0d4d\u0d31\u0d46", "\u2581\u0d2a\u0d46", "\u0d3e\u0d28\u0d4d", "\u0d28\u0d41"],
+      ids: [0, 13795, 35286, 4287, 16483, 2],
+      decoded: "<s> \u0d0e\u0d28\u0d4d\u0d31\u0d46 \u0d2a\u0d46\u0d3e\u0d28\u0d4d\u0d28\u0d41</s>",
+    },
+    MALAYALAM_DECOMPOSED_VOWEL_SIGN_OO: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.MALAYALAM_DECOMPOSED_VOWEL_SIGN_OO,
+      tokens: ["\u2581\u0d15\u0d3e\u0d23\u0d41\u0d28\u0d4d\u0d28", "\u0d41\u0d23\u0d4d\u0d1f", "\u0d32\u0d4d\u0d32\u0d47", "\u0d3e", "?"],
+      ids: [0, 73201, 82374, 57556, 2381, 32, 2],
+      decoded: "<s> \u0d15\u0d3e\u0d23\u0d41\u0d28\u0d4d\u0d28\u0d41\u0d23\u0d4d\u0d1f\u0d32\u0d4d\u0d32\u0d47\u0d3e?</s>",
+    },
+    TAMIL_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.TAMIL_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0b95\u0bc6", "\u0bbe", "\u0b9f\u0bc1"],
+      ids: [0, 116741, 7667, 9000, 2],
+      decoded: "<s> \u0b95\u0bc6\u0bbe\u0b9f\u0bc1</s>",
+    },
+    BENGALI_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.BENGALI_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0995\u09c7", "\u09be", "\u09a5\u09be", "\u09af\u09bc"],
+      ids: [0, 31527, 4691, 56324, 2801, 2],
+      decoded: "<s> \u0995\u09c7\u09be\u09a5\u09be\u09af\u09bc</s>",
+    },
+    ORIYA_DECOMPOSED_VOWEL_SIGN_O: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.ORIYA_DECOMPOSED_VOWEL_SIGN_O,
+      tokens: ["\u2581\u0b15\u0b47", "\u0b3e", "\u0b23"],
+      ids: [0, 96885, 4835, 8693, 2],
+      decoded: "<s> \u0b15\u0b47\u0b3e\u0b23</s>",
+    },
+    SEGMENTED_DIGITS: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.SEGMENTED_DIGITS,
+      tokens: ["\u2581", "\ud83e\udff0\ud83e\udff1\ud83e\udff9"],
+      ids: [0, 6, 3, 2],
+      decoded: "<s> <unk></s>",
+    },
+    CYRILLIC_SUBSCRIPT_LETTERS: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.CYRILLIC_SUBSCRIPT_LETTERS,
+      tokens: ["\u2581x", "\ud838\udc51\ud838\udc52", "\u2581y"],
+      ids: [0, 1022, 3, 113, 2],
+      decoded: "<s> x<unk> y</s>",
+    },
+    HALFWIDTH_KATAKANA: {
+      text: PRECOMPILED_CHARSMAP_TEST_STRINGS.HALFWIDTH_KATAKANA,
+      tokens: ["\u2581", "\u30ab", "\u3099", "\u30f3", "\u30bf", "\u3099", "\u30e0"],
+      ids: [0, 6, 10045, 246514, 7740, 10793, 246514, 13091, 2],
+      decoded: "<s> \u30ab\u3099\u30f3\u30bf\u3099\u30e0</s>",
+    },
+  },
 };
