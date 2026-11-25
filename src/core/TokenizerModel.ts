@@ -38,9 +38,23 @@ abstract class TokenizerModel extends Callable<[string[]], string[]> {
    * @returns The encoded tokens.
    */
   _call(tokens: string[]): string[] {
-    let result = this.encode(tokens);
-    if (this.fuse_unk) {
-      result = fuse_unk(result, this.tokens_to_ids, this.unk_token_id);
+    if (!this.fuse_unk) {
+      return this.encode(tokens);
+    }
+
+    // Unknown tokens are only fused within a single word (pre-token), never across word
+    // boundaries, so every word has to be encoded and fused on its own.
+    const result: string[] = [];
+    for (const token of tokens) {
+      const encoded = this.encode([token]);
+      // A single token has nothing to fuse with.
+      const fused =
+        encoded.length > 1
+          ? fuse_unk(encoded, this.tokens_to_ids, this.unk_token_id)
+          : encoded;
+      for (const t of fused) {
+        result.push(t);
+      }
     }
     return result;
   }
