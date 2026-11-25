@@ -2,11 +2,14 @@ import { build as esbuild } from "esbuild";
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
+import { rewriteDeclarationImports } from "./rewrite-declaration-imports.mjs";
 
 console.log("Generating TypeScript declarations...");
 execSync("tsc -p tsconfig.build.json", { stdio: "inherit" });
 console.log("Resolving path aliases in declaration files...");
 execSync("tsc-alias -p tsconfig.build.json", { stdio: "inherit" });
+
+rewriteDeclarationImports("types");
 
 const formatSize = (bytes) => {
   if (bytes < 1024) return `${bytes}b`;
