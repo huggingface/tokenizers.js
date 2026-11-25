@@ -32,22 +32,23 @@ class WordPieceTokenizer extends TokenizerModel {
    * @param tokens The tokens to encode.
    * @returns An array of encoded tokens.
    */
-  encode(tokens: string[]): string[] {
-    const output_tokens: string[] = [];
-    for (const token of tokens) {
+  encode(tokens: Array<[string, [number, number]]>): Array<[string, [number, number]]> {
+    const output_tokens: Array<[string, [number, number]]> = [];
+    for (const [token, [word_start, word_end]] of tokens) {
       const chars = [...token];
       if (chars.length > this.max_input_chars_per_word) {
-        output_tokens.push(this.unk_token!);
+        output_tokens.push([this.unk_token!, [word_start, word_end]]);
         continue;
       }
 
       let is_unknown = false;
       let start = 0;
-      const sub_tokens: string[] = [];
+      const sub_tokens: Array<[string, [number, number]]> = [];
 
       while (start < chars.length) {
         let end = chars.length;
         let current_substring: string | null = null;
+        const sub_start = start;
         while (start < end) {
           let substr = chars.slice(start, end).join("");
 
@@ -65,11 +66,11 @@ class WordPieceTokenizer extends TokenizerModel {
           is_unknown = true;
           break;
         }
-        sub_tokens.push(current_substring);
+        sub_tokens.push([current_substring, [word_start + sub_start, word_start + end]]);
         start = end;
       }
       if (is_unknown) {
-        output_tokens.push(this.unk_token!);
+        output_tokens.push([this.unk_token!, [word_start, word_end]]);
       } else {
         output_tokens.push(...sub_tokens);
       }

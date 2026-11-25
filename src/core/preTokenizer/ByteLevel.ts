@@ -54,22 +54,31 @@ class ByteLevel extends PreTokenizer {
    * @param options Additional options for the pre-tokenization logic.
    * @returns An array of tokens.
    */
-  pre_tokenize_text(text: string, options?: any): string[] {
-    // Add a leading space if the option is enabled
-    if (this.add_prefix_space && !text.startsWith(" ")) {
+  pre_tokenize_text(text: string, options?: any): Array<[string, [number, number]]> {
+    // Track whether we insert a synthetic space so we can correct span positions
+    const prefixInserted = this.add_prefix_space && !text.startsWith(" ");
+    if (prefixInserted) {
       text = " " + text;
     }
 
-    // Split on whitespace and punctuation
-    const tokens = this.use_regex ? text.match(this.pattern) || [] : [text];
+    // Capture raw token strings with their positions in the (possibly prefixed) text
+    const rawTokens: Array<[string, number]> = this.use_regex
+      ? [...text.matchAll(this.pattern)].map((m) => [m[0], m.index!])
+      : [[text, 0]];
+
+    // Offset converts positions in the prefixed text back to the original input
+    const offset = prefixInserted ? -1 : 0;
 
     // Maps all our bytes to unicode strings, avoiding control tokens of the BPE (spaces in our case)
-    return tokens.map((token) =>
-      Array.from(
+    return rawTokens.map(([token, index]) => {
+      const start = Math.max(0, index + offset);
+      const end = Math.max(0, index + token.length + offset);
+      const encoded = Array.from(
         this.text_encoder.encode(token),
         (byte) => this.byte_encoder[byte],
-      ).join(""),
-    );
+      ).join("");
+      return [encoded, [start, end]];
+    });
   }
 }
 

@@ -183,6 +183,14 @@ class TokenLattice {
   }
 
   /**
+   * @returns The most likely sequence of tokens with their character spans.
+   */
+  token_spans(): Array<[string, [number, number]]> {
+    const nodes = this.viterbi();
+    return nodes.map((x) => [this.piece(x), [x.pos, x.pos + x.length]]);
+  }
+
+  /**
    * @returns The most likely sequence of token ids.
    */
   token_ids(): number[] {

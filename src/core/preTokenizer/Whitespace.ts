@@ -10,8 +10,8 @@ class Whitespace extends PreTokenizer {
    * @param options Additional options for the pre-tokenization logic.
    * @returns An array of tokens produced by splitting the input text on whitespace.
    */
-  pre_tokenize_text(text: string, options?: any): string[] {
-    return text.match(/\w+|[^\w\s]+/g) || [];
+  pre_tokenize_text(text: string, options?: any): Array<[string, [number, number]]> {
+    return [...text.matchAll(/\w+|[^\w\s]+/g)].map(m => [m[0], [m.index!, m.index! + m[0].length]]);
   }
 }
 
