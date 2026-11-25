@@ -1,4 +1,5 @@
 import Normalizer from "../Normalizer";
+import { lowercase } from "@utils/core";
 
 import type { TokenizerConfigNormalizerLowercase } from "@static/tokenizer";
 
@@ -13,7 +14,7 @@ class Lowercase extends Normalizer {
    * @returns {string} The normalized text.
    */
   normalize(text: string): string {
-    return text.toLowerCase();
+    return lowercase(text);
   }
 }
 

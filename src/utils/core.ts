@@ -875,6 +875,15 @@ export const lowercase_and_remove_accents = (text: string): string =>
   remove_accents(text.toLowerCase());
 
 /**
+ * Lowercases a string one character at a time, like Rust `tokenizers`.
+ * `String.prototype.toLowerCase` applies the Final_Sigma rule and turns a
+ * word-final "Σ" into "ς"; Rust `tokenizers` always gives "σ". Mapping "Σ"
+ * to "σ" first removes that one context-dependent case.
+ */
+export const lowercase = (text: string): string =>
+  text.replaceAll("Σ", "σ").toLowerCase();
+
+/**
  * Efficiently merge arrays, creating a new copy.
  * Adapted from https://stackoverflow.com/a/6768642/13989043
  */

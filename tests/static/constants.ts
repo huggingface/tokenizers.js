@@ -34,6 +34,8 @@ export const BERT_TEST_STRINGS = {
   MIXED_CASE_WITHOUT_ACCENTS: " \tHeLLo!how  \n Are yoU?  ",
   MIXED_CASE_WITH_ACCENTS: " \tHäLLo!how  \n Are yoU?  ",
   LOWER_CASE_WITH_SPECIAL_TOKENS: "[CLS]hello[MASK]world[SEP]",
+  // A word-final "Σ" lowercases to "σ", while an explicit "ς" is kept
+  GREEK_FINAL_SIGMA: "ΟΔΟΣ οδος",
 };
 
 // SentencePiece-specific test cases

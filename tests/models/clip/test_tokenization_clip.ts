@@ -1,4 +1,4 @@
-import { BASE_TEST_STRINGS } from "../../static/constants";
+import { BASE_TEST_STRINGS, BERT_TEST_STRINGS } from "../../static/constants";
 
 export default {
   "Xenova/clip-vit-base-patch16": {
@@ -151,6 +151,12 @@ export default {
       tokens: ["\u00e2\u013e\u00a8</w>", "\u00f0\u0141\u00a4\u0139</w>", "\u00f0\u0141\u0133\u0123", "\u00ef\u00b8\u0131</w>", "\u00f0\u0141\u0133", "\u00b1", "\u00f0\u0141\u0131\u00bb</w>", "\u00f0\u0141\u0137", "\u00b5", "\u00e2\u0122\u012f\u00e2\u013b\u0124\u00ef\u00b8\u0131</w>", "\u00f0\u0141\u00a7", "\u013b", "\u00f0\u0141\u0131\u00bb", "\u00e2\u0122\u012f\u00e2\u013b", "\u0124</w>", "\u00f0\u0141\u0133\u00a8", "\u00f0\u0141\u0131\u00bb\u00e2\u0122\u012f", "\u00f0\u0141\u012e\u00be</w>", "\u00f0\u0141\u00a7", "\u0133", "\u00e2\u0122\u012f", "\u00f0\u0141\u00a4", "\u013f", "\u00e2\u0122\u012f", "\u00f0\u0141\u00a7", "\u0133</w>", "\u00f0\u0141\u0133\u00a9\u00e2\u0122\u012f", "\u00e2\u013f\u00a4", "\u00e2\u0122\u012f", "\u00f0\u0141\u0134\u012d", "\u00e2\u0122\u012f", "\u00f0\u0141\u0133", "\u00a8</w>", "\u00f0\u0141\u0133\u00a9\u00e2\u0122\u012f", "\u00f0\u0141\u0133\u00a9\u00e2\u0122\u012f", "\u00f0\u0141\u0133\u00a7", "\u00e2\u0122\u012f", "\u00f0\u0141\u0133", "\u00a6</w>", "\u00f0\u0141\u00a7", "\u0133", "\u00f0\u0141\u0131\u00bb\u00e2\u0122\u012f", "\u00f0\u0141\u00a4", "\u013f", "\u00e2\u0122\u012f", "\u00f0\u0141\u00a7", "\u0133", "\u00f0\u0141\u0131\u00bb</w>", "\u00f0\u0141\u0131\u00b4", "\u00f3", "\u0142", "\u0123", "\u00a7", "\u00f3", "\u0142", "\u0123", "\u00a2", "\u00f3", "\u0142", "\u0123", "\u00a5", "\u00f3", "\u0142", "\u0123", "\u00ae", "\u00f3", "\u0142", "\u0123", "\u00a7", "\u00f3", "\u0142", "\u0123", "\u00bf</w>", "\u00f0\u0141\u0133\u00a8", "\u00f0\u0141\u0131\u00bb\u00e2\u0122\u012f", "\u00e2\u013f\u00a4\u00ef\u00b8\u0131", "\u00e2\u0122\u012f", "\u00f0\u0141\u0134\u012d", "\u00e2\u0122\u012f", "\u00f0\u0141\u0133\u00a8", "\u00f0\u0141\u0131\u00bc</w>"],
       ids: [49406, 3531, 10465, 47796, 1001, 964, 109, 3702, 7692, 113, 10613, 8792, 247, 5042, 5177, 480, 18966, 46250, 39796, 8792, 239, 4244, 1793, 251, 4244, 8792, 495, 26304, 1266, 4244, 12217, 4244, 964, 357, 26304, 26304, 48938, 4244, 964, 355, 8792, 239, 46250, 1793, 251, 4244, 8792, 239, 3702, 39690, 175, 254, 223, 100, 175, 254, 223, 95, 175, 254, 223, 98, 175, 254, 223, 106, 175, 254, 223, 100, 175, 254, 223, 379, 18966, 46250, 2626, 4244, 12217, 4244, 18966, 4027, 49407],
       decoded: "<|startoftext|>\u2728 \ud83e\udd17 \ud83d\udc41\ufe0f \ud83d\udc71\ud83c\udffb \ud83d\udd75\u200d\u2642\ufe0f \ud83e\uddd9\ud83c\udffb\u200d\u2642 \ud83d\udc68\ud83c\udffb\u200d\ud83c\udf3e \ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1 \ud83d\udc69\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68 \ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc66 \ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb \ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f \ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc <|endoftext|>",
+    },
+    GREEK_FINAL_SIGMA: {
+      text: BERT_TEST_STRINGS.GREEK_FINAL_SIGMA,
+      tokens: ["\u00ce", "\u00bf", "\u00ce", "\u00b4", "\u00ce", "\u00bf", "\u00cf", "\u0125</w>", "\u00ce", "\u00bf", "\u00ce", "\u00b4", "\u00ce", "\u00bf", "\u00cf", "\u0124</w>"],
+      ids: [49406, 138, 123, 138, 112, 138, 123, 139, 481, 138, 123, 138, 112, 138, 123, 139, 480, 49407],
+      decoded: "<|startoftext|>\u03bf\u03b4\u03bf\u03c3 \u03bf\u03b4\u03bf\u03c2 <|endoftext|>",
     },
   },
   "Xenova/owlvit-base-patch32": {
