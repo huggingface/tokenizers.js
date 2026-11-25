@@ -206,6 +206,7 @@ export interface TokenizerConfigPreTokenizerMetaspace {
   replacement?: string;
   str_rep?: string;
   prepend_scheme?: PrependScheme;
+  split?: boolean;
 }
 
 export interface TokenizerConfigPreTokenizerCharDelimiterSplit {

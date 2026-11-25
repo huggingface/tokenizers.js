@@ -17,6 +17,8 @@ class Metaspace extends PreTokenizer {
   str_rep: string;
   /** The metaspace prepending scheme. */
   prepend_scheme: PrependScheme;
+  /** Whether to split the text into words before each replacement character. */
+  split: boolean;
 
   /**
    * @param config The configuration object for the MetaspacePreTokenizer.
@@ -27,6 +29,8 @@ class Metaspace extends PreTokenizer {
     this.replacement = config.replacement ?? "▁";
     this.str_rep = config.str_rep || this.replacement;
     this.prepend_scheme = config.prepend_scheme ?? "always";
+    // Like the Rust tokenizers library, configs without `split` (older ones) split.
+    this.split = config.split ?? true;
   }
 
   /**
@@ -52,7 +56,23 @@ class Metaspace extends PreTokenizer {
     ) {
       normalized = this.str_rep + normalized;
     }
-    return [normalized];
+    if (!this.split) {
+      return [normalized];
+    }
+
+    // Split before each replacement character, which starts the next word (like `MergedWithNext`).
+    const words: string[] = [];
+    let start = 0;
+    for (
+      let i = normalized.indexOf(this.replacement, 1);
+      i !== -1;
+      i = normalized.indexOf(this.replacement, i + this.replacement.length)
+    ) {
+      words.push(normalized.slice(start, i));
+      start = i;
+    }
+    words.push(normalized.slice(start));
+    return words;
   }
 }
 
