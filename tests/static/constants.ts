@@ -168,3 +168,12 @@ export const AFMOE_TEST_STRINGS = {
   TRAILING_WHITESPACE: "ends with spaces   ",
   GENERAL_WHITESPACE: "a\tb  c",
 };
+
+// The Digits pre-tokenizer splits on every Unicode numeric character (Nd, Nl and No), like Rust's `char::is_numeric`
+export const DIGITS_PRETOKENIZER_TEST_STRINGS = {
+  ARABIC_INDIC_DIGITS: "١٢٣",
+  SUPERSCRIPT_AND_CIRCLED_DIGITS: "a²b①",
+  VULGAR_FRACTIONS: "½¼",
+  ROMAN_NUMERAL: "Ⅷ VIII",
+  MIXED_SCRIPT_DIGITS: "١٢ 12",
+};

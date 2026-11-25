@@ -1,6 +1,7 @@
 import fetchConfigById from "./utils/fetchConfigById";
 import { Tokenizer } from "../src";
 import { create_pattern } from "../src/utils/core";
+import { DIGITS_PRETOKENIZER_TEST_STRINGS } from "./static/constants";
 
 const compile_regex = (source: string): RegExp => {
   const pattern = create_pattern({ Regex: source });
@@ -370,4 +371,39 @@ describe("Edge cases", () => {
     const excessiveNesting = `${"[".repeat(257)}a${"]".repeat(257)}`;
     expect_syntax_error(excessiveNesting, /maximum character-class nesting depth of 256/i);
   });
+});
+
+describe("Digits pre-tokenizer with Unicode numerics", () => {
+  type DigitsCase = keyof typeof DIGITS_PRETOKENIZER_TEST_STRINGS;
+
+  // Expected values come from the Python `tokenizers` 0.23.2 package (`tokenizer.pre_tokenizer.pre_tokenize_str(text)`).
+  // These vocabularies were trained with the same split, so no merge crosses a numeric character and the token ids
+  // look the same either way. The pre-tokenizer output is where a wrong split shows.
+  const EXPECTED: Record<string, Record<DigitsCase, string[]>> = {
+    "bigcode/santacoder": {
+      ARABIC_INDIC_DIGITS: ["\u00d9\u00a1", "\u00d9\u00a2", "\u00d9\u00a3"],
+      SUPERSCRIPT_AND_CIRCLED_DIGITS: ["a", "\u00c2\u00b2", "b", "\u00e2\u0133\u0142"],
+      VULGAR_FRACTIONS: ["\u00c2\u00bd", "\u00c2\u00bc"],
+      ROMAN_NUMERAL: ["\u00e2\u0127\u00a7", "\u0120VIII"],
+      MIXED_SCRIPT_DIGITS: ["\u00d9\u00a1", "\u00d9\u00a2", "\u0120", "1", "2"],
+    },
+    "tiiuae/falcon-7b": {
+      ARABIC_INDIC_DIGITS: ["\u00d9\u00a1\u00d9\u00a2\u00d9\u00a3"],
+      SUPERSCRIPT_AND_CIRCLED_DIGITS: ["a", "\u00c2", "\u00b2", "b", "\u00e2\u0133\u0142"],
+      VULGAR_FRACTIONS: ["\u00c2", "\u00bd", "\u00c2", "\u00bc"],
+      ROMAN_NUMERAL: ["\u00e2\u0127\u00a7", "\u0120VIII"],
+      MIXED_SCRIPT_DIGITS: ["\u00d9\u00a1\u00d9\u00a2", "\u0120", "12"],
+    },
+  };
+
+  for (const [modelId, cases] of Object.entries(EXPECTED)) {
+    it(`${modelId} splits like Rust`, async () => {
+      const { tokenizerJson, tokenizerConfig } = await fetchConfigById(modelId);
+      const tokenizer = new Tokenizer(tokenizerJson, tokenizerConfig);
+      for (const [name, expected] of Object.entries(cases)) {
+        const text = DIGITS_PRETOKENIZER_TEST_STRINGS[name as DigitsCase];
+        expect(tokenizer.pre_tokenizer!.pre_tokenize(text)).toEqual(expected);
+      }
+    }, 60_000);
+  }
 });
