@@ -170,6 +170,12 @@ export default {
       ids: [101, 2534, 2080, 999, 2129, 2024, 2017, 1029, 102],
       decoded: "[CLS] hallo! how are you? [SEP]",
     },
+    GREEK_FINAL_SIGMA: {
+      text: BERT_TEST_STRINGS.GREEK_FINAL_SIGMA,
+      tokens: ["\u03bf", "##\u03b4", "##\u03bf", "##\u03c3", "\u03bf", "##\u03b4", "##\u03bf\u03c2"],
+      ids: [101, 1169, 29722, 29730, 29733, 1169, 29722, 15297, 102],
+      decoded: "[CLS] \u03bf\u03b4\u03bf\u03c3 \u03bf\u03b4\u03bf\u03c2 [SEP]",
+    },
     ONLY_WHITESPACE: {
       text: BASE_TEST_STRINGS.ONLY_WHITESPACE,
       tokens: [],
