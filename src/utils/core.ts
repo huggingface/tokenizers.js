@@ -920,6 +920,108 @@ export const regex_split = (text: string, regex: RegExp): string[] => {
   return result;
 };
 
+export type SplitDelimiterBehavior =
+  | "Removed"
+  | "Isolated"
+  | "MergedWithPrevious"
+  | "MergedWithNext"
+  | "Contiguous";
+
+/**
+ * Cuts `text` into the pieces matched by `regex` and the pieces between them.
+ * Each piece is paired with whether it is a match. Empty matches are kept, except one right where
+ * the previous match ended, which Oniguruma does not report but JavaScript does.
+ */
+export const regex_pieces = (
+  text: string,
+  regex: RegExp,
+): Array<[string, boolean]> => {
+  const pieces: Array<[string, boolean]> = [];
+  let prev = 0;
+  for (const match of text.matchAll(regex)) {
+    if (match[0].length === 0 && pieces.length > 0 && match.index === prev) {
+      continue;
+    }
+    if (prev < match.index!) {
+      pieces.push([text.slice(prev, match.index), false]);
+    }
+    pieces.push([match[0], true]);
+    prev = match.index! + match[0].length;
+  }
+  if (prev < text.length) {
+    pieces.push([text.slice(prev), false]);
+  }
+  return pieces;
+};
+
+/**
+ * Joins pieces of text according to a split behavior, as in Rust `tokenizers`
+ * (`NormalizedString::split`). A piece marked `true` is a delimiter.
+ * @param pieces The pieces of text, in order, each paired with whether it is a delimiter.
+ * @param behavior What to do with the delimiters.
+ * @param invert Whether to treat the other pieces as the delimiters instead.
+ * @returns The non-empty pieces after merging.
+ */
+export const split_with_behavior = (
+  pieces: Array<[string, boolean]>,
+  behavior: SplitDelimiterBehavior,
+  invert = false,
+): string[] => {
+  const marked = invert
+    ? pieces.map(([piece, is_match]): [string, boolean] => [piece, !is_match])
+    : pieces;
+  let result: string[];
+  switch (behavior) {
+    case "Removed":
+      result = marked
+        .filter(([, is_match]) => !is_match)
+        .map(([piece]) => piece);
+      break;
+    case "Isolated":
+      result = marked.map(([piece]) => piece);
+      break;
+    case "Contiguous":
+    case "MergedWithPrevious": {
+      // Contiguous joins runs of delimiters; MergedWithPrevious appends a delimiter to the piece
+      // before it, unless that piece is a delimiter too
+      result = [];
+      let previous_match = false;
+      for (const [piece, is_match] of marked) {
+        const merge =
+          behavior === "Contiguous"
+            ? is_match === previous_match
+            : is_match && !previous_match;
+        if (merge && result.length > 0) {
+          result[result.length - 1] += piece;
+        } else {
+          result.push(piece);
+        }
+        previous_match = is_match;
+      }
+      break;
+    }
+    case "MergedWithNext": {
+      // Prepends a delimiter to the piece after it, unless that piece is a delimiter too
+      result = [];
+      let previous_match = false;
+      for (let i = marked.length - 1; i >= 0; --i) {
+        const [piece, is_match] = marked[i];
+        if (is_match && !previous_match && result.length > 0) {
+          result[result.length - 1] = piece + result[result.length - 1];
+        } else {
+          result.push(piece);
+        }
+        previous_match = is_match;
+      }
+      result.reverse();
+      break;
+    }
+    default:
+      throw new Error(`Unknown split behavior: ${behavior}`);
+  }
+  return result.filter((piece) => piece.length > 0);
+};
+
 export const remove_accents = (text: string): string =>
   text.replace(/\p{M}/gu, "");
 

@@ -1,5 +1,5 @@
 import fetchConfigById from "./utils/fetchConfigById";
-import { Tokenizer } from "../src";
+import { Tokenizer, PunctuationPreTokenizer, SplitPreTokenizer } from "../src";
 import { create_pattern } from "../src/utils/core";
 
 const compile_regex = (source: string): RegExp => {
@@ -369,5 +369,55 @@ describe("Edge cases", () => {
 
     const excessiveNesting = `${"[".repeat(257)}a${"]".repeat(257)}`;
     expect_syntax_error(excessiveNesting, /maximum character-class nesting depth of 256/i);
+  });
+});
+
+// Expected values come from the Python `tokenizers` 0.23.2 package (`pre_tokenize_str`).
+describe("Split behaviors", () => {
+  type Behavior = "Removed" | "Isolated" | "MergedWithPrevious" | "MergedWithNext" | "Contiguous";
+
+  const PUNCTUATION_EXPECTED: Record<Behavior, string[]> = {
+    Removed: ["Hey", " ", "a", "b", " c"],
+    Isolated: ["Hey", "!", "!", " ", "(", "a", "-", "b", ")", ",", " c", "?"],
+    MergedWithPrevious: ["Hey!", "!", " (", "a-", "b)", ",", " c?"],
+    MergedWithNext: ["Hey", "!", "! ", "(a", "-b", ")", ", c", "?"],
+    Contiguous: ["Hey", "!!", " ", "(", "a", "-", "b", "),", " c", "?"],
+  };
+
+  for (const [behavior, expected] of Object.entries(PUNCTUATION_EXPECTED)) {
+    it(`Punctuation with ${behavior}`, () => {
+      const pre_tokenizer = new PunctuationPreTokenizer({ type: "Punctuation", behavior: behavior as Behavior });
+      expect(pre_tokenizer.pre_tokenize_text("Hey!! (a-b), c?")).toEqual(expected);
+    });
+  }
+
+  it("Punctuation defaults to Isolated", () => {
+    const pre_tokenizer = new PunctuationPreTokenizer({ type: "Punctuation" });
+    expect(pre_tokenizer.pre_tokenize_text("Hey!! (a-b), c?")).toEqual(PUNCTUATION_EXPECTED.Isolated);
+  });
+
+  const SPLIT_EXPECTED: Array<[Behavior, boolean, string[]]> = [
+    ["Removed", false, ["a", "b", "c"]],
+    ["Isolated", false, ["a", "-", "b", "-", "-", "c", "-"]],
+    ["MergedWithPrevious", false, ["a-", "b-", "-", "c-"]],
+    ["MergedWithNext", false, ["a", "-b", "-", "-c", "-"]],
+    ["Contiguous", false, ["a", "-", "b", "--", "c", "-"]],
+    ["Removed", true, ["-", "-", "-", "-"]],
+    ["Isolated", true, ["a", "-", "b", "-", "-", "c", "-"]],
+    ["MergedWithPrevious", true, ["a", "-b", "-", "-c", "-"]],
+    ["MergedWithNext", true, ["a-", "b-", "-", "c-"]],
+    ["Contiguous", true, ["a", "-", "b", "--", "c", "-"]],
+  ];
+
+  for (const [behavior, invert, expected] of SPLIT_EXPECTED) {
+    it(`Split with ${behavior}${invert ? " and invert" : ""}`, () => {
+      const pre_tokenizer = new SplitPreTokenizer({ type: "Split", pattern: { String: "-" }, behavior, invert });
+      expect(pre_tokenizer.pre_tokenize_text("a-b--c-")).toEqual(expected);
+    });
+  }
+
+  it("Split ignores an empty match right after a match, like Oniguruma", () => {
+    const pre_tokenizer = new SplitPreTokenizer({ type: "Split", pattern: { Regex: String.raw`\s*` }, behavior: "MergedWithNext" });
+    expect(pre_tokenizer.pre_tokenize_text("a \r\nb")).toEqual(["a", " \r\nb"]);
   });
 });
