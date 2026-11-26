@@ -2,6 +2,40 @@ import fetchConfigById from "./utils/fetchConfigById";
 import { Tokenizer, AddedToken } from "../src";
 import collectTests from "./utils/collectTests";
 
+describe("Empty second sequence", () => {
+  const tokenizer = new Tokenizer(
+    {
+      model: {
+        type: "WordPiece",
+        vocab: { "[UNK]": 0, "[CLS]": 1, "[SEP]": 2, hello: 3 },
+        unk_token: "[UNK]",
+        continuing_subword_prefix: "##",
+      },
+      decoder: null,
+      post_processor: {
+        type: "BertProcessing",
+        cls: ["[CLS]", 1],
+        sep: ["[SEP]", 2],
+      },
+      pre_tokenizer: null,
+      normalizer: null,
+      added_tokens: [],
+    },
+    {},
+  );
+
+  test("preserves an explicitly empty text_pair", () => {
+    expect(tokenizer.encode("hello").ids).toEqual([1, 3, 2]);
+    expect(tokenizer.encode("hello", { text_pair: "" }).ids).toEqual([1, 3, 2, 2]);
+    expect(
+      tokenizer.encode("hello", {
+        text_pair: "",
+        return_token_type_ids: true,
+      }).token_type_ids,
+    ).toEqual([0, 0, 0, 1]);
+  });
+});
+
 const TOKENIZER_TESTS = await collectTests();
 
 describe("Tokenizers (model-specific)", () => {
