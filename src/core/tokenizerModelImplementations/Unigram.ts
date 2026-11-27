@@ -18,6 +18,9 @@ class Unigram extends TokenizerModel {
   min_score: number;
   unk_score: number;
   trie: CharTrie;
+  /** Whether to use spm byte-fallback trick (defaults to False) */
+  byte_fallback: boolean;
+  text_encoder?: TextEncoder;
 
   /**
    * Create a new Unigram tokenizer model.
@@ -53,6 +56,12 @@ class Unigram extends TokenizerModel {
 
     this.trie = new CharTrie();
     this.trie.extend(this.vocab);
+
+    this.byte_fallback = config.byte_fallback ?? false;
+
+    if (this.byte_fallback) {
+      this.text_encoder = new TextEncoder();
+    }
 
     // NOTE: `fuse_unk` is hardcoded to true for Unigram models
     // See: https://github.com/huggingface/tokenizers/blob/b58227c7f1ccf8b73ee2268354336da56d91e492/tokenizers/src/models/unigram/model.rs#L119
@@ -100,7 +109,49 @@ class Unigram extends TokenizerModel {
       this.eos_token_id,
     );
     this.populate_nodes(lattice);
-    return lattice.tokens();
+    if (!this.byte_fallback) {
+      return lattice.tokens();
+    }
+
+    // Like the Rust implementation, fuse consecutive unknown pieces before
+    // falling back to bytes, so the fallback applies to the whole fused piece.
+    const tokens: string[] = [];
+    let unknown = "";
+    for (const node of lattice.viterbi()) {
+      const piece = lattice.piece(node);
+      if (node.token_id === this.unk_token_id) {
+        unknown += piece;
+        continue;
+      }
+      if (unknown) {
+        tokens.push(...this.byte_fallback_tokens(unknown));
+        unknown = "";
+      }
+      tokens.push(piece);
+    }
+    if (unknown) {
+      tokens.push(...this.byte_fallback_tokens(unknown));
+    }
+    return tokens;
+  }
+
+  /**
+   * Converts an unknown piece into its UTF-8 byte tokens.
+   *
+   * @param piece The piece that is not covered by the vocabulary.
+   * @returns The byte tokens, or the piece itself if it is in the vocabulary or
+   * if any of the byte tokens is missing from it.
+   */
+  private byte_fallback_tokens(piece: string): string[] {
+    if (this.tokens_to_ids.has(piece)) {
+      return [piece];
+    }
+    const byte_tokens = Array.from(this.text_encoder!.encode(piece)).map(
+      (x) => `<0x${x.toString(16).toUpperCase().padStart(2, "0")}>`,
+    );
+    return byte_tokens.every((x) => this.tokens_to_ids.has(x))
+      ? byte_tokens
+      : [piece];
   }
 
   /**
