@@ -27,5 +27,3 @@ tests/data
 *.sw?
 
 *.env
-
-*.local.*

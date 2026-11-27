@@ -1,5 +1,5 @@
 import TokenizerModel from "../TokenizerModel";
-import { object_to_map } from "@utils/core";
+import { byte_fallback_tokens, object_to_map } from "@utils/core";
 import PriorityQueue from "@utils/data-structures/PriorityQueue";
 import LRUCache from "@utils/data-structures/LRUCache";
 
@@ -23,7 +23,6 @@ class BPE extends TokenizerModel {
   continuing_subword_suffix: string | null;
   /** Whether to use spm byte-fallback trick (defaults to False) */
   byte_fallback: boolean;
-  text_encoder?: TextEncoder;
   /** Whether or not to match tokens with the vocab before using merges. */
   ignore_merges: boolean;
   /**
@@ -71,10 +70,6 @@ class BPE extends TokenizerModel {
     this.continuing_subword_suffix = config.continuing_subword_suffix ?? null;
 
     this.byte_fallback = this.config.byte_fallback ?? false;
-
-    if (this.byte_fallback) {
-      this.text_encoder = new TextEncoder();
-    }
 
     this.ignore_merges = this.config.ignore_merges ?? false;
 
@@ -263,10 +258,8 @@ class BPE extends TokenizerModel {
         if (this.tokens_to_ids.has(t)) {
           output_tokens.push(t);
         } else if (this.byte_fallback) {
-          const byte_tokens = Array.from(this.text_encoder!.encode(t)).map(
-            (x) => `<0x${x.toString(16).toUpperCase().padStart(2, "0")}>`,
-          );
-          if (byte_tokens.every((x) => this.tokens_to_ids.has(x))) {
+          const byte_tokens = byte_fallback_tokens(t, this.tokens_to_ids);
+          if (byte_tokens) {
             // Ensure the byte tokens are actually in the vocabulary, otherwise
             // we fall back to the unknown token. For more information, see
             // https://github.com/huggingface/transformers/issues/28096.

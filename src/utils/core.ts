@@ -842,6 +842,31 @@ export const fuse_unk = (
   return fused;
 };
 
+const TEXT_ENCODER = new TextEncoder();
+
+/**
+ * Converts a piece of text into its UTF-8 byte tokens (e.g., `<0xE2>`), as
+ * used by the byte-fallback mechanism of BPE and Unigram models.
+ *
+ * @param text The text that is not covered by the vocabulary.
+ * @param tokens_to_ids The vocabulary, mapping tokens to ids.
+ * @returns The byte tokens, or `null` if any of them is missing from the vocabulary.
+ */
+export const byte_fallback_tokens = (
+  text: string,
+  tokens_to_ids: Map<string, any>,
+): string[] | null => {
+  const byte_tokens: string[] = [];
+  for (const byte of TEXT_ENCODER.encode(text)) {
+    const token = `<0x${byte.toString(16).toUpperCase().padStart(2, "0")}>`;
+    if (!tokens_to_ids.has(token)) {
+      return null;
+    }
+    byte_tokens.push(token);
+  }
+  return byte_tokens;
+};
+
 export const is_chinese_char = (cp: number): boolean =>
   (cp >= 0x4e00 && cp <= 0x9fff) ||
   (cp >= 0x3400 && cp <= 0x4dbf) ||

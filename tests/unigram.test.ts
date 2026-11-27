@@ -145,6 +145,14 @@ describe("Unigram byte fallback", () => {
       expect(tokenizer.decode(ids)).toEqual(text);
     });
 
+    it("handles a long run of unknown characters", () => {
+      const text = "寿".repeat(50000); // A single fused piece of 150,000 byte tokens
+      const { ids } = tokenizer.encode(text);
+      expect(ids).toHaveLength(1 + 150000);
+      expect(ids.slice(0, 7)).toEqual([1, 235, 181, 197, 235, 181, 197]);
+      expect(tokenizer.decode(ids)).toEqual(text);
+    }, 5000); // NOTE: 5 seconds
+
     it("exposes the byte tokens through the model", () => {
       const model = tokenizer.model as Unigram;
       expect(model.byte_fallback).toBe(true);
