@@ -297,7 +297,7 @@ class Tokenizer {
 
       subsections.forEach((subsection, j) => {
         const added_token = this.added_tokens_map.get(subsection);
-        if (added_token) {
+        if (added_token?.normalized) {
           if (added_token.lstrip && j > 0) {
             subsections[j - 1] = subsections[j - 1].trimEnd();
           }
@@ -311,7 +311,8 @@ class Tokenizer {
         if (subsection.length === 0) {
           return [];
         }
-        if (this.added_tokens_map.has(subsection)) {
+        // A normalized string can have the same spelling as a raw added token.
+        if (this.added_tokens_map.get(subsection)?.normalized) {
           return [subsection];
         }
 

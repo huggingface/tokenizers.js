@@ -54,6 +54,36 @@ describe("Edge cases", () => {
     expect(ids).toEqual([128000, 15339, 1917, 0]);
   }, 5000); // NOTE: 5 seconds
 
+  it("only matches unnormalized added tokens in the original text", () => {
+    const tokenizer = new Tokenizer(
+      {
+        added_tokens: [
+          { id: 2, content: "▁▁", normalized: false },
+          { id: 3, content: "A B", normalized: true },
+        ],
+        normalizer: {
+          type: "Replace",
+          pattern: { String: " " },
+          content: "▁",
+        },
+        pre_tokenizer: null,
+        post_processor: null,
+        decoder: null,
+        model: {
+          type: "BPE",
+          vocab: { "[UNK]": 0, "▁": 1 },
+          merges: [],
+          unk_token: "[UNK]",
+        },
+      },
+      {},
+    );
+
+    expect(tokenizer.encode("▁▁").ids).toEqual([2]);
+    expect(tokenizer.encode("A▁B").ids).toEqual([3]);
+    expect(tokenizer.encode("  ").ids).toEqual([1, 1]);
+  });
+
   it("normalizes Python-oriented regex for JS", () => {
     const quotePattern = compile_regex("['\\\\\"]");
     expect(quotePattern.test('"')).toBe(true);
