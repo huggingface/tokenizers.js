@@ -447,6 +447,7 @@ export interface TokenizerConfigWordPieceModel {
 export interface TokenizerConfigUnigramModel {
   type: "Unigram";
   unk_id?: number | null;
+  byte_fallback?: boolean;
   vocab: Array<[string, number]>;
 }
 
