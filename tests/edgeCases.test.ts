@@ -1,5 +1,5 @@
 import fetchConfigById from "./utils/fetchConfigById";
-import { Tokenizer } from "../src";
+import { Tokenizer, StripNormalizer } from "../src";
 import { create_pattern } from "../src/utils/core";
 
 const compile_regex = (source: string): RegExp => {
@@ -369,5 +369,30 @@ describe("Edge cases", () => {
 
     const excessiveNesting = `${"[".repeat(257)}a${"]".repeat(257)}`;
     expect_syntax_error(excessiveNesting, /maximum character-class nesting depth of 256/i);
+  });
+
+  it("strips Unicode White_Space like Rust tokenizers in the Strip normalizer", async () => {
+    // Normalizer: Sequence[Strip(both), Precompiled, Replace]. Rust strips U+0085 (NEXT LINE)
+    // and keeps U+FEFF (BOM), which `String.prototype.trim()` does the other way around.
+    // Expected values are from Python tokenizers.
+    const modelId = "mixedbread-ai/mxbai-rerank-xsmall-v1";
+    const { tokenizerJson, tokenizerConfig } = await fetchConfigById(modelId);
+    const tokenizer = new Tokenizer(tokenizerJson, tokenizerConfig);
+
+    expect(tokenizer.tokenize("\u0085hello\u0085")).toEqual(["▁hello"]);
+    expect(tokenizer.encode("\u0085hello\u0085").ids).toEqual([1, 12018, 2]);
+    expect(tokenizer.tokenize("\ufeffhello\ufeff")).toEqual(["▁hello", "▁"]);
+    expect(tokenizer.encode("\ufeffhello\ufeff").ids).toEqual([1, 12018, 507, 2]);
+    expect(tokenizer.tokenize("\u3000hello\u2003")).toEqual(["▁hello"]);
+  }, 60_000);
+
+  it.each([
+    [true, false, "\u0085 a\ufeff \u0085", "a\ufeff \u0085"],
+    [false, true, "\u0085 a\ufeff \u0085", "\u0085 a\ufeff"],
+    [true, true, "\u0085 a\ufeff \u0085", "a\ufeff"],
+    [true, true, "\ufeff a \ufeff", "\ufeff a \ufeff"],
+  ])("Strip(strip_left=%s, strip_right=%s) matches Python tokenizers for %j", (strip_left, strip_right, text, expected) => {
+    const normalizer = new StripNormalizer({ type: "Strip", strip_left, strip_right } as any);
+    expect(normalizer.normalize(text)).toEqual(expected);
   });
 });
