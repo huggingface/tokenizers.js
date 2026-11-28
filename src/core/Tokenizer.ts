@@ -25,10 +25,20 @@ import type {
   TokenizerJSON,
 } from "@static/tokenizer";
 
+export type TruncationStrategy = "longest_first" | "only_first" | "only_second";
+
 interface EncodeOptions {
   text_pair?: string | null;
   add_special_tokens?: boolean;
   return_token_type_ids?: boolean | null;
+  /**
+   * Truncate to `max_length` tokens, special tokens included. `true` means
+   * `"longest_first"`. Room is reserved for the special tokens the
+   * post-processor adds, so they are never cut off.
+   */
+  truncation?: boolean | TruncationStrategy;
+  /** Maximum length of the encoding, special tokens included. Required with `truncation`. */
+  max_length?: number | null;
 }
 
 interface DecodeOptions {
@@ -39,6 +49,11 @@ interface DecodeOptions {
 interface TokenizeOptions {
   text_pair?: string | null;
   add_special_tokens?: boolean;
+}
+
+interface TruncationOptions {
+  truncation?: boolean | TruncationStrategy;
+  max_length?: number | null;
 }
 
 class Tokenizer {
@@ -162,11 +177,15 @@ class Tokenizer {
       text_pair = null,
       add_special_tokens = true,
       return_token_type_ids = null,
+      truncation = false,
+      max_length = null,
     }: EncodeOptions = {},
   ): Encoding {
     const { tokens, token_type_ids } = this.tokenize_helper(text, {
       text_pair,
       add_special_tokens,
+      truncation,
+      max_length,
     });
 
     const input_ids = tokens.map(
@@ -328,14 +347,98 @@ class Tokenizer {
 
   private tokenize_helper(
     text: string,
-    { text_pair = null, add_special_tokens = true }: TokenizeOptions,
+    {
+      text_pair = null,
+      add_special_tokens = true,
+      truncation = false,
+      max_length = null,
+    }: TokenizeOptions & TruncationOptions,
   ): { tokens: Array<string>; token_type_ids?: Array<number> } {
-    const tokens1 = this.encode_text(text);
-    const tokens2 = this.encode_text(text_pair || null);
+    let tokens1 = this.encode_text(text);
+    let tokens2 = this.encode_text(text_pair || null);
+
+    if (truncation) {
+      [tokens1, tokens2] = this.truncate(
+        tokens1,
+        tokens2,
+        truncation === true ? "longest_first" : truncation,
+        max_length,
+        add_special_tokens,
+      );
+    }
 
     return this.post_processor
       ? this.post_processor(tokens1, tokens2, add_special_tokens)
       : { tokens: merge_arrays(tokens1 ?? [], tokens2 ?? []) };
+  }
+
+  /**
+   * Truncates the sequences before the post-processor adds its special tokens,
+   * reserving room for them. Ported from `truncate_pair` in Rust `tokenizers`
+   * (tokenizers/tk-encode/src/utils/truncation.rs), so the ids match the
+   * Python library's. Truncation is from the right.
+   */
+  private truncate(
+    tokens1: string[],
+    tokens2: string[] | null,
+    strategy: TruncationStrategy,
+    max_length: number | null,
+    add_special_tokens: boolean,
+  ): [string[], string[] | null] {
+    if (!is_integral_number(max_length) || max_length < 0) {
+      throw new Error(
+        "`max_length` must be a non-negative integer when `truncation` is set.",
+      );
+    }
+    // The post-processor's special tokens for this input shape: its output for
+    // empty sequences.
+    const num_added =
+      add_special_tokens && this.post_processor
+        ? this.post_processor([], tokens2 === null ? null : [], true).tokens
+            .length
+        : 0;
+    const budget = Math.max(0, max_length - num_added);
+
+    if (budget === 0) {
+      return [[], tokens2 === null ? null : []];
+    }
+    const length = tokens1.length + (tokens2?.length ?? 0);
+    if (length <= budget) {
+      return [tokens1, tokens2];
+    }
+    const num_removed = length - budget;
+
+    if (strategy === "longest_first") {
+      if (tokens2 === null) {
+        return [tokens1.slice(0, tokens1.length - num_removed), null];
+      }
+      // Keep the shorter sequence whole if the longer can absorb the cut;
+      // otherwise split the budget evenly, the odd token to the longer one.
+      let n1 = Math.min(tokens1.length, tokens2.length);
+      let n2 = n1 > budget ? n1 : Math.max(n1, budget - n1);
+      if (n1 + n2 > budget) {
+        n1 = Math.floor(budget / 2);
+        n2 = n1 + (budget % 2);
+      }
+      if (tokens1.length > tokens2.length) {
+        [n1, n2] = [n2, n1];
+      }
+      return [tokens1.slice(0, n1), tokens2.slice(0, n2)];
+    }
+
+    if (strategy === "only_second" && tokens2 === null) {
+      throw new Error("Truncation error: second sequence not provided.");
+    }
+    const target = strategy === "only_first" ? tokens1 : tokens2!;
+    if (target.length <= num_removed) {
+      throw new Error(
+        "Truncation error: sequence to truncate is too short to respect `max_length`.",
+      );
+    }
+    const truncated = target.slice(0, target.length - num_removed);
+    return strategy === "only_first"
+      ? [truncated, tokens2]
+      : [tokens1, truncated];
   }
 
   /**

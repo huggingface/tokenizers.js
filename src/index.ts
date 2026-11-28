@@ -1,4 +1,5 @@
 export { default as Tokenizer } from "./core/Tokenizer";
+export type { TruncationStrategy } from "./core/Tokenizer";
 export { default as AddedToken } from "./core/AddedToken";
 export type { Encoding } from "./static/types";
 

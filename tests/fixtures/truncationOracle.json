@@ -1,0 +1,861 @@
+{
+ "tokenizers_version": "0.23.2",
+ "models": {
+  "Xenova/bert-base-uncased": {
+   "single_longest_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     102
+    ]
+   },
+   "single_only_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "only_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     102
+    ]
+   },
+   "single_no_special_tokens": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "longest_first",
+    "add_special_tokens": false,
+    "ids": [
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     1996,
+     13971
+    ]
+   },
+   "single_fits_exactly": {
+    "text": "Hi there.",
+    "text_pair": null,
+    "max_length": 5,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     7632,
+     2045,
+     1012,
+     102
+    ]
+   },
+   "pair_longest_first_both_long": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 12,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     102,
+     1037,
+     2460,
+     2117,
+     6251,
+     102
+    ]
+   },
+   "pair_longest_first_short_kept": {
+    "text": "Hi there.",
+    "text_pair": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "max_length": 14,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     7632,
+     2045,
+     1012,
+     102,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     1996,
+     13971,
+     102
+    ]
+   },
+   "pair_longest_first_odd_budget": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 13,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     102,
+     1037,
+     2460,
+     2117,
+     6251,
+     2055,
+     102
+    ]
+   },
+   "pair_only_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "Hi there.",
+    "max_length": 14,
+    "truncation": "only_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     1996,
+     13971,
+     102,
+     7632,
+     2045,
+     1012,
+     102
+    ]
+   },
+   "pair_only_second": {
+    "text": "Hi there.",
+    "text_pair": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "max_length": 14,
+    "truncation": "only_second",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     7632,
+     2045,
+     1012,
+     102,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     1996,
+     13971,
+     102
+    ]
+   },
+   "pair_no_special_tokens": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 10,
+    "truncation": "longest_first",
+    "add_special_tokens": false,
+    "ids": [
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     1037,
+     2460,
+     2117,
+     6251,
+     2055
+    ]
+   }
+  },
+  "Xenova/all-MiniLM-L6-v2": {
+   "single_longest_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     102
+    ]
+   },
+   "single_only_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "only_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     102
+    ]
+   },
+   "single_no_special_tokens": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "longest_first",
+    "add_special_tokens": false,
+    "ids": [
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     1996,
+     13971
+    ]
+   },
+   "single_fits_exactly": {
+    "text": "Hi there.",
+    "text_pair": null,
+    "max_length": 5,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     7632,
+     2045,
+     1012,
+     102
+    ]
+   },
+   "pair_longest_first_both_long": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 12,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     102,
+     1037,
+     2460,
+     2117,
+     6251,
+     102
+    ]
+   },
+   "pair_longest_first_short_kept": {
+    "text": "Hi there.",
+    "text_pair": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "max_length": 14,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     7632,
+     2045,
+     1012,
+     102,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     1996,
+     13971,
+     102
+    ]
+   },
+   "pair_longest_first_odd_budget": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 13,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     102,
+     1037,
+     2460,
+     2117,
+     6251,
+     2055,
+     102
+    ]
+   },
+   "pair_only_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "Hi there.",
+    "max_length": 14,
+    "truncation": "only_first",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     1996,
+     13971,
+     102,
+     7632,
+     2045,
+     1012,
+     102
+    ]
+   },
+   "pair_only_second": {
+    "text": "Hi there.",
+    "text_pair": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "max_length": 14,
+    "truncation": "only_second",
+    "add_special_tokens": true,
+    "ids": [
+     101,
+     7632,
+     2045,
+     1012,
+     102,
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     2058,
+     1996,
+     13971,
+     102
+    ]
+   },
+   "pair_no_special_tokens": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 10,
+    "truncation": "longest_first",
+    "add_special_tokens": false,
+    "ids": [
+     1996,
+     4248,
+     2829,
+     4419,
+     14523,
+     1037,
+     2460,
+     2117,
+     6251,
+     2055
+    ]
+   }
+  },
+  "Xenova/roberta-base": {
+   "single_longest_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     0,
+     133,
+     2119,
+     6219,
+     23602,
+     13855,
+     81,
+     2
+    ]
+   },
+   "single_only_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "only_first",
+    "add_special_tokens": true,
+    "ids": [
+     0,
+     133,
+     2119,
+     6219,
+     23602,
+     13855,
+     81,
+     2
+    ]
+   },
+   "single_no_special_tokens": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "longest_first",
+    "add_special_tokens": false,
+    "ids": [
+     133,
+     2119,
+     6219,
+     23602,
+     13855,
+     81,
+     5,
+     22414
+    ]
+   },
+   "single_fits_exactly": {
+    "text": "Hi there.",
+    "text_pair": null,
+    "max_length": 5,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     0,
+     30086,
+     89,
+     4,
+     2
+    ]
+   },
+   "pair_longest_first_both_long": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 12,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     0,
+     133,
+     2119,
+     6219,
+     23602,
+     2,
+     2,
+     250,
+     765,
+     200,
+     3645,
+     2
+    ]
+   },
+   "pair_longest_first_short_kept": {
+    "text": "Hi there.",
+    "text_pair": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "max_length": 14,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     0,
+     30086,
+     89,
+     4,
+     2,
+     2,
+     133,
+     2119,
+     6219,
+     23602,
+     13855,
+     81,
+     5,
+     2
+    ]
+   },
+   "pair_longest_first_odd_budget": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 13,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     0,
+     133,
+     2119,
+     6219,
+     23602,
+     13855,
+     2,
+     2,
+     250,
+     765,
+     200,
+     3645,
+     2
+    ]
+   },
+   "pair_only_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "Hi there.",
+    "max_length": 14,
+    "truncation": "only_first",
+    "add_special_tokens": true,
+    "ids": [
+     0,
+     133,
+     2119,
+     6219,
+     23602,
+     13855,
+     81,
+     5,
+     2,
+     2,
+     30086,
+     89,
+     4,
+     2
+    ]
+   },
+   "pair_only_second": {
+    "text": "Hi there.",
+    "text_pair": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "max_length": 14,
+    "truncation": "only_second",
+    "add_special_tokens": true,
+    "ids": [
+     0,
+     30086,
+     89,
+     4,
+     2,
+     2,
+     133,
+     2119,
+     6219,
+     23602,
+     13855,
+     81,
+     5,
+     2
+    ]
+   },
+   "pair_no_special_tokens": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 10,
+    "truncation": "longest_first",
+    "add_special_tokens": false,
+    "ids": [
+     133,
+     2119,
+     6219,
+     23602,
+     13855,
+     250,
+     765,
+     200,
+     3645,
+     59
+    ]
+   }
+  },
+  "Xenova/t5-small": {
+   "single_longest_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     37,
+     1704,
+     4216,
+     3,
+     20400,
+     4418,
+     7,
+     1
+    ]
+   },
+   "single_only_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "only_first",
+    "add_special_tokens": true,
+    "ids": [
+     37,
+     1704,
+     4216,
+     3,
+     20400,
+     4418,
+     7,
+     1
+    ]
+   },
+   "single_no_special_tokens": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "longest_first",
+    "add_special_tokens": false,
+    "ids": [
+     37,
+     1704,
+     4216,
+     3,
+     20400,
+     4418,
+     7,
+     147
+    ]
+   },
+   "single_fits_exactly": {
+    "text": "Hi there.",
+    "text_pair": null,
+    "max_length": 4,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     2018,
+     132,
+     5,
+     1
+    ]
+   },
+   "pair_longest_first_both_long": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 12,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     37,
+     1704,
+     4216,
+     3,
+     20400,
+     1,
+     71,
+     710,
+     511,
+     7142,
+     81,
+     1
+    ]
+   },
+   "pair_longest_first_short_kept": {
+    "text": "Hi there.",
+    "text_pair": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "max_length": 14,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     2018,
+     132,
+     5,
+     1,
+     37,
+     1704,
+     4216,
+     3,
+     20400,
+     4418,
+     7,
+     147,
+     8,
+     1
+    ]
+   },
+   "pair_longest_first_odd_budget": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 13,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     37,
+     1704,
+     4216,
+     3,
+     20400,
+     4418,
+     1,
+     71,
+     710,
+     511,
+     7142,
+     81,
+     1
+    ]
+   },
+   "pair_only_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "Hi there.",
+    "max_length": 14,
+    "truncation": "only_first",
+    "add_special_tokens": true,
+    "ids": [
+     37,
+     1704,
+     4216,
+     3,
+     20400,
+     4418,
+     7,
+     147,
+     8,
+     1,
+     2018,
+     132,
+     5,
+     1
+    ]
+   },
+   "pair_only_second": {
+    "text": "Hi there.",
+    "text_pair": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "max_length": 14,
+    "truncation": "only_second",
+    "add_special_tokens": true,
+    "ids": [
+     2018,
+     132,
+     5,
+     1,
+     37,
+     1704,
+     4216,
+     3,
+     20400,
+     4418,
+     7,
+     147,
+     8,
+     1
+    ]
+   },
+   "pair_no_special_tokens": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": "A short second sentence about something else entirely.",
+    "max_length": 10,
+    "truncation": "longest_first",
+    "add_special_tokens": false,
+    "ids": [
+     37,
+     1704,
+     4216,
+     3,
+     20400,
+     71,
+     710,
+     511,
+     7142,
+     81
+    ]
+   }
+  },
+  "Xenova/gpt2": {
+   "single_longest_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     464,
+     2068,
+     7586,
+     21831,
+     18045,
+     625,
+     262,
+     16931
+    ]
+   },
+   "single_only_first": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "only_first",
+    "add_special_tokens": true,
+    "ids": [
+     464,
+     2068,
+     7586,
+     21831,
+     18045,
+     625,
+     262,
+     16931
+    ]
+   },
+   "single_no_special_tokens": {
+    "text": "The quick brown fox jumps over the lazy dog while the cat watches from the old wooden fence.",
+    "text_pair": null,
+    "max_length": 8,
+    "truncation": "longest_first",
+    "add_special_tokens": false,
+    "ids": [
+     464,
+     2068,
+     7586,
+     21831,
+     18045,
+     625,
+     262,
+     16931
+    ]
+   },
+   "single_fits_exactly": {
+    "text": "Hi there.",
+    "text_pair": null,
+    "max_length": 3,
+    "truncation": "longest_first",
+    "add_special_tokens": true,
+    "ids": [
+     17250,
+     612,
+     13
+    ]
+   }
+  }
+ }
+}
