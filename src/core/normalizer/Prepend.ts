@@ -13,8 +13,8 @@ class Prepend extends Normalizer {
    * @returns The normalized text.
    */
   normalize(text: string): string {
-    text = this.config.prepend + text;
-    return text;
+    // Like Rust tokenizers, leave an empty string unchanged
+    return text.length > 0 ? this.config.prepend + text : text;
   }
 }
 

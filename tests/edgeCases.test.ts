@@ -54,6 +54,20 @@ describe("Edge cases", () => {
     expect(ids).toEqual([128000, 15339, 1917, 0]);
   }, 5000); // NOTE: 5 seconds
 
+  it("does not prepend to text that normalizes to an empty string", async () => {
+    // Normalizer: Sequence[Replace, Precompiled, Prepend("▁"), Replace]. The precompiled
+    // charsmap deletes control characters, so Prepend receives an empty string and, like
+    // Rust tokenizers, must leave it empty. Expected values are from Python tokenizers.
+    const modelId = "ibm-granite/granite-speech-5.0-470m-turboctc-nc";
+    const { tokenizerJson, tokenizerConfig } = await fetchConfigById(modelId);
+    const tokenizer = new Tokenizer(tokenizerJson, tokenizerConfig);
+
+    expect(tokenizer.tokenize("\u0001")).toEqual([]);
+    expect(tokenizer.encode("\u0001").ids).toEqual([]);
+    expect(tokenizer.tokenize("a\u0001")).toEqual(["▁a"]);
+    expect(tokenizer.encode("a\u0001").ids).toEqual([513]);
+  }, 60_000);
+
   it("normalizes Python-oriented regex for JS", () => {
     const quotePattern = compile_regex("['\\\\\"]");
     expect(quotePattern.test('"')).toBe(true);
